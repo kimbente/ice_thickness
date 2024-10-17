@@ -6,9 +6,10 @@ Directly model ice thickness from Bedmap3 data points. Byrd glacier.
 
 # ToDo:
 - domain-informed noise level
+- std to count ratio: standard error
 
 ## Why do we model ice thickness and not the bed elevation?
-- Hypothesis: Ice thickness distribution is smoother in space and thus easier to model with the choosen methods. 
+- Hypothesis: Ice thickness distribution is smoother in space and thus easier to model with the choosen methods (GPs/kriging/kernel methods are naturally better at modelling smooth distributions.)
 - Test this hypothesis with
     - Look at std
     - Fit simple GP model and interpret
@@ -24,3 +25,18 @@ Directly model ice thickness from Bedmap3 data points. Byrd glacier.
 
 ## Considerations
 - Check that geoid/ellipsoid reference is consistent. BedMachine uses ellipsoid.
+
+# Data
+
+- Bedmap123 data preprocess and subsetted for this region around Byrd glacier.
+    - **surface_altitude**: Surface elevation or altitude (referenced to WGS84) in meters
+    - **land_ice_thickness**: Ice thickness in meters
+    - **bedrock_altitude** Bed elevation or altitude (referenced to WGS84) in meters
+- Bedmachine v3
+    - In BedMachine Antarctica, all heights are referenced to mean sea level (using the geoid EIGEN-6C4). To
+convert the heights to heights referenced to the WGS84 ellipsoid, simply add the geoid height
+    - Ice equivalent units.
+
+Corrections of BedMachine:
+- Bed, thickness, and surface elevation need to be corrected to ellipsoid. 
+- Ice thickness also needs to be firn corrected.
