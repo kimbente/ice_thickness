@@ -56,3 +56,11 @@ https://docs.gpytorch.ai/en/stable/examples/02_Scalable_Exact_GPs/index.html
 # Gradient observation
 
 https://docs.gpytorch.ai/en/v1.11/examples/08_Advanced_Usage/Simple_GP_Regression_Derivative_Information_1d.html
+
+# Morlighem MC
+
+- Do we need to extend the region for the ice inflow (contraint on obs.) to be good.
+- product: H * v (ice flux)
+    - The resulting Ice Flux is often in cubic meters per year (m³/yr), representing the volume of ice transported by glaciers or ice sheets
+    - gradient of ice flux
+- radar-derived thickness data from multiple sources, with a vertical precision of ~30 m.
