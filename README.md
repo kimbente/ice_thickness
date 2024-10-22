@@ -43,6 +43,12 @@ Corrections of BedMachine:
 - Bed, thickness, and surface elevation need to be corrected to ellipsoid. 
 - Ice thickness also needs to be firn corrected.
 
+# About the data
+
+The median gridding error over Byrd glacier for a 500 x 500 m grid is 9.5 meters.  
+The mean gridding error over Byrd glacier for a 500 x 500 m grid is 16.3 meters.  
+The mean SEM (standard error of the mean) over Byrd glacier for a 500 x 500 m grid is 3.9 meters.
+
 # Scaleable inference
 
 https://docs.gpytorch.ai/en/stable/examples/02_Scalable_Exact_GPs/index.html 
