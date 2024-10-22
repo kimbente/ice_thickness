@@ -25,6 +25,8 @@ Directly model ice thickness from Bedmap3 data points. Byrd glacier.
 
 ## Considerations
 - Check that geoid/ellipsoid reference is consistent. BedMachine uses ellipsoid.
+- Check that height is consitent too. BedMachine fird-corrects to attain ice-equivalent values.
+- Remove flight line that is dubious. ()
 
 # Data
 
@@ -40,3 +42,11 @@ convert the heights to heights referenced to the WGS84 ellipsoid, simply add the
 Corrections of BedMachine:
 - Bed, thickness, and surface elevation need to be corrected to ellipsoid. 
 - Ice thickness also needs to be firn corrected.
+
+# Scaleable inference
+
+https://docs.gpytorch.ai/en/stable/examples/02_Scalable_Exact_GPs/index.html 
+
+# Gradient observation
+
+https://docs.gpytorch.ai/en/v1.11/examples/08_Advanced_Usage/Simple_GP_Regression_Derivative_Information_1d.html
