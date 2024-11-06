@@ -1,0 +1,55 @@
+# Apparent mass balance
+
+- $M_s$ surface mass balance (m/yr ice equivalent, positive for accumulation, negative for ablation).
+- $M_b$ is the basal melting rate (m/yr ice equivalent, positive when melting, negative when freezing).
+- $\frac{\partial H}{\partial t}$ is the ice thickness change (m/yr ice equivalent.) (thickening through movement of ice mass)
+    - neglect if much lower than other side of the equation ( e.g. < 1 m/yr)
+
+\begin{aligned}
+a = M_s - M_b - \frac{\partial H}{\partial t}
+\end{aligned}
+
+We assume $\frac{\partial H}{\partial t} = 0$ (negligable thickness change expect for one region) and also $M_b = 0$ (negligable basal melt) so 
+
+\begin{aligned}
+a = M_s
+\end{aligned}
+" The apparent mass balance is therefore here taken as equal to the surface mass balance."
+
+If the gain from surface mass balance is the same as the ice thinning, the apparent mass balance is 0 (no change.) Definition of smb is a bit confusing.
+
+# Ice flux divergence
+
+- $v$ is the ice velocity vector field
+- $H$ is the ice thickness field
+- $\nabla$ "nabla"/"deldot" is the divergence / vector field of partial derivates (x and y)
+
+This equation states that the ice flux divergence is balanced by the rate of thickness change and the net surface and basal mass balances.
+Veritically integrated with the Leibnitz integral rule.
+
+\begin{aligned}
+\nabla \cdot H\vec{v} = M_s
+\end{aligned}
+
+# Divergence free ice velocity 
+
+The vector field of the velocity is divergence free (mass is conserved.)
+
+[Tutorial in the context of fluid dynamics](https://runestone.academy/ns/books/published/acmulti/S_Vector_Div.html)
+
+- $v$ is the ice velocity vector
+
+\begin{aligned}
+\nabla \cdot v = 0
+\end{aligned}
+
+# Integration with interpolation
+
+Mass conservation loss term
+
+\begin{aligned}
+\mathcal{L}_{MC} =  \int \mid \nabla \cdot H\vec{v} - M_s \mid
+\end{aligned}
+
+- $v$ data already used in kernel
+- use torch autograd 
