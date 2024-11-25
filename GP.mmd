@@ -1,0 +1,117 @@
+# Gaussian Processes
+
+- Gaussian Processes for Machine Learning by Rasmussen and Williams
+- 2.2 Function-space View.
+
+## Definition of a Gaussian Process
+
+`A Gaussian process is a collection of random variables, any finite number of which have a joint Gaussian distribution.'
+- every point $x \in \mathbb{R}^d$ is modelled as a random variable $f(x)$
+- the joint distribution of a finite number of these variables $p(f(x_1), f(x_2), \dots, f(x_n))$ is itself Gaussian.
+- distribution over functions
+
+\begin{aligned}
+f(x) \sim \mathcal{GP}(m(x), k(x, x'))
+\end{aligned}
+
+## Mean Function and Covariance Function
+\begin{aligned}
+m(x) &= \mathbb{E}[f(x)], \\
+k(x, x') &= \mathbb{E}[(f(x) - m(x))(f(x') - m(x'))]
+\end{aligned}
+
+## Joint Distribution of Training and Test Points
+
+For a Gaussian Process, given $n$ training points $X$ and test points $X_*$, the joint distribution is:
+
+\begin{aligned}
+\begin{bmatrix}
+f \\
+f_*
+\end{bmatrix}
+\sim \mathcal{N}\left(
+\begin{bmatrix}
+m(X) \\
+m(X_*)
+\end{bmatrix},
+\begin{bmatrix}
+K(X, X) & K(X, X_*) \\
+K(X_*, X) & K(X_*, X_*)
+\end{bmatrix}
+\right)
+\end{aligned}
+
+## Posterior Mean and Covariance
+
+\begin{aligned}
+\mu_* &= m(X_*) + K(X_*, X) K(X, X)^{-1} (y - m(X)), \\
+\Sigma_* &= K(X_*, X_*) - K(X_*, X) K(X, X)^{-1} K(X, X_*)
+\end{aligned}
+
+If we have zero mean:
+
+\begin{aligned}
+\mu_* &= K(X_*, X) \left(K(X, X) + \sigma_n^2 I\right)^{-1} y, \\
+\Sigma_* &= K(X_*, X_*) - K(X_*, X) \left(K(X, X) + \sigma_n^2 I\right)^{-1} K(X, X_*)
+\end{aligned}
+
+
+##  Squared Exponential (SE) Kernel
+
+The SE kernel is a common choice for the covariance function:
+
+\begin{aligned}
+k(x, x') = \sigma_f^2 \exp\left(-\frac{\|x - x'\|^2}{2l^2}\right)
+\end{aligned}
+
+which is the same as 
+
+\begin{aligned}
+k(x, x') = \sigma_f^2 \exp\left(-0.5 \frac{\|x - x'\|^2}{l^2}\right)
+\end{aligned}
+
+## Marginal Log Likelihood
+
+\begin{aligned}
+\log p(y|X) = -\frac{1}{2} y^\top K(X, X)^{-1} y - \frac{1}{2} \log |K(X, X)| - \frac{n}{2} \log 2\pi
+\end{aligned}
+
+## CHOLESKY
+
+https://gregorygundersen.com/blog/2019/09/12/practical-gp-regression/
+
+Cholesky factorization of the noisy covariance matrix $K$. We compute the Cholesky decomposition of a symmetric positive-definite matrix so that $K = LL^\top$. The returned matrix L is lower-triangular.
+
+\begin{aligned}
+L = \text{cholesky}(K + \sigma_n^2 I)
+\end{aligned}
+
+\begin{aligned}
+\alpha = L^{-\top} \left(L^{-1} y\right)
+\end{aligned}
+
+### Posterior mean
+
+- torch.linalg.cholesky()
+- torch.linalg.cholesky_solve()
+    - $L$ is the lower-triangular Cholesky decomposition such that $A = LL^\top$
+    - torch.cholesky_solve(B, L, upper = False) returns the solution X for $AX = B$
+    - i.e. $X = A^{-1} B$
+
+In previous code I used torch.linalg.cholesky() followed torch.cholesky_inverse(L) directly to compute $A^{-1}$. Then I calculated W.
+
+### Posterior covariance
+
+\begin{aligned}
+v = L^{-1} K(X, X_*), \\
+\Sigma_* = K(X_*, X_*) - v^\top v
+\end{aligned}
+
+# Prior:
+
+Prior to seeing any data. Assumptions about functional form and kernel function.
+
+# Resources:
+
+- 
+- https://math.stackexchange.com/questions/3158303/using-cholesky-decomposition-to-compute-covariance-matrix-determinant
