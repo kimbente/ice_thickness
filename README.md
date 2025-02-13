@@ -2,14 +2,14 @@
 
 Directly model ice thickness from Bedmap3 data points. Byrd glacier.
 
-![alt text](image.png)
+![alt text](images/data_over_byrd.png)
 
 # ToDo:
 - domain-informed noise level
 - std to count ratio: standard error
 
 ## Why do we model ice thickness and not the bed elevation?
-- Hypothesis: Ice thickness distribution is smoother in space and thus easier to model with the choosen methods (GPs/kriging/kernel methods are naturally better at modelling smooth distributions.)
+- Hypothesis: Ice thickness distribution is smoother in space (than bed elevation) and thus easier to model with the choosen methods (GPs/kriging/kernel methods are naturally better at modelling smooth distributions.)
 - Test this hypothesis with
     - Look at std
     - Fit simple GP model and interpret
