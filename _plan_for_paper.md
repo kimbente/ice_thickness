@@ -2,26 +2,41 @@
 
 ## Simulated experiments on divergence-free ice flux
 
-3 examples
-- funnel (show ice flux of outlet glaicer which is similar)
-- merge
-- Bifurication (morraine avoidance)
-- curve (curving of ice flux my subglacial mountains for example)
-- ridge 
+5 representative examples
 
-Funnel: 
-![alt text](image-2.png)
+simulate_convergence, simulate_merge, simulate_branching, simulate_deflection, simulate_ridge
+- (1) Convergence
+- (2) Merge (& curve, e.g. due to subglacial mountain)
+- (3) Branching (opposite of converging in a way)
+- (4) Deflection (i.e. bifurication, e.g. morraine avoidance)
+- (5) Ridge (hard example, maybe tweek slighly as it is not the most "representative" example)
 
-Curve:
+We can also show examples from real ice flux that resemble the simulations.
 
 ### Baselines
+
+- Ours
+    - 2d lengthscales
+    - https://github.com/carji475/linearly-constrained-gaussian-processes/blob/master/simulation-example/simulation_study.m
 - Non-phycial GPs (i.e. kriging)
-- PINNs?! what training data? How do we comapre against this?
+- PINNs (soft-constrained)
+    - https://www.thomasteisberg.com/projects/igarss2021/
+    - https://github.com/thomasteisberg/igarss2021 
+    - https://egusphere.copernicus.org/preprints/2024/egusphere-2024-1732/egusphere-2024-1732.pdf 
+- Neural Conservation Laws (NCLs) i.e. Hard-Constrained Neural Networks (HCNNs)
+    - https://arxiv.org/abs/2210.01741 
+
+Ablations:
+- mean function
+- covariance functions
 
 ### Metrics
+
+On test data
 - divergence (to measure physical consistency)
-- LML (propabilistc meassure)
-- RMSE (error)
+- NLL (propabilistc meassure)
+- RMSE
+- MAE
 
 ## Real data (Byrd glacier, Antarctica)
 
@@ -34,12 +49,7 @@ Curve:
 ### Comparisons
 - compare ice flux divergence against BedMachine, and BedMap (existing maps)
 
-### Ablations
-- compare different covariance functions
+# Names for our method
 
-# Method "Hard-constrained mass converving interpolation of ice thickness"
+-  "Hard-constrained mass converving interpolation of ice thickness"
 
-Based on this paper https://papers.nips.cc/paper_files/paper/2017/file/71ad16ad2c4d81f348082ff6c4b20768-Paper.pdf
-
-- Potential issue with swirls: higher lengthscale may help
-- 
