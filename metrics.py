@@ -36,3 +36,9 @@ def log_likelihood_test(predictive_mean, predictive_covar, Y_test):
     
     # scalar
     return log_likelihood
+
+def compute_RMSE(y_true, y_pred):
+    return torch.sqrt(torch.mean(torch.square(y_true - y_pred)))
+
+def compute_MAE(y_true, y_pred):
+    return torch.mean(torch.abs(y_true - y_pred))
