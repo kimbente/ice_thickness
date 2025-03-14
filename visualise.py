@@ -9,7 +9,7 @@ import matplotlib.colors as mcolors
 
 # Generate Berlin colormap although it is only available in Matplotlib 3.10
 # Load tensor for berlin (dark diverging cmap) from folder
-cmap_berlin_tensor = torch.load("configs/vis/cmap_berlin_tensor.pt")
+cmap_berlin_tensor = torch.load("configs/vis/cmap_berlin_tensor.pt", weights_only = True)
 
 # convert to list
 _berlin_data = cmap_berlin_tensor.tolist()

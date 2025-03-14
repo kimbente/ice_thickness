@@ -33,6 +33,9 @@ class dfNN_for_vmap(nn.Module):
             # This version works with vmap, diagonal shifts diagional one up
             U_zero_one = torch.triu(torch.ones(self.input_dim, self.input_dim), diagonal = 1)
 
+            # put on same device as U_fill
+            U_zero_one = U_zero_one.to(U_fill.device) 
+
             # U_zero_one is (2, 2), U_fill is (1), so we can just scale U_zero_one by U_fill
             U = U_zero_one * U_fill
 

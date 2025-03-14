@@ -52,4 +52,5 @@ On test data
 # Names for our method
 
 -  "Hard-constrained mass converving interpolation of ice thickness"
+- GPs underPINNed 
 

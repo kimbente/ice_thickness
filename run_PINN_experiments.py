@@ -1,10 +1,10 @@
-from NN_models import dfNN_for_vmap
+from NN_models import PINN_backbone
 from simulate import simulate_convergence, simulate_branching, simulate_ridge, simulate_merge, simulate_deflection
 from metrics import compute_RMSE, compute_MAE
 from utils import set_seed
 
 # Global file for training configs
-from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, LEARNING_RATE, WEIGHT_DECAY, BATCH_SIZE, N_SIDE, DFNN_RESULTS_DIR
+from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, LEARNING_RATE, WEIGHT_DECAY, BATCH_SIZE, N_SIDE, PINN_RESULTS_DIR, W_PINN_DIV_WEIGHT
 
 import torch
 from torch.func import vmap, jacfwd
@@ -21,7 +21,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print('Using device:', device)
 print()
 
-model_name = "dfNN"
+model_name = "PINN"
 
 #########################
 ### x_train & y_train ###
@@ -45,7 +45,7 @@ simulations = {
     "ridge": simulate_ridge,
 }
 
-# Load training inputs
+# Load training inputs, not weights_only = True
 x_train = torch.load("data/sim_data/x_train_lines_discretised_0to1.pt").float()
 
 # Storage dictionaries
@@ -104,18 +104,21 @@ for sim_name, sim_func in simulations.items():
 #####################
 
 # Early stopping parameters
-PATIENCE = PATIENCE
-MAX_NUM_EPOCHS = MAX_NUM_EPOCHS
+PATIENCE = PATIENCE  # Stop after 50 epochs with no improvement
+MAX_NUM_EPOCHS = MAX_NUM_EPOCHS # 2000
 
 # Number of training runs for mean and std of metrics
-NUM_RUNS = NUM_RUNS
+NUM_RUNS = NUM_RUNS # 10
+
 LEARNING_RATE = LEARNING_RATE
 WEIGHT_DECAY = WEIGHT_DECAY
 
 BATCH_SIZE = BATCH_SIZE
 
+w = W_PINN_DIV_WEIGHT
+
 # Ensure the results folder exists
-RESULTS_DIR = DFNN_RESULTS_DIR
+RESULTS_DIR = PINN_RESULTS_DIR # Change this to "results" for full training
 os.makedirs(RESULTS_DIR, exist_ok = True)
 
 ### LOOP OVER SIMULATIONS ###
@@ -125,7 +128,7 @@ for sim_name, sim_func in simulations.items():
     # Store metrics for the current simulation
     simulation_results = []
 
-    # x_train is the same, select y_train
+    # x_train, x_test stays the same but select y_train
     y_train = y_train_dict[sim_name]
     # select the correct y_test (PREVIOUS ERROR)
     y_test = y_test_dict[sim_name]
@@ -140,18 +143,20 @@ for sim_name, sim_func in simulations.items():
 
         # Initialise fresh model
         # we seeded so this is reproducible
-        dfNN_model = dfNN_for_vmap().to(device)
-        dfNN_model.train()
+        PINN_model = PINN_backbone().to(device)
+        PINN_model.train()
 
         # Define loss function (e.g., MSE for regression)
         criterion = torch.nn.MSELoss()
 
         # Define optimizer (e.g., AdamW)
-        optimizer = optim.AdamW(dfNN_model.parameters(), lr = LEARNING_RATE, weight_decay = WEIGHT_DECAY)
+        optimizer = optim.AdamW(PINN_model.parameters(), lr = LEARNING_RATE, weight_decay = WEIGHT_DECAY)
 
-        # Initialise tensors to store losses for this run
+        # Initialise tensor to store losses
         epoch_train_losses = torch.zeros(MAX_NUM_EPOCHS)
+        epoch_train_rmse_losses = torch.zeros(MAX_NUM_EPOCHS)
         epoch_test_losses = torch.zeros(MAX_NUM_EPOCHS)
+        epoch_test_rmse_losses = torch.zeros(MAX_NUM_EPOCHS)
 
         # Early stopping variables
         best_loss = float('inf')
@@ -161,101 +166,111 @@ for sim_name, sim_func in simulations.items():
         print("\nStart Training")
         for epoch in range(MAX_NUM_EPOCHS):
 
-            epoch_train_loss = 0.0  # Accumulate batch losses within epoch
-            epoch_test_loss = 0.0
+            epoch_train_loss = 0.0  # Accumulate batch losses
+            epoch_train_rmse_loss = 0.0
 
             for batch in dataloader:
-                # assure model is in training mode 
-                dfNN_model.train()
+                PINN_model.train()
 
                 x_batch, y_batch = batch
                 # put on GPU
                 x_batch, y_batch = x_batch.to(device), y_batch.to(device)
+                # inplace
                 x_batch.requires_grad_()
 
                 # Forward pass
-                y_pred = vmap(dfNN_model)(x_batch)
+                y_pred = vmap(PINN_model)(x_batch)
+                # torch.Size([32 (batch_dim), 2 (out_dim), 2 (in_dim)])
+                batch_divergence = vmap(jacfwd(PINN_model))(x_batch)
+                # sum: f1/x1 + f2/x2, square to account for negative
+                batch_divergence_loss = torch.square(torch.diagonal(batch_divergence, dim1 = -2, dim2 = -1).sum())
 
-                # Compute loss (RMSE for same units as data) - criterion(pred, target)
-                loss = torch.sqrt(criterion(y_pred, y_batch))
+                # Compute loss (RMSE for same units as data) + divergence loss
+                loss = (1 - w) * torch.sqrt(criterion(y_pred, y_batch)) + w * batch_divergence_loss
                 epoch_train_loss += loss.item()
+                epoch_train_rmse_loss += torch.sqrt(criterion(y_pred, y_batch)).item()
 
                 # Backpropagation
+                # AFTER
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
 
             ### END BATCH LOOP ###
-            dfNN_model.eval()
-            # Compute test loss for loss convergence plot
-            y_test_pred = vmap(dfNN_model)(x_test.to(device))
-            test_loss = torch.sqrt(criterion(y_test_pred, y_test.to(device))).item()
-            
-            # Compute average loss for the epoch (e.g. 7 batches/epoch)
-            avg_train_loss = epoch_train_loss / len(dataloader)
+            PINN_model.eval()
 
-            epoch_train_losses[epoch] = avg_train_loss
-            epoch_test_losses[epoch] = test_loss
+            # Test loss outside of batch loop - once per epoch
+            y_test_pred = vmap(PINN_model)(x_test.to(device))
+            # compute just once
+            epoch_test_rmse_loss = torch.sqrt(criterion(y_test_pred, y_test.to(device))).item()
+            epoch_test_loss = (1 - w) * torch.sqrt(criterion(y_test_pred, y_test.to(device))) + w * torch.square(torch.diagonal(vmap(jacfwd(PINN_model))(x_test.to(device)), dim1 = -2, dim2 = -1).sum()).item()
 
-            print(f"{sim_name} {model_name} Run {run + 1}/{NUM_RUNS}, Epoch {epoch + 1}/{MAX_NUM_EPOCHS}, Training Loss (RMSE): {avg_train_loss:.4f}")
+            # Compute average loss for the epoch and store
+            epoch_train_losses[epoch] = epoch_train_loss / len(dataloader)
+            epoch_train_rmse_losses[epoch] = epoch_train_rmse_loss / len(dataloader)
+            epoch_test_losses[epoch] = epoch_test_loss # old calc once per epoch over all
+            epoch_test_rmse_losses[epoch] = epoch_test_rmse_loss
 
-            # debug
+            print(f"{sim_name} {model_name} Run {run + 1}/{NUM_RUNS}, Epoch {epoch + 1}/{MAX_NUM_EPOCHS}, Training Loss (RMSE): {epoch_train_losses[epoch]:.4f}")
+
             # Early stopping check
-            if avg_train_loss < best_loss:
-                best_loss = avg_train_loss
+            if epoch_train_losses[epoch] < best_loss:
+                best_loss = epoch_train_losses[epoch]
                 epochs_no_improve = 0  # Reset counter
-                best_model_state = dfNN_model.state_dict()  # Save best model
+                best_model_state = PINN_model.state_dict()  # Save best model
             else:
                 epochs_no_improve += 1
 
             if epochs_no_improve >= PATIENCE:
                 print(f"Early stopping triggered after {epoch + 1} epochs.")
                 break
-        
+
         ### END EPOCH LOOP ###
-        # Load the best model before stopping for this "run"
-        dfNN_model.load_state_dict(best_model_state)
+        # Load the best model before stopping
+        PINN_model.load_state_dict(best_model_state)
         print(f"Run {run + 1}/{NUM_RUNS}, Training of {model_name} complete for {sim_name.upper()}. Restored best model.")
 
         ################
         ### EVALUATE ###
         ################
 
-        # Evaluate the trained model after epochs are finished
-        dfNN_model.eval()
+        # Evaluate the trained model for each run
+        PINN_model.eval()
 
-        y_train_dfNN_predicted = vmap(dfNN_model)(x_train.to(device)).detach()
-        y_test_dfNN_predicted = vmap(dfNN_model)(x_test.to(device)).detach()
+        y_train_PINN_predicted = vmap(PINN_model)(x_train.to(device)).detach()
+        y_test_PINN_predicted = vmap(PINN_model)(x_test.to(device)).detach()
 
         # Only save things for one run
         if run == 0:
             #(1) Save predictions from first run so we can visualise them later
-            torch.save(y_test_dfNN_predicted, f"{RESULTS_DIR}/{sim_name}_{model_name}_test_predictions.pt")
+            torch.save(y_test_PINN_predicted, f"{RESULTS_DIR}/{sim_name}_{model_name}_test_predictions.pt")
 
-            #(2) Save loss over epochs
+            #(2) Save losses over epochs
             df_losses = pd.DataFrame({
                 'Epoch': list(range(epoch_train_losses.shape[0])), # pythonic
-                'Train Loss RMSE': epoch_train_losses.tolist(), 
-                'Test Loss RMSE': epoch_test_losses.tolist()
+                'Train Loss': epoch_train_losses.tolist(),
+                'Train Loss RMSE': epoch_train_rmse_losses.tolist(), 
+                'Test Loss': epoch_test_losses.tolist(),
+                'Test Loss RMSE': epoch_test_rmse_losses.tolist()
                 })
             
             df_losses.to_csv(f"{RESULTS_DIR}/{sim_name}_{model_name}_losses_over_epochs.csv", index = False)
 
         # Compute Divergence (convert tensor to float)
-        dfNN_train_div = torch.diagonal(vmap(jacfwd(dfNN_model))(x_train.to(device)), dim1 = -2, dim2 = -1).detach().sum().item()
-        dfNN_test_div = torch.diagonal(vmap(jacfwd(dfNN_model))(x_test.to(device)), dim1 = -2, dim2 = -1).detach().sum().item()
+        PINN_train_div = torch.diagonal(vmap(jacfwd(PINN_model))(x_train.to(device)), dim1 = -2, dim2 = -1).detach().sum().item()
+        PINN_test_div = torch.diagonal(vmap(jacfwd(PINN_model))(x_test.to(device)), dim1 = -2, dim2 = -1).detach().sum().item()
 
         # Compute metrics (convert tensors to float)
-        dfNN_train_RMSE = compute_RMSE(y_train, y_train_dfNN_predicted.cpu()).item()
-        dfNN_train_MAE = compute_MAE(y_train, y_train_dfNN_predicted.cpu()).item()
+        dfNN_train_RMSE = compute_RMSE(y_train, y_train_PINN_predicted.cpu()).item()
+        dfNN_train_MAE = compute_MAE(y_train, y_train_PINN_predicted.cpu()).item()
 
-        dfNN_test_RMSE = compute_RMSE(y_test, y_test_dfNN_predicted.cpu()).item()
-        dfNN_test_MAE = compute_MAE(y_test, y_test_dfNN_predicted.cpu()).item()
+        dfNN_test_RMSE = compute_RMSE(y_test, y_test_PINN_predicted.cpu()).item()
+        dfNN_test_MAE = compute_MAE(y_test, y_test_PINN_predicted.cpu()).item()
 
         # Store results in list
         simulation_results.append([
-            run + 1, dfNN_train_RMSE, dfNN_train_MAE, dfNN_train_div,
-            dfNN_test_RMSE, dfNN_test_MAE, dfNN_test_div
+            run + 1, dfNN_train_RMSE, dfNN_train_MAE, PINN_train_div,
+            dfNN_test_RMSE, dfNN_test_MAE, PINN_test_div
         ])
 
     ### FINISH LOOP OVER RUNS ###
@@ -277,4 +292,3 @@ for sim_name, sim_func in simulations.items():
     mean_std_file = os.path.join(RESULTS_DIR, f"{sim_name}_{model_name}_metrics_summary.csv")
     mean_std_df.to_csv(mean_std_file)
     print(f"\nMean & Std saved to {mean_std_file}")
-    # Only train for one simulation for now

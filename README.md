@@ -64,3 +64,34 @@ https://docs.gpytorch.ai/en/v1.11/examples/08_Advanced_Usage/Simple_GP_Regressio
     - The resulting Ice Flux is often in cubic meters per year (m³/yr), representing the volume of ice transported by glaciers or ice sheets
     - gradient of ice flux
 - radar-derived thickness data from multiple sources, with a vertical precision of ~30 m.
+
+# Simulated experiments:
+
+- **run_dfNN_experiments.py**
+    - Loss: simple RMSE
+    - matrix-field representation (U of A)
+    - GPU enabled
+    - N_runs = 10 to assess how much variability we have from initialisation randomness
+    - seed enabled reproducibility
+    - early stopping after 50 iterations of no improvement
+    - test is 0 to 1
+    - Metrics: RMSE, MAE, abs. divergence
+    - Issues:
+        - smoothness? batch size?
+        - test loss is way too high for some reason...
+        - TODO: calculate divergence loss over full domain?!
+    - Outputs: 
+        - **convergence_dfNN_metrics_summary.csv** mean metrics and std metrics over N_runs
+        - **convergence_dfNN_metrics_per_run.csv** metrics for individual runs, make sure max_runs is high enough
+        - **convergence_dfNN_losses_over_epochs.csv** is the loss convergence on train and test from the first run so check that 
+        - **convergence_dfNN_test_predictions.pt** predictions from first run
+- **run_PINN_experiments.py**
+    - Loss: (1 - w) * RMSE + (w) * squared divergence with w = 0.5 or 0.3 for now
+        - high variability with 0.3
+    - Merge needs quite a few iterations
+    - patience higher > 40 
+    - Plot both loss components!
+    - torch.load weights only is problematic
+- **GP**
+    - randomness in sampling initial HPs?
+    - train on batches or not?
