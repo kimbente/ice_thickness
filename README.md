@@ -95,3 +95,9 @@ https://docs.gpytorch.ai/en/v1.11/examples/08_Advanced_Usage/Simple_GP_Regressio
 - **GP**
     - randomness in sampling initial HPs?
     - train on batches or not?
+    - NLML convergence is much smoother
+    - larger learning rate
+    - plot how the hypers are learned over time
+    - like dfNN_model.state_dict(), save best hypers
+    - Comp. divergence
+    - add metrics on train

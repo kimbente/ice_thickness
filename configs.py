@@ -21,4 +21,5 @@ W_PINN_DIV_WEIGHT = 0.5
 # FOR GPS
 SIGMA_F_RANGE = (1.5, 2.0)   # Example range for sigma_f
 L_RANGE = (0.3, 0.8)         # Example range for each lengthscale
+GP_LEARNING_RATE = 0.01
 

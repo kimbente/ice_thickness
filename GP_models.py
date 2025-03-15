@@ -27,12 +27,127 @@
 
 import torch
 import torch.optim as optim
+from torch.func import vmap
 
 import numpy as np
 import math
 
 from kernels import *
 from simulate import *
+
+def GP_predict(
+        x_train,
+        y_train,
+        x_test, 
+        hyperparameters,
+        mean_func = None,
+        divergence_free_bool = True):
+    """ 
+    Predicts the mean and covariance of the test data given the training data and hyperparameters
+
+    Args:
+        x_train (torch.Size([n_train, 2])): x1 and x2 coordinates
+        y_train (torch.Size([n_train, 2])): u and v, might be noisy
+        x_test (torch.Size([n_test, 2])): x1 and x2 coordinates
+        hyperparameters (list): varying length depending on kernel
+        mean_func (function, optional): mean function. Defaults to None. Inputs torch.Size([n_test, 2]) and returns torch.Size([n_test, 2] too
+        divergence_free_bool (bool, optional): _description_. Defaults to True.
+
+    Returns:
+        predictive_mean (torch.Size([n_test, 2])):
+        predictive_covariance (torch.Size([n_test, n_test])):
+        lml (torch.Size([1])): (positive) log marginal likelihood
+    """
+    
+    # Extract first hyperparameter sigma_n: noise - given, not optimised
+    sigma_n = hyperparameters[0]
+    
+    # Extract number of rows (data points) in x_test
+    n_test = x_test.shape[0]
+    
+    kernel_func = divergence_free_se_kernel if divergence_free_bool else block_diagonal_se_kernel
+
+    # default is zero mean
+    if mean_func == None:
+        mean_y_train = torch.zeros_like(x_train)
+        mean_y_test = torch.zeros_like(x_test)
+    else:
+        # apply model with vmap
+        mean_y_train = vmap(mean_func)(x_train)
+        mean_y_test = vmap(mean_func)(x_test)
+
+    # Outputs kernel of shape torch.Size([2 * n_train, 2 * n_train])
+    K_train_train = kernel_func(
+        x_train, 
+        x_train, 
+        hyperparameters)
+
+    # Add noise to the diagonal
+    K_train_train_noisy = K_train_train + torch.eye(K_train_train.shape[0], device = K_train_train.device) * sigma_n**2
+
+    # torch.Size([2 * n_train, 2 * n_test])
+    # K_* in Rasmussen is (x_train, X_test)
+    K_train_test = kernel_func(
+        x_train, 
+        x_test,
+        hyperparameters)
+
+    # matrix transpose
+    # torch.Size([2 * n_test, 2 * n_train])
+    K_test_train = K_train_test.mT
+
+    K_test_test = kernel_func(
+        x_test,
+        x_test,
+        hyperparameters)
+    
+    # Determine L - torch.Size([2 * n_train, 2 * n_train])
+    L = torch.linalg.cholesky(K_train_train_noisy, upper = False)
+    # L.T \ (L \ y) in one step - torch.Size([2 * n_train, 1])
+
+    # Make y flat by concatenating u and v (both columns) AFTER each other
+    # torch.Size([2 x n_train, 1])
+    # y_train_flat = torch.cat([y_train[:, 0], y_train[:, 1]]).unsqueeze(-1)
+    y_train_minus_mean = y_train - mean_y_train
+    y_train_minus_mean_flat = torch.cat([y_train_minus_mean[:, 0], y_train_minus_mean[:, 1]]).unsqueeze(-1)
+
+    # alpha: torch.Size([2 x n_train, 1])
+    alpha = torch.cholesky_solve(y_train_minus_mean_flat, L, upper = False)
+
+    # matrix multiplication
+    # torch.Size([2 * n_test, 2 * n_train]) * torch.Size([2 * n_train, 1])
+    # alpha needs to be changed to datatype double because K is
+    # predictive mean now is torch.Size([2 * n_test]) (after squeezing explicit last dimension)
+    predictive_mean = torch.matmul(K_test_train, alpha).squeeze()
+    # reshape to separate u and v (which were concatenated after each other)
+    # ADD test mean 
+    predictive_mean = torch.cat([predictive_mean[:n_test].unsqueeze(-1), predictive_mean[n_test:].unsqueeze(-1)], dim = -1) + mean_y_test
+
+    # Step 3: Solve for V = L^-1 * K(X_*, X)
+    # K_* is K_train_test
+    # L is lower triangular
+    v = torch.linalg.solve_triangular(L, K_train_test, upper = False)
+    # same as
+    # v = torch.linalg.solve(L, K_train_test)
+    # torch.matmul(v, v.T) would give the wrong shape
+    predictive_covariance = K_test_test - torch.matmul(v.T, v)
+
+    # matmul: torch.Size([1, 10]) * torch.Size([10, 1])
+    # 0.5 * y^T * alpha
+    # squeeze to remove redundant dimension
+    # y_train are noisy data observations
+    lml_term1 = - 0.5 * torch.matmul(y_train_minus_mean_flat.T, alpha).squeeze()
+
+    # sum(log(L_ii)))
+    lml_term2 = - torch.sum(torch.log(torch.diagonal(L)))
+
+    # Constant term - technically not optimised 
+    # n/2 * log(2 * pi)
+    lml_term3 = - (y_train.shape[0]/2) * torch.log(torch.tensor(2 * math.pi))
+
+    lml = lml_term1 + lml_term2 + lml_term3
+
+    return predictive_mean, predictive_covariance, lml
 
 def predict(X_train,
             Y_train_noisy,
@@ -71,7 +186,7 @@ def predict(X_train,
         hyperparameters)
 
     # Add noise to the diagonal
-    K_train_train_noisy = K_train_train + torch.eye(K_train_train.shape[0]) * sigma_n**2
+    K_train_train_noisy = K_train_train + torch.eye(K_train_train.shape[0], device = K_train_train.device) * sigma_n**2
 
     # torch.Size([2 * n_train, 2 * n_test])
     # K_* in Rasmussen is (X_train, X_test)

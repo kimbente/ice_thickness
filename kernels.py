@@ -23,8 +23,8 @@ def divergence_free_se_kernel(
     # Extract hyperparameters (except for sigma_n)
     # sigma_f_squared = torch.exp(hyperparameters[1]) # torch.exp(log_sigma_f_squared)
     # sigma_f_squared = hyperparameters[1]
-    sigma_f = hyperparameters[1] 
-    l = hyperparameters[2]
+    sigma_f = hyperparameters[1].to(row_tensor.device)
+    l = hyperparameters[2].to(row_tensor.device)
 
     if l.shape[0] == 1:
         lx1 = l
@@ -67,7 +67,7 @@ def divergence_free_se_kernel(
     blocks = torch.cat((
         torch.cat((upper_left, upper_right), 1), 
         torch.cat((lower_left, lower_right), 1)
-        ), 0)
+        ), 0).to(row_tensor.device)
 
     # torch.Size([2 * n_row, 2 * n_column])
     # elementwise multiplication
@@ -75,7 +75,7 @@ def divergence_free_se_kernel(
     # with 2 lengthscales again we need to move the division inde (defore summing) so we target the individual dims
     K = sigma_f.square() * blocks.mul(diff.square().div(l.square()).sum(dim = -1).div(-2).exp().tile(2, 2))
 
-    return K
+    return K.to(row_tensor.device)
 
 def divergence_free_se_kernel_og(
         row_tensor, # torch.Size([n_rows, 2])
