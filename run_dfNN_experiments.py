@@ -262,7 +262,8 @@ for sim_name, sim_func in simulations.items():
     # Convert results to a Pandas DataFrame
     df = pd.DataFrame(
         simulation_results, 
-        columns = ["Run", "Train RMSE", "Train MAE", "Train Divergence",
+        columns = ["Run", 
+                   "Train RMSE", "Train MAE", "Train Divergence",
                    "Test RMSE", "Test MAE", "Test Divergence"])
 
     # Compute mean and standard deviation for each metric

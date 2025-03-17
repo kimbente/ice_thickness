@@ -92,12 +92,12 @@ https://docs.gpytorch.ai/en/v1.11/examples/08_Advanced_Usage/Simple_GP_Regressio
     - patience higher > 40 
     - Plot both loss components!
     - torch.load weights only is problematic
-- **GP**
-    - randomness in sampling initial HPs?
-    - train on batches or not?
-    - NLML convergence is much smoother
+- **run_dfGP_experiments**
+    - no batch training but epochs are over all data at one
+    - NLML convergence is much smoother than NN learning
     - larger learning rate
-    - plot how the hypers are learned over time
-    - like dfNN_model.state_dict(), save best hypers
-    - Comp. divergence
-    - add metrics on train
+    - NLL: sparse or full (unstable numerically)
+    - memory issue
+- **run_GP_experiments.py**
+    - B is initailise in a symmetric structure which is not needed however
+    - Results are a bit too good given all the data

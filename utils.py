@@ -23,3 +23,6 @@ def set_seed(seed):
     # For deterministic algorithms in PyTorch
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
+
+def sample_posterior():
+    

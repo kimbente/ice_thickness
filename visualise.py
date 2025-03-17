@@ -9,7 +9,7 @@ import matplotlib.colors as mcolors
 
 # Generate Berlin colormap although it is only available in Matplotlib 3.10
 # Load tensor for berlin (dark diverging cmap) from folder
-cmap_berlin_tensor = torch.load("configs/vis/cmap_berlin_tensor.pt", weights_only = True)
+cmap_berlin_tensor = torch.load("configs/vis/cmap_berlin_tensor.pt", weights_only = False)
 
 # convert to list
 _berlin_data = cmap_berlin_tensor.tolist()
@@ -40,6 +40,8 @@ def visualise_v_quiver(v, x,
         title_string (str, optional): Title for plot. Defaults to "v(x)".
         color_abs_max (float, optional): Maximum absolute value for color normalization. Defaults to 0.5.
     """
+    v = v.cpu().detach()
+    x = x.cpu().detach()
 
     # Extract N_long and calculate sqrt of N_long, N_side
     N_long = torch.tensor(v.shape[0])
@@ -52,6 +54,8 @@ def visualise_v_quiver(v, x,
     # black color if nothing is parsed in.
     if div_v is None:
         div_v = torch.zeros_like(v[:, 0])
+    else:
+        div_v = div_v.cpu().detach()
 
     # Make coordinates square again
     X = x[:, 0].reshape(N_side, N_side)
@@ -97,6 +101,8 @@ def visualise_v_stream(v, x, div_v = None, title_string = "v(x)", color_abs_max 
         title_string (str, optional): Title for plot. Defaults to "v(x)".
         color_abs_max (float, optional): Maximum absolute value for color normalization. Defaults to 0.5.
     """
+    v = v.cpu().detach()
+    x = x.cpu().detach()
 
     # Extract N_long and calculate sqrt of N_long, N_side
     N_long = torch.tensor(v.shape[0])
@@ -113,6 +119,8 @@ def visualise_v_stream(v, x, div_v = None, title_string = "v(x)", color_abs_max 
     # black color if nothing is parsed in.
     if div_v is None:
         div_v = torch.zeros_like(v[:, 0])
+    else:
+        div_v = div_v.cpu().detach()
 
     div_v_square = div_v.reshape(N_side, N_side)
     # Define symmetric normalization with zero centered

@@ -105,6 +105,9 @@ for sim_name, sim_func in simulations.items():
 
 # Early stopping parameters
 PATIENCE = PATIENCE  # Stop after 50 epochs with no improvement
+# Overwrite
+PATIENCE = 80  # Stop after 50 epochs with no improvement
+
 MAX_NUM_EPOCHS = MAX_NUM_EPOCHS # 2000
 
 # Number of training runs for mean and std of metrics
@@ -119,6 +122,7 @@ w = W_PINN_DIV_WEIGHT
 
 # Ensure the results folder exists
 RESULTS_DIR = PINN_RESULTS_DIR # Change this to "results" for full training
+RESULTS_DIR = "results/PINN_PATIENCE80" # Change this to "results" for full training
 os.makedirs(RESULTS_DIR, exist_ok = True)
 
 ### LOOP OVER SIMULATIONS ###
@@ -277,7 +281,8 @@ for sim_name, sim_func in simulations.items():
     # Convert results to a Pandas DataFrame
     df = pd.DataFrame(
         simulation_results, 
-        columns = ["Run", "Train RMSE", "Train MAE", "Train Divergence",
+        columns = ["Run", 
+                   "Train RMSE", "Train MAE", "Train Divergence",
                    "Test RMSE", "Test MAE", "Test Divergence"])
 
     # Compute mean and standard deviation for each metric

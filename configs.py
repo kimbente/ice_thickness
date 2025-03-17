@@ -13,13 +13,20 @@ N_SIDE = 20
 # Paths
 DFNN_RESULTS_DIR = "results/dfNN"
 PINN_RESULTS_DIR = "results/PINN"
-DFGP_RESULTS_DIR = "results/DFGP"
+DFGP_RESULTS_DIR = "results/dfGP"
+GP_RESULTS_DIR = "results/GP"
 
 # FOR PINN ONLY
 W_PINN_DIV_WEIGHT = 0.5
 
 # FOR GPS
 SIGMA_F_RANGE = (1.5, 2.0)   # Example range for sigma_f
+# For regular GP only
+B_DIAGONAL_RANGE = SIGMA_F_RANGE  # Example range for B diagonal
+B_OFFDIAGONAL_RANGE = (- 0.2, 0.5)  # Example range for B off-diagonal
+
 L_RANGE = (0.3, 0.8)         # Example range for each lengthscale
 GP_LEARNING_RATE = 0.01
+
+GP_MAX_NUM_EPOCHS = 1000
 

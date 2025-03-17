@@ -58,7 +58,6 @@ def GP_predict(
         predictive_covariance (torch.Size([n_test, n_test])):
         lml (torch.Size([1])): (positive) log marginal likelihood
     """
-    
     # Extract first hyperparameter sigma_n: noise - given, not optimised
     sigma_n = hyperparameters[0]
     

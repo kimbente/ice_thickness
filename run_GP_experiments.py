@@ -1,11 +1,10 @@
 from GP_models import GP_predict
 from simulate import simulate_convergence, simulate_branching, simulate_ridge, simulate_merge, simulate_deflection
-from metrics import compute_RMSE, compute_MAE, compute_NLL, compute_NLL_full
 from utils import set_seed
-from metrics import compute_RMSE, compute_NLL, compute_NLL_full
+from metrics import compute_RMSE, compute_NLL, compute_MAE
 
 # Global file for training configs
-from configs import PATIENCE, GP_MAX_NUM_EPOCHS, NUM_RUNS, GP_LEARNING_RATE, WEIGHT_DECAY, N_SIDE, DFGP_RESULTS_DIR, SIGMA_F_RANGE, L_RANGE
+from configs import PATIENCE, GP_MAX_NUM_EPOCHS, NUM_RUNS, GP_LEARNING_RATE, WEIGHT_DECAY, N_SIDE, GP_RESULTS_DIR, L_RANGE, B_DIAGONAL_RANGE, B_OFFDIAGONAL_RANGE
 
 import torch
 import torch.nn as nn
@@ -21,7 +20,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print('Using device:', device)
 print()
 
-model_name = "dfGP"
+model_name = "GP"
 
 #########################
 ### x_train & y_train ###
@@ -116,7 +115,7 @@ WEIGHT_DECAY = WEIGHT_DECAY
 # BATCH_SIZE = BATCH_SIZE
 
 # Ensure the results folder exists
-RESULTS_DIR = DFGP_RESULTS_DIR
+RESULTS_DIR = GP_RESULTS_DIR
 os.makedirs(RESULTS_DIR, exist_ok = True)
 
 ### LOOP OVER SIMULATIONS ###
@@ -139,15 +138,28 @@ for sim_name, sim_func in simulations.items():
 
         # Sample from uniform distributions to initialise hyperparameters
         sigma_n = torch.tensor([0.05], requires_grad = False).to(device) # no optimisation for noise, no sampling
-        # nn.Parameter avoids the leaf problem
-        sigma_f = nn.Parameter(torch.empty(1, device = device).uniform_( * SIGMA_F_RANGE)) # Trainable
-        l = nn.Parameter(torch.empty(2, device = device).uniform_( * L_RANGE)) # Trainable
+        sigma_f = torch.tensor([1.0], requires_grad = False).to(device) # Fixed because we tune B (and sigma_f would just scale B)
+        # Initialising l from a uniform distribution as nn.Param to avoid leaf variable error
+        l = nn.Parameter(torch.empty(2, device = device).uniform_( * L_RANGE))
+
+        # Trainable B matrix components
+        B_diag = nn.Parameter(torch.empty(1, device = device).uniform_( * B_DIAGONAL_RANGE))  
+        B_off_diag = nn.Parameter(torch.empty(1, device = device).uniform_( * B_OFFDIAGONAL_RANGE)) 
+
+        # Construct B using a proper tensor operation (not `torch.tensor()`)
+        # squeeze to make 2 x 2 
+        B = torch.stack([
+            torch.stack([B_diag, B_off_diag], dim = 0),
+            torch.stack([B_off_diag, B_diag], dim = 0)
+        ], dim = 0).squeeze()
+
+        B = nn.Parameter(B)
         
         # We do not need to "initialse" the GP model
         # We don't need a criterion either
 
         # Define optimizer (e.g., AdamW)
-        optimizer = optim.AdamW([sigma_f, l], lr = LEARNING_RATE, weight_decay = WEIGHT_DECAY)
+        optimizer = optim.AdamW([l, B], lr = LEARNING_RATE, weight_decay = WEIGHT_DECAY)
 
         # Initialise tensors to store losses over epochs (for convergence plot)
         epoch_train_NLML_losses = torch.zeros(MAX_NUM_EPOCHS)
@@ -172,9 +184,9 @@ for sim_name, sim_func in simulations.items():
                         x_train,
                         y_train,
                         x_train, # have predictions for training data again
-                        [sigma_n, sigma_f, l], # initial hyperparameters
+                        [sigma_n, sigma_f, l, B], # initial hyperparameters
                         # no mean
-                        divergence_free_bool = True)
+                        divergence_free_bool = False)
                 
                 loss = - lml_train
                 # Backpropagation
@@ -187,9 +199,9 @@ for sim_name, sim_func in simulations.items():
                         x_train,
                         y_train,
                         x_test.to(device), # have predictions for training data again
-                        [sigma_n, sigma_f, l], # initial hyperparameters
+                        [sigma_n, sigma_f, l, B], # initial hyperparameters
                         # no mean
-                        divergence_free_bool = True)
+                        divergence_free_bool = False)
                 
                 train_RMSE = compute_RMSE(y_train, mean_pred_train)
                 test_RMSE = compute_RMSE(y_test, mean_pred_test)
@@ -211,9 +223,9 @@ for sim_name, sim_func in simulations.items():
                         x_train,
                         y_train,
                         x_train[0:2], # have predictions for training data again
-                        [sigma_n, sigma_f, l], # initial hyperparameters
+                        [sigma_n, sigma_f, l, B], # initial hyperparameters
                         # no mean
-                        divergence_free_bool = True)
+                        divergence_free_bool = False)
                 
                 loss = - lml_train
                 # Backpropagation
@@ -227,7 +239,6 @@ for sim_name, sim_func in simulations.items():
             if loss < best_loss:
                 best_loss = loss
                 epochs_no_improve = 0  # Reset counter
-                # best_model_state = dfGP_model.state_dict()  # Save best model
             else:
                 epochs_no_improve += 1
 
@@ -246,9 +257,9 @@ for sim_name, sim_func in simulations.items():
                      x_train,
                      y_train,
                      x_test.to(device),
-                     [sigma_n, sigma_f, l], # optimal hypers
+                     [sigma_n, sigma_f, l, B], # optimal hypers
                      # no mean
-                     divergence_free_bool = True)
+                     divergence_free_bool = False)
 
         # Only save things for one run
         if run == 0:
@@ -256,12 +267,13 @@ for sim_name, sim_func in simulations.items():
             torch.save(mean_pred_test, f"{RESULTS_DIR}/{sim_name}_{model_name}_test_mean_predictions.pt")
             torch.save(covar_pred_test, f"{RESULTS_DIR}/{sim_name}_{model_name}_test_covar_predictions.pt")
 
-            #(2) Save best hyperparameters for run 1
+            #(2) Save best hyperparameters from run 1
             # Stack tensors into a single tensor
             best_hypers_tensor = torch.cat([
                 sigma_n.reshape(-1),  # Ensure 1D shape
                 sigma_f.reshape(-1),
-                l.reshape(-1)
+                l.reshape(-1),
+                B.reshape(-1)
             ])
 
             # Save the tensor
@@ -284,9 +296,9 @@ for sim_name, sim_func in simulations.items():
                      x_train,
                      y_train,
                      x_train,
-                     [sigma_n, sigma_f, l], # optimal hypers
+                     [sigma_n, sigma_f, l, B], # optimal hypers
                      # no mean
-                     divergence_free_bool = True)
+                     divergence_free_bool = False)
 
         ### Divergence
         # Need wrapper function for functional divergence
@@ -295,9 +307,9 @@ for sim_name, sim_func in simulations.items():
                 x_train,
                 y_train,
                 input,
-                [sigma_n, sigma_f, l], # optimal hypers
+                [sigma_n, sigma_f, l, B], # optimal hypers
                 # no mean
-                divergence_free_bool = True)
+                divergence_free_bool = False)
             return mean
         
 
@@ -305,28 +317,29 @@ for sim_name, sim_func in simulations.items():
         jac_autograd_test = torch.autograd.functional.jacobian(apply_GP, 
                                         x_test.to(device))
         jac_autograd_test = torch.einsum("bobi -> boi", jac_autograd_test) # batch out batch in
-        dfGP_test_div = torch.diagonal(jac_autograd_test, dim1 = -2, dim2 = -1).sum().item()
+        GP_test_div = torch.diagonal(jac_autograd_test, dim1 = -2, dim2 = -1).sum().item()
 
         # functional div train
         jac_autograd_train = torch.autograd.functional.jacobian(apply_GP, 
                                         x_train.to(device))
         jac_autograd_train = torch.einsum("bobi -> boi", jac_autograd_train) # batch out batch in
-        dfGP_train_div = torch.diagonal(jac_autograd_train, dim1 = -2, dim2 = -1).sum().item()
+        GP_train_div = torch.diagonal(jac_autograd_train, dim1 = -2, dim2 = -1).sum().item()
 
         # Compute metrics (convert tensors to float) for every run's tuned model
-        dfGP_train_RMSE = compute_RMSE(y_train, mean_pred_train).item()
-        dfGP_train_MAE = compute_MAE(y_train, mean_pred_train).item()
-        dfGP_train_NLL = compute_NLL_full(y_train, mean_pred_train, covar_pred_train).item()
+        GP_train_RMSE = compute_RMSE(y_train, mean_pred_train).item()
+        GP_train_MAE = compute_MAE(y_train, mean_pred_train).item()
+        GP_train_NLL = compute_NLL(y_train, mean_pred_train, covar_pred_train).item()
 
-        dfGP_test_RMSE = compute_RMSE(y_test, mean_pred_test).item()
-        dfGP_test_MAE = compute_MAE(y_test, mean_pred_test).item()
-        # full has cuased issues
-        dfGP_test_NLL = compute_NLL(y_test, mean_pred_test, covar_pred_test).item()
+        GP_test_RMSE = compute_RMSE(y_test, mean_pred_test).item()
+        GP_test_MAE = compute_MAE(y_test, mean_pred_test).item()
+        # full NLL has caused instability issues due to the logdet
+        # now we use sparse
+        GP_test_NLL = compute_NLL(y_test, mean_pred_test, covar_pred_test).item()
 
         simulation_results.append([
             run + 1,
-            dfGP_train_RMSE, dfGP_train_MAE, dfGP_train_NLL, dfGP_train_div,
-            dfGP_test_RMSE, dfGP_test_MAE, dfGP_test_NLL, dfGP_test_div
+            GP_train_RMSE, GP_train_MAE, GP_train_NLL, GP_train_div,
+            GP_test_RMSE, GP_test_MAE, GP_test_NLL, GP_test_div
         ])
 
     ### FINISH LOOP OVER RUNS ###
