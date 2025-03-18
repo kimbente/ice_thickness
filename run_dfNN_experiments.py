@@ -4,7 +4,7 @@ from metrics import compute_RMSE, compute_MAE
 from utils import set_seed
 
 # Global file for training configs
-from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, LEARNING_RATE, WEIGHT_DECAY, BATCH_SIZE, N_SIDE, DFNN_RESULTS_DIR
+from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, LEARNING_RATE, WEIGHT_DECAY, BATCH_SIZE, N_SIDE, DFNN_RESULTS_DIR, DFNN_LEARNING_RATE
 
 import torch
 from torch.func import vmap, jacfwd
@@ -12,6 +12,10 @@ from torch.utils.data import DataLoader, TensorDataset
 import torch.optim as optim
 import os
 import pandas as pd
+
+### TIMING ###
+import time
+start_time = time.time()  # Start timing after imports
 
 # Set seed for reproducibility
 set_seed(42)
@@ -46,7 +50,7 @@ simulations = {
 }
 
 # Load training inputs
-x_train = torch.load("data/sim_data/x_train_lines_discretised_0to1.pt").float()
+x_train = torch.load("data/sim_data/x_train_lines_discretised_0to1.pt", weights_only = False).float()
 
 # Storage dictionaries
 y_train_dict = {}
@@ -109,7 +113,7 @@ MAX_NUM_EPOCHS = MAX_NUM_EPOCHS
 
 # Number of training runs for mean and std of metrics
 NUM_RUNS = NUM_RUNS
-LEARNING_RATE = LEARNING_RATE
+LEARNING_RATE = DFNN_LEARNING_RATE # trying 0.001 here instead
 WEIGHT_DECAY = WEIGHT_DECAY
 
 BATCH_SIZE = BATCH_SIZE
@@ -279,3 +283,28 @@ for sim_name, sim_func in simulations.items():
     mean_std_df.to_csv(mean_std_file)
     print(f"\nMean & Std saved to {mean_std_file}")
     # Only train for one simulation for now
+
+### End timing ###
+end_time = time.time()  # End timing
+elapsed_time = end_time - start_time  # Compute elapsed time
+# Convert elapsed time to minutes
+elapsed_time_minutes = elapsed_time / 60
+
+if device == "cuda":
+    gpu_name = torch.cuda.get_device_name(0)  # Get GPU model
+else:
+    gpu_name = "N/A"
+
+print(f"Elapsed wall time: {elapsed_time:.4f} seconds")
+
+# Define full path for the file
+wall_time_path = os.path.join(RESULTS_DIR, model_name + "_run_" "wall_time.txt")
+
+# Save to the correct folder with both seconds and minutes
+with open(wall_time_path, "w") as f:
+    f.write(f"Elapsed wall time: {elapsed_time:.4f} seconds\n")
+    f.write(f"Elapsed wall time: {elapsed_time_minutes:.2f} minutes\n")
+    f.write(f"Device used: {device}\n")
+    f.write(f"GPU model: {gpu_name}\n")
+
+print(f"Wall time saved to {wall_time_path}.")

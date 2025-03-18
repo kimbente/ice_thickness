@@ -101,3 +101,5 @@ https://docs.gpytorch.ai/en/v1.11/examples/08_Advanced_Usage/Simple_GP_Regressio
 - **run_GP_experiments.py**
     - B is initailise in a symmetric structure which is not needed however
     - Results are a bit too good given all the data
+- **run_dfGPdfNN_experiments.py**
+    - epochs exhausted

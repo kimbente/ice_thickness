@@ -4,7 +4,12 @@ MAX_NUM_EPOCHS = 2000  # Adjust based on training needs - check if it gets exhau
 NUM_RUNS = 10  # Number of training runs for metric evaluation
 
 LEARNING_RATE = 0.0001
-WEIGHT_DECAY = 1e-4
+# higher LR works better for both, maybe try higher patiene
+PINN_LEARNING_RATE = 0.001
+DFNN_LEARNING_RATE = 0.001
+
+# WEIGHT_DECAY = 1e-4
+WEIGHT_DECAY = 0.01  # 1e-2
 BATCH_SIZE = 32
 
 # Discretization for test data
@@ -15,6 +20,7 @@ DFNN_RESULTS_DIR = "results/dfNN"
 PINN_RESULTS_DIR = "results/PINN"
 DFGP_RESULTS_DIR = "results/dfGP"
 GP_RESULTS_DIR = "results/GP"
+DFGPDFNN_RESULTS_DIR = "results/dfGPdfNN"
 
 # FOR PINN ONLY
 W_PINN_DIV_WEIGHT = 0.5

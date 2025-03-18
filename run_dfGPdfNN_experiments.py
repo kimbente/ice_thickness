@@ -1,11 +1,11 @@
 from GP_models import GP_predict
+from NN_models import dfNN_for_vmap
 from simulate import simulate_convergence, simulate_branching, simulate_ridge, simulate_merge, simulate_deflection
 from metrics import compute_RMSE, compute_MAE, compute_NLL, compute_NLL_full
 from utils import set_seed
-from metrics import compute_RMSE, compute_NLL, compute_NLL_full
 
 # Global file for training configs
-from configs import PATIENCE, GP_MAX_NUM_EPOCHS, NUM_RUNS, GP_LEARNING_RATE, WEIGHT_DECAY, N_SIDE, DFGP_RESULTS_DIR, SIGMA_F_RANGE, L_RANGE
+from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, GP_LEARNING_RATE, WEIGHT_DECAY, N_SIDE, DFGPDFNN_RESULTS_DIR, SIGMA_F_RANGE, L_RANGE
 
 import torch
 import torch.nn as nn
@@ -25,7 +25,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print('Using device:', device)
 print()
 
-model_name = "dfGP"
+# stick to covention to keep df lower case
+model_name = "dfGPdfNN"
 
 #########################
 ### x_train & y_train ###
@@ -109,7 +110,8 @@ for sim_name, sim_func in simulations.items():
 
 # Early stopping parameters
 PATIENCE = PATIENCE
-MAX_NUM_EPOCHS = GP_MAX_NUM_EPOCHS
+# More params than GP models so we need more epochs
+MAX_NUM_EPOCHS = MAX_NUM_EPOCHS
 
 # Number of training runs for mean and std of metrics
 NUM_RUNS = NUM_RUNS
@@ -120,7 +122,8 @@ WEIGHT_DECAY = WEIGHT_DECAY
 # BATCH_SIZE = BATCH_SIZE
 
 # Ensure the results folder exists
-RESULTS_DIR = DFGP_RESULTS_DIR
+RESULTS_DIR = DFGPDFNN_RESULTS_DIR
+RESULTS_DIR = "results/dfGPdfNN_more_epochs"
 os.makedirs(RESULTS_DIR, exist_ok = True)
 
 ### LOOP OVER SIMULATIONS ###
@@ -147,11 +150,14 @@ for sim_name, sim_func in simulations.items():
         sigma_f = nn.Parameter(torch.empty(1, device = device).uniform_( * SIGMA_F_RANGE)) # Trainable
         l = nn.Parameter(torch.empty(2, device = device).uniform_( * L_RANGE)) # Trainable
         
-        # We do not need to "initialse" the GP model
+        # We do not need to "initialse" the GP model but the mean model
+        # Initialise fresh model
+        dfNN_mean_model = dfNN_for_vmap()
+        dfNN_mean_model.to(device)
         # We don't need a criterion either
 
         # Define optimizer (e.g., AdamW)
-        optimizer = optim.AdamW([sigma_f, l], lr = LEARNING_RATE, weight_decay = WEIGHT_DECAY)
+        optimizer = optim.AdamW(list(dfNN_mean_model.parameters()) + [sigma_f, l], lr = LEARNING_RATE, weight_decay = WEIGHT_DECAY)
 
         # Initialise tensors to store losses over epochs (for convergence plot)
         epoch_train_NLML_losses = torch.zeros(MAX_NUM_EPOCHS)
@@ -169,6 +175,8 @@ for sim_name, sim_func in simulations.items():
         ### LOOP OVER EPOCHS ###
         print("\nStart Training")
         for epoch in range(MAX_NUM_EPOCHS):
+            
+            dfNN_mean_model.train()
 
             # No batching - full epoch pass in one
             if run == 0:
@@ -177,7 +185,7 @@ for sim_name, sim_func in simulations.items():
                         y_train,
                         x_train, # have predictions for training data again
                         [sigma_n, sigma_f, l], # initial hyperparameters
-                        # no mean
+                        dfNN_mean_model, # vmap?
                         divergence_free_bool = True)
                 
                 loss = - lml_train
@@ -192,7 +200,7 @@ for sim_name, sim_func in simulations.items():
                         y_train,
                         x_test.to(device), # have predictions for training data again
                         [sigma_n, sigma_f, l], # initial hyperparameters
-                        # no mean
+                        dfNN_mean_model,
                         divergence_free_bool = True)
                 
                 train_RMSE = compute_RMSE(y_train, mean_pred_train)
@@ -216,7 +224,7 @@ for sim_name, sim_func in simulations.items():
                         y_train,
                         x_train[0:2], # have predictions for training data again
                         [sigma_n, sigma_f, l], # initial hyperparameters
-                        # no mean
+                        dfNN_mean_model,
                         divergence_free_bool = True)
                 
                 loss = - lml_train
@@ -243,6 +251,8 @@ for sim_name, sim_func in simulations.items():
         ### EVALUATE ###
         ################
 
+        dfNN_mean_model.eval()
+
         # Now HPs should be tuned
         # Evaluate the trained model after all epochs are finished/early stopping
 
@@ -251,7 +261,7 @@ for sim_name, sim_func in simulations.items():
                      y_train,
                      x_test.to(device),
                      [sigma_n, sigma_f, l], # optimal hypers
-                     # no mean
+                     dfNN_mean_model,
                      divergence_free_bool = True)
 
         # Only save things for one run
@@ -289,7 +299,7 @@ for sim_name, sim_func in simulations.items():
                      y_train,
                      x_train,
                      [sigma_n, sigma_f, l], # optimal hypers
-                     # no mean
+                     dfNN_mean_model,
                      divergence_free_bool = True)
 
         ### Divergence
@@ -300,7 +310,7 @@ for sim_name, sim_func in simulations.items():
                 y_train,
                 input,
                 [sigma_n, sigma_f, l], # optimal hypers
-                # no mean
+                dfNN_mean_model,
                 divergence_free_bool = True)
             return mean
         
@@ -309,28 +319,28 @@ for sim_name, sim_func in simulations.items():
         jac_autograd_test = torch.autograd.functional.jacobian(apply_GP, 
                                         x_test.to(device))
         jac_autograd_test = torch.einsum("bobi -> boi", jac_autograd_test) # batch out batch in
-        dfGP_test_div = torch.diagonal(jac_autograd_test, dim1 = -2, dim2 = -1).sum().item()
+        dfGPdfNN_test_div = torch.diagonal(jac_autograd_test, dim1 = -2, dim2 = -1).sum().item()
 
         # functional div train
         jac_autograd_train = torch.autograd.functional.jacobian(apply_GP, 
                                         x_train.to(device))
         jac_autograd_train = torch.einsum("bobi -> boi", jac_autograd_train) # batch out batch in
-        dfGP_train_div = torch.diagonal(jac_autograd_train, dim1 = -2, dim2 = -1).sum().item()
+        dfGPdfNN_train_div = torch.diagonal(jac_autograd_train, dim1 = -2, dim2 = -1).sum().item()
 
         # Compute metrics (convert tensors to float) for every run's tuned model
-        dfGP_train_RMSE = compute_RMSE(y_train, mean_pred_train).item()
-        dfGP_train_MAE = compute_MAE(y_train, mean_pred_train).item()
-        dfGP_train_NLL = compute_NLL_full(y_train, mean_pred_train, covar_pred_train).item()
+        dfGPdfNN_train_RMSE = compute_RMSE(y_train, mean_pred_train).item()
+        dfGPdfNN_train_MAE = compute_MAE(y_train, mean_pred_train).item()
+        dfGPdfNN_train_NLL = compute_NLL_full(y_train, mean_pred_train, covar_pred_train).item()
 
-        dfGP_test_RMSE = compute_RMSE(y_test, mean_pred_test).item()
-        dfGP_test_MAE = compute_MAE(y_test, mean_pred_test).item()
+        dfGPdfNN_test_RMSE = compute_RMSE(y_test, mean_pred_test).item()
+        dfGPdfNN_test_MAE = compute_MAE(y_test, mean_pred_test).item()
         # full has cuased issues
-        dfGP_test_NLL = compute_NLL(y_test, mean_pred_test, covar_pred_test).item()
+        dfGPdfNN_test_NLL = compute_NLL(y_test, mean_pred_test, covar_pred_test).item()
 
         simulation_results.append([
             run + 1,
-            dfGP_train_RMSE, dfGP_train_MAE, dfGP_train_NLL, dfGP_train_div,
-            dfGP_test_RMSE, dfGP_test_MAE, dfGP_test_NLL, dfGP_test_div
+            dfGPdfNN_train_RMSE, dfGPdfNN_train_MAE, dfGPdfNN_train_NLL, dfGPdfNN_train_div,
+            dfGPdfNN_test_RMSE, dfGPdfNN_test_MAE, dfGPdfNN_test_NLL, dfGPdfNN_test_div
         ])
 
     ### FINISH LOOP OVER RUNS ###

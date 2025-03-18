@@ -12,6 +12,10 @@ import torch.optim as optim
 import os
 import pandas as pd
 
+### TIMING ###
+import time
+start_time = time.time()  # Start timing after imports
+
 # Set seed for reproducibility
 set_seed(42)
 
@@ -363,3 +367,28 @@ for sim_name, sim_func in simulations.items():
     mean_std_df.to_csv(mean_std_file)
     print(f"\nMean & Std saved to {mean_std_file}")
     # Only train for one simulation for now
+
+### End timing ###
+end_time = time.time()  # End timing
+elapsed_time = end_time - start_time  # Compute elapsed time
+# Convert elapsed time to minutes
+elapsed_time_minutes = elapsed_time / 60
+
+if device == "cuda":
+    gpu_name = torch.cuda.get_device_name(0)  # Get GPU model
+else:
+    gpu_name = "N/A"
+
+print(f"Elapsed wall time: {elapsed_time:.4f} seconds")
+
+# Define full path for the file
+wall_time_path = os.path.join(RESULTS_DIR, model_name + "_run_" "wall_time.txt")
+
+# Save to the correct folder with both seconds and minutes
+with open(wall_time_path, "w") as f:
+    f.write(f"Elapsed wall time: {elapsed_time:.4f} seconds\n")
+    f.write(f"Elapsed wall time: {elapsed_time_minutes:.2f} minutes\n")
+    f.write(f"Device used: {device}\n")
+    f.write(f"GPU model: {gpu_name}\n")
+
+print(f"Wall time saved to {wall_time_path}.")
