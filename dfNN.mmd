@@ -1,0 +1,109 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\begin{document}
+
+The field resulting from the \textbf{row-wise divergence} of an antisymmetric Jacobian matrix is \textbf{not necessarily divergence-free}. To understand why, let's break down the key concepts:
+
+\section*{Recap of the Row-Wise Divergence}
+
+We are considering the \textbf{row-wise divergence} of the antisymmetric matrix \( J_{\text{antisym}} \), which has the following form:
+
+\[
+\text{Row-wise divergence of } J_{\text{antisym}} = \frac{1}{2} \begin{bmatrix}
+\frac{\partial^2 y_1}{\partial x_2^2} - \frac{\partial^2 y_2}{\partial x_1 \partial x_2} \\
+\frac{\partial^2 y_2}{\partial x_1^2} - \frac{\partial^2 y_1}{\partial x_1 \partial x_2}
+\end{bmatrix}.
+\]
+
+\section*{Divergence-Free Condition}
+
+A vector field is \textbf{divergence-free} if:
+
+\[
+\text{div}(\mathbf{v}) = \nabla \cdot \mathbf{v} = 0.
+\]
+
+That means the sum of the partial derivatives of each component of the vector field with respect to its corresponding coordinates must equal zero.
+
+\section*{Examining the Row-Wise Divergence}
+
+To check if the resulting field is divergence-free, let's evaluate the \textbf{divergence of the resulting vector field}.
+
+The vector field resulting from the row-wise divergence of \( J_{\text{antisym}} \) is:
+
+\[
+\mathbf{v} = \begin{bmatrix} 
+\frac{\partial^2 y_1}{\partial x_2^2} - \frac{\partial^2 y_2}{\partial x_1 \partial x_2} \\
+\frac{\partial^2 y_2}{\partial x_1^2} - \frac{\partial^2 y_1}{\partial x_1 \partial x_2}
+\end{bmatrix}.
+\]
+
+Now, let's compute the divergence of this vector field:
+
+\[
+\text{div}(\mathbf{v}) = \frac{\partial}{\partial x_1} \left( \frac{\partial^2 y_1}{\partial x_2^2} - \frac{\partial^2 y_2}{\partial x_1 \partial x_2} \right) + \frac{\partial}{\partial x_2} \left( \frac{\partial^2 y_2}{\partial x_1^2} - \frac{\partial^2 y_1}{\partial x_1 \partial x_2} \right).
+\]
+
+Expanding this:
+
+\[
+\text{div}(\mathbf{v}) = \frac{\partial^3 y_1}{\partial x_1 \partial x_2^2} - \frac{\partial^3 y_2}{\partial x_1^2 \partial x_2} + \frac{\partial^3 y_2}{\partial x_1^2 \partial x_2} - \frac{\partial^3 y_1}{\partial x_1^2 \partial x_2}.
+\]
+
+Simplifying this:
+
+\[
+\text{div}(\mathbf{v}) = \frac{\partial^3 y_1}{\partial x_1 \partial x_2^2} - \frac{\partial^3 y_1}{\partial x_1^2 \partial x_2} - \frac{\partial^3 y_1}{\partial x_1^2 \partial x_2} + \frac{\partial^3 y_1}{\partial x_1 \partial x_2^2} = 0.
+\]
+
+Thus, the \textbf{divergence of the resulting field is zero}.
+
+\section*{Conclusion}
+
+Yes, the resulting field is \textbf{divergence-free}.
+
+\begin{itemize}
+    \item The key property of antisymmetric matrices, particularly those related to vector fields and their derivatives, means that interactions between components lead to a \textbf{conservation of flow}, which results in a \textbf{divergence-free vector field}.
+    \item In the context of fluid dynamics or other physical systems, this would imply that the flow is \textbf{incompressible} in the sense that there is no net "expansion" or "contraction" at any point in the field.
+\end{itemize}
+
+\end{document}
+
+
+### HNN
+
+The rotational velocity (or vorticity) of a vector field \( \mathbf{v} = (v_1, v_2) \) in 2D is given by the curl:
+
+\[
+\nabla \times \mathbf{v} = \frac{\partial v_2}{\partial x_1} - \frac{\partial v_1}{\partial x_2}
+\]
+
+For a velocity field constructed from a scalar potential \( H(x_1, x_2) \), where:
+
+\[
+v_1(x_1, x_2) = \frac{\partial H}{\partial x_2}, \quad v_2(x_1, x_2) = -\frac{\partial H}{\partial x_1}
+\]
+
+The curl becomes:
+
+\[
+\nabla \times \mathbf{v} = \frac{\partial}{\partial x_1} \left( -\frac{\partial H}{\partial x_1} \right) - \frac{\partial}{\partial x_2} \left( \frac{\partial H}{\partial x_2} \right)
+\]
+
+Using the symmetry of mixed partial derivatives, we get:
+
+\[
+\nabla \times \mathbf{v} = 0
+\]
+
+Thus, the rotational velocity (or vorticity) of this velocity field is zero.
+
+
+
+
+
+
+
+
+

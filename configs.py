@@ -17,6 +17,8 @@ N_SIDE = 20
 
 # Paths
 DFNN_RESULTS_DIR = "results/dfNN"
+DFNN_FULLMATRIX_RESULTS_DIR = "results/dfNN_fullmatrix"
+HNN_RESULTS_DIR = "results/HNN"
 PINN_RESULTS_DIR = "results/PINN"
 DFGP_RESULTS_DIR = "results/dfGP"
 GP_RESULTS_DIR = "results/GP"

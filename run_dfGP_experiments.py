@@ -351,7 +351,7 @@ for sim_name, sim_func in simulations.items():
 
     # Save mean and standard deviation to CSV
     mean_std_file = os.path.join(RESULTS_DIR, f"{sim_name}_{model_name}_metrics_summary.csv")
-    mean_std_df.to_csv(mean_std_file)
+    mean_std_df.to_csv(mean_std_file, float_format = "%.5f") # reduce to 5 decimals
     print(f"\nMean & Std saved to {mean_std_file}")
     # Only train for one simulation for now
 

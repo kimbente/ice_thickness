@@ -3,6 +3,7 @@ from NN_models import dfNN_for_vmap
 from simulate import simulate_convergence, simulate_branching, simulate_ridge, simulate_merge, simulate_deflection
 from metrics import compute_RMSE, compute_MAE, compute_NLL, compute_NLL_full
 from utils import set_seed
+import gc # garbage collection
 
 # Global file for training configs
 from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, GP_LEARNING_RATE, WEIGHT_DECAY, N_SIDE, DFGPDFNN_RESULTS_DIR, SIGMA_F_RANGE, L_RANGE
@@ -112,6 +113,7 @@ for sim_name, sim_func in simulations.items():
 PATIENCE = PATIENCE
 # More params than GP models so we need more epochs
 MAX_NUM_EPOCHS = MAX_NUM_EPOCHS
+MAX_NUM_EPOCHS = 2000
 
 # Number of training runs for mean and std of metrics
 NUM_RUNS = NUM_RUNS
@@ -123,11 +125,15 @@ WEIGHT_DECAY = WEIGHT_DECAY
 
 # Ensure the results folder exists
 RESULTS_DIR = DFGPDFNN_RESULTS_DIR
-RESULTS_DIR = "results/dfGPdfNN_more_epochs"
+RESULTS_DIR = "results/dfGPdfNN_more_more"
 os.makedirs(RESULTS_DIR, exist_ok = True)
 
 ### LOOP OVER SIMULATIONS ###
 for sim_name, sim_func in simulations.items():
+
+    gc.collect()  # Collect unused Python objects
+    torch.cuda.empty_cache()
+
     print(f"\nTraining for {sim_name.upper()}...")
 
     # Store metrics for the current simulation
@@ -361,7 +367,7 @@ for sim_name, sim_func in simulations.items():
 
     # Save mean and standard deviation to CSV
     mean_std_file = os.path.join(RESULTS_DIR, f"{sim_name}_{model_name}_metrics_summary.csv")
-    mean_std_df.to_csv(mean_std_file)
+    mean_std_df.to_csv(mean_std_file, float_format = "%.5f") # reduce to 5 decimals
     print(f"\nMean & Std saved to {mean_std_file}")
     # Only train for one simulation for now
 
@@ -371,7 +377,7 @@ elapsed_time = end_time - start_time  # Compute elapsed time
 # Convert elapsed time to minutes
 elapsed_time_minutes = elapsed_time / 60
 
-if device == "cuda":
+if torch.cuda.is_available():
     gpu_name = torch.cuda.get_device_name(0)  # Get GPU model
 else:
     gpu_name = "N/A"

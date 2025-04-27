@@ -56,3 +56,21 @@ def sample_posterior(posterior_mean, posterior_covariance, n_samples = 10):
     samples_long = posterior_mean_long.tile(n_samples, 1) + torch.matmul(z, L_posterior.mT)
 
     return samples_long.reshape(n_samples, -1, 2)
+
+def make_grid(n_side, start = 0.0, end = 1.0):
+    """ Make a grid of points in 2D space using torch
+
+    Args:
+        n_side (torch.Size([ ]) i.e. scalar): This is the same as H == W == grid_size
+        start (torch.Size([ ]) i.e. scalar, optional): Staring point of both x and y. Defaults to 0.0.
+        end (torch.Size([ ]) i.e. scalar, optional): End point of both x and y. Defaults to 1.0.
+    Returns:
+        x_test_grid (torch.Size([n_side, n_side, 2])): 2D grid of points 
+        x_test_long (torch.Size([n_side * n_side, 2])): flat version of the grid
+    """
+    side_array = torch.linspace(start = start, end = end, steps = n_side)
+    XX, YY = torch.meshgrid(side_array, side_array, indexing = "xy")
+    x_test_grid = torch.cat([XX.unsqueeze(-1), YY.unsqueeze(-1)], dim = -1)
+    x_test_long = x_test_grid.reshape(-1, 2)
+    
+    return x_test_grid, x_test_long
