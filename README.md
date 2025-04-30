@@ -10,11 +10,23 @@ There are many applications in which a hard-constraint on divergence-free output
 
 We compare dfNGPs again hard-constrained dfNN, and dfGPs, as well as against soft-constrained PINNs and regular GPs. We perform experiments on 5 simulated examples as well as on ice flux data taked from InSAR ice velocity data as well as BedMachine/Bedmap3 ice thickness data from the Byrd glacier catchment in Antarctica. 
 
-### Data from Byrd
+### Simulated data: divergence-free vector fields with sparse data
 
-![alt text](images/data_over_byrd.png)
+Run ```python run_dfGPdfNN_experiments.py``` to generate experimental results for n = 10 runs on all 5 experiments. All results will be saved in the results folder. Files ending with *_metric_summary.csv* such as *results/dfGPdfNN/branching_dtl_dfGPdfNN_metrics_summary.csv* contain the most important metrics. 
 
-# Simulated experiments:
+The train and test data for the simulated experiments look as such:
+
+![Simulated experiments](images/simulated_experiments.png)
+
+Training data is provided simular to data from flight lines from airborne geophysical surveys. 
+
+### Real-data: Ice flux data Byrd
+
+The following shows the ice flux over Byrd glacier, Antarctica overlaid on MODIS data.
+
+![Ice flux over Byrd](images/ice_flux_modis_byrd.png)
+
+# Simulated experiments notes (internal use)
 
 - **run_dfNN_experiments.py**
     - Loss: simple RMSE
@@ -27,8 +39,6 @@ We compare dfNGPs again hard-constrained dfNN, and dfGPs, as well as against sof
     - Metrics: RMSE, MAE, abs. divergence
     - Issues:
         - smoothness? batch size?
-        - test loss is way too high for some reason...
-        - TODO: calculate divergence loss over full domain?!
     - Outputs: 
         - **convergence_dfNN_metrics_summary.csv** mean metrics and std metrics over N_runs
         - **convergence_dfNN_metrics_per_run.csv** metrics for individual runs, make sure max_runs is high enough
@@ -52,3 +62,7 @@ We compare dfNGPs again hard-constrained dfNN, and dfGPs, as well as against sof
     - Results are a bit too good given all the data
 - **run_dfGPdfNN_experiments.py**
     - epochs exhausted
+
+# Compare Posteriors of dfGP and regular GP
+
+![divergence-free and divergent posterior](images/compare_dfGP_GP_posterior_divergence.png)
