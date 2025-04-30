@@ -1,3 +1,7 @@
+# Ice thickness over Byrd glacier
+
+![alt text](images/data_over_byrd.png)
+
 # ToDo:
 - domain-informed noise level
 
