@@ -1,5 +1,5 @@
 from GP_models import GP_predict
-from simulate import simulate_convergence, simulate_branching, simulate_ridge, simulate_merge, simulate_deflection
+# from simulate import simulate_convergence, simulate_branching, simulate_ridge, simulate_merge, simulate_deflection
 from metrics import compute_RMSE, compute_MAE, compute_NLL, compute_NLL_full
 from utils import set_seed
 from metrics import compute_RMSE, compute_NLL, compute_NLL_full
@@ -33,20 +33,20 @@ model_name = "dfGP"
 
 # Import all simulation functions
 from simulate import (
-    simulate_convergence,
-    simulate_branching,
-    simulate_merge,
-    simulate_deflection,
-    simulate_ridge,
+    simulate_detailed_convergence,
+    simulate_detailed_deflection,
+    simulate_detailed_curve,
+    simulate_detailed_ridges,
+    simulate_detailed_branching,
 )
 
 # Define simulations as a dictionary with names as keys to function objects
 simulations = {
-    "convergence": simulate_convergence,
-    "branching": simulate_branching,
-    "merge": simulate_merge,
-    "deflection": simulate_deflection,
-    "ridge": simulate_ridge,
+    "convergence_dtl": simulate_detailed_convergence,
+    "deflection_dtl": simulate_detailed_deflection,
+    "curve_dtl": simulate_detailed_curve,
+    "ridges_dtl": simulate_detailed_ridges,
+    "branching_dtl": simulate_detailed_branching,
 }
 
 # Load training inputs
@@ -246,10 +246,13 @@ for sim_name, sim_func in simulations.items():
         # Now HPs should be tuned
         # Evaluate the trained model after all epochs are finished/early stopping
 
+        # Need gradients for autograd divergence
+        x_test_grad = x_test.to(device).requires_grad_(True)
+
         mean_pred_test, covar_pred_test, _ = GP_predict(
                      x_train,
                      y_train,
-                     x_test.to(device),
+                     x_test_grad,
                      [sigma_n, sigma_f, l], # optimal hypers
                      # no mean
                      divergence_free_bool = True)
@@ -282,40 +285,52 @@ for sim_name, sim_func in simulations.items():
                 'l2': epoch_l2.tolist()
                 })
             
-            df_losses.to_csv(f"{RESULTS_DIR}/{sim_name}_{model_name}_losses_over_epochs.csv", index = False)
+            df_losses.to_csv(f"{RESULTS_DIR}/{sim_name}_{model_name}_losses_over_epochs.csv", index = False, float_format = "%.5f")
+
+        x_train_grad = x_train.to(device).requires_grad_(True)
 
         mean_pred_train, covar_pred_train, _ = GP_predict(
                      x_train,
                      y_train,
-                     x_train,
+                     x_train_grad,
                      [sigma_n, sigma_f, l], # optimal hypers
                      # no mean
                      divergence_free_bool = True)
 
-        ### Divergence
-        # Need wrapper function for functional divergence
-        def apply_GP(input):
-            mean, _, _ = GP_predict(
-                x_train,
-                y_train,
-                input,
-                [sigma_n, sigma_f, l], # optimal hypers
-                # no mean
-                divergence_free_bool = True)
-            return mean
-        
+        ### Divergence: Total absolute divergence (sum divergence at each point, after summing dims)
+        # autograd div test
+        u_indicator_test, v_indicator_test = torch.zeros_like(mean_pred_test), torch.zeros_like(mean_pred_test)
+        u_indicator_test[:, 0] = 1.0 # output column u selected
+        v_indicator_test[:, 1] = 1.0 # output column v selected
 
-        # functional div test
-        jac_autograd_test = torch.autograd.functional.jacobian(apply_GP, 
-                                        x_test.to(device))
-        jac_autograd_test = torch.einsum("bobi -> boi", jac_autograd_test) # batch out batch in
-        dfGP_test_div = torch.diagonal(jac_autograd_test, dim1 = -2, dim2 = -1).sum().item()
+        dfGP_test_div = (torch.autograd.grad(
+            outputs = mean_pred_test,
+            inputs = x_test_grad,
+            grad_outputs = u_indicator_test,
+            create_graph = True
+        )[0][:, 0] + torch.autograd.grad(
+            outputs = mean_pred_test,
+            inputs = x_test_grad,
+            grad_outputs = v_indicator_test,
+            create_graph = True
+        )[0][:, 1]).abs().sum().item() # v with respect to y
 
-        # functional div train
-        jac_autograd_train = torch.autograd.functional.jacobian(apply_GP, 
-                                        x_train.to(device))
-        jac_autograd_train = torch.einsum("bobi -> boi", jac_autograd_train) # batch out batch in
-        dfGP_train_div = torch.diagonal(jac_autograd_train, dim1 = -2, dim2 = -1).sum().item()
+        # autograd div train
+        u_indicator_train, v_indicator_train = torch.zeros_like(mean_pred_train), torch.zeros_like(mean_pred_train)
+        u_indicator_train[:, 0] = 1.0 # output column u selected
+        v_indicator_train[:, 1] = 1.0 # output column v selected
+
+        dfGP_train_div = (torch.autograd.grad(
+            outputs = mean_pred_train,
+            inputs = x_train_grad,
+            grad_outputs = u_indicator_train,
+            create_graph = True
+        )[0][:, 0] + torch.autograd.grad(
+            outputs = mean_pred_train,
+            inputs = x_train_grad,
+            grad_outputs = v_indicator_train,
+            create_graph = True
+        )[0][:, 1]).abs().sum().item() # v with respect to y
 
         # Compute metrics (convert tensors to float) for every run's tuned model
         dfGP_train_RMSE = compute_RMSE(y_train, mean_pred_train).item()
@@ -344,9 +359,13 @@ for sim_name, sim_func in simulations.items():
     # Compute mean and standard deviation for each metric
     mean_std_df = df.iloc[:, 1:].agg(["mean", "std"])  # Exclude "Run" column
 
+    # Add sim_name and model_name as columns in the DataFrame _metrics_summary
+    mean_std_df["sim name"] = sim_name
+    mean_std_df["model name"] = model_name
+
     # Save results to CSV
     results_file = os.path.join(RESULTS_DIR, f"{sim_name}_{model_name}_metrics_per_run.csv")
-    df.to_csv(results_file, index = False)
+    df.to_csv(results_file, index = False, float_format = "%.5f")
     print(f"\nResults saved to {results_file}")
 
     # Save mean and standard deviation to CSV

@@ -1,69 +1,18 @@
-# Ice thickness
+# Mass conservating ice flux vector fields with divergence-free Neural Gaussian Processes (dfNGPs)
 
-Directly model ice thickness from Bedmap3 data points. Byrd glacier.
+In this repository we introduce a new methods, combining the strengths of [Neural Conservations Laws by Richter-Powell et al. 2022](https://arxiv.org/abs/2210.01741) and the in 2D equivalent class of [Hamiltonian Neural Networks introduced by Greydanus et al. in 2019](https://proceedings.neurips.cc/paper_files/paper/2019/file/26cd8ecadce0d4efd6cc8a8725cbd1f8-Paper.pdf) with probabilistic [Linearly constrained Gaussian Processes by Jidling et al. 2017](Jidling) to model divergence-free 2D vector fields. We use the divergence-free Neural Network as a highly expressive mean function within a divergence-free Gaussian Processes framework. This harnesses the property that the sum of two divergence-free vector fields remains divergence-free. We term our model a **divergence-free Neural Gaussian Processes (dfNGPs)**. Our model can quantify uncertainty and is guaranteed to produce divergence-free outputs (mean function as well as posterior samples). This it is suitable in applications where **data is sparse** and **uncertainty quantification** is critical. 
+
+## Motivation for environmental applications
+
+There are many applications in which a hard-constraint on divergence-free outputs helps to learn physically realistic phenomena, particulary when modelling incompressible fluids, where mass is conserved. 
+
+## Experiments
+
+We compare dfNGPs again hard-constrained dfNN, and dfGPs, as well as against soft-constrained PINNs and regular GPs. We perform experiments on 5 simulated examples as well as on ice flux data taked from InSAR ice velocity data as well as BedMachine/Bedmap3 ice thickness data from the Byrd glacier catchment in Antarctica. 
+
+### Data from Byrd
 
 ![alt text](images/data_over_byrd.png)
-
-# ToDo:
-- domain-informed noise level
-- std to count ratio: standard error
-
-## Why do we model ice thickness and not the bed elevation?
-- Hypothesis: Ice thickness distribution is smoother in space (than bed elevation) and thus easier to model with the choosen methods (GPs/kriging/kernel methods are naturally better at modelling smooth distributions.)
-- Test this hypothesis with
-    - Look at std
-    - Fit simple GP model and interpret
-
-## Why do we go directly from measurements to high-resolution bed topography models
-- Because uncertainty quantification is much better this way.
-
-## Research plans
-- Investigate per grid error and number of data points
-- Visualise number of data points
-- Investigate roughness: Roughness ML module for post-processing needed? 
-- Integrate MC ideas in kernel: physical consistency
-
-## Considerations
-- Check that geoid/ellipsoid reference is consistent. BedMachine uses ellipsoid.
-- Check that height is consitent too. BedMachine fird-corrects to attain ice-equivalent values.
-- Remove flight line that is dubious. ()
-
-# Data
-
-- Bedmap123 data preprocess and subsetted for this region around Byrd glacier.
-    - **surface_altitude**: Surface elevation or altitude (referenced to WGS84) in meters
-    - **land_ice_thickness**: Ice thickness in meters
-    - **bedrock_altitude** Bed elevation or altitude (referenced to WGS84) in meters
-- Bedmachine v3
-    - In BedMachine Antarctica, all heights are referenced to mean sea level (using the geoid EIGEN-6C4). To
-convert the heights to heights referenced to the WGS84 ellipsoid, simply add the geoid height
-    - Ice equivalent units.
-
-Corrections of BedMachine:
-- Bed, thickness, and surface elevation need to be corrected to ellipsoid. 
-- Ice thickness also needs to be firn corrected.
-
-# About the data
-
-The median gridding error over Byrd glacier for a 500 x 500 m grid is 9.5 meters.  
-The mean gridding error over Byrd glacier for a 500 x 500 m grid is 16.3 meters.  
-The mean SEM (standard error of the mean) over Byrd glacier for a 500 x 500 m grid is 3.9 meters.
-
-# Scaleable inference
-
-https://docs.gpytorch.ai/en/stable/examples/02_Scalable_Exact_GPs/index.html 
-
-# Gradient observation
-
-https://docs.gpytorch.ai/en/v1.11/examples/08_Advanced_Usage/Simple_GP_Regression_Derivative_Information_1d.html
-
-# Morlighem MC
-
-- Do we need to extend the region for the ice inflow (contraint on obs.) to be good.
-- product: H * v (ice flux)
-    - The resulting Ice Flux is often in cubic meters per year (m³/yr), representing the volume of ice transported by glaciers or ice sheets
-    - gradient of ice flux
-- radar-derived thickness data from multiple sources, with a vertical precision of ~30 m.
 
 # Simulated experiments:
 

@@ -1,5 +1,5 @@
-from NN_models import dfNN_fullmatrix_for_vmap
-from simulate import simulate_convergence, simulate_branching, simulate_ridge, simulate_merge, simulate_deflection
+from archive.NN_models_HNN_dfNN_fullmatrix import dfNN_fullmatrix_for_vmap
+# from simulate import simulate_convergence, simulate_branching, simulate_ridge, simulate_merge, simulate_deflection
 from metrics import compute_RMSE, compute_MAE
 from utils import set_seed
 
@@ -33,20 +33,20 @@ model_name = "dfNN_fullmatrix"
 
 # Import all simulation functions
 from simulate import (
-    simulate_convergence,
-    simulate_branching,
-    simulate_merge,
-    simulate_deflection,
-    simulate_ridge,
+    simulate_detailed_convergence,
+    simulate_detailed_deflection,
+    simulate_detailed_curve,
+    simulate_detailed_ridges,
+    simulate_detailed_branching,
 )
 
 # Define simulations as a dictionary with names as keys to function objects
 simulations = {
-    "convergence": simulate_convergence,
-    "branching": simulate_branching,
-    "merge": simulate_merge,
-    "deflection": simulate_deflection,
-    "ridge": simulate_ridge,
+    "convergence_dtl": simulate_detailed_convergence,
+    "deflection_dtl": simulate_detailed_deflection,
+    "curve_dtl": simulate_detailed_curve,
+    "ridges_dtl": simulate_detailed_ridges,
+    "branching_dtl": simulate_detailed_branching,
 }
 
 # Load training inputs
@@ -228,8 +228,12 @@ for sim_name, sim_func in simulations.items():
         # Evaluate the trained model after epochs are finished
         dfNN_model.eval()
 
-        y_train_dfNN_predicted = vmap(dfNN_model)(x_train.to(device)).detach()
-        y_test_dfNN_predicted = vmap(dfNN_model)(x_test.to(device)).detach()
+        # grad for autograd
+        x_train_grad = x_train.to(device).requires_grad_()
+        x_test_grad = x_test.to(device).requires_grad_()
+
+        y_train_dfNN_predicted = vmap(dfNN_model)(x_train_grad)
+        y_test_dfNN_predicted = vmap(dfNN_model)(x_test_grad)
 
         # Only save things for one run
         if run == 0:
@@ -243,11 +247,43 @@ for sim_name, sim_func in simulations.items():
                 'Test Loss RMSE': epoch_test_losses.tolist()
                 })
             
-            df_losses.to_csv(f"{RESULTS_DIR}/{sim_name}_{model_name}_losses_over_epochs.csv", index = False)
+            df_losses.to_csv(f"{RESULTS_DIR}/{sim_name}_{model_name}_losses_over_epochs.csv", index = False, float_format = "%.5f")
 
         # Compute Divergence (convert tensor to float)
-        dfNN_train_div = torch.diagonal(vmap(jacfwd(dfNN_model))(x_train.to(device)), dim1 = -2, dim2 = -1).detach().sum().item()
-        dfNN_test_div = torch.diagonal(vmap(jacfwd(dfNN_model))(x_test.to(device)), dim1 = -2, dim2 = -1).detach().sum().item()
+        # autograd divergence train
+        u_indicator_train, v_indicator_train = torch.zeros_like(y_train_dfNN_predicted), torch.zeros_like(y_train_dfNN_predicted)
+        u_indicator_train[:, 0] = 1.0 # output column u selected
+        v_indicator_train[:, 1] = 1.0 # output column v selected
+
+        dfNN_train_div = (torch.autograd.grad(
+            outputs = y_train_dfNN_predicted,
+            inputs = x_train_grad,
+            grad_outputs = u_indicator_train,
+            create_graph = True
+        )[0][:, 0] + torch.autograd.grad(
+            outputs = y_train_dfNN_predicted,
+            inputs = x_train_grad,
+            grad_outputs = v_indicator_train,
+            create_graph = True
+        )[0][:, 1]).abs().sum().item() # v with respect to y
+
+        # Divergence
+        # autograd divergence test
+        u_indicator_test, v_indicator_test = torch.zeros_like(y_test_dfNN_predicted), torch.zeros_like(y_test_dfNN_predicted)
+        u_indicator_test[:, 0] = 1.0 # output column u selected
+        v_indicator_test[:, 1] = 1.0 # output column v selected
+
+        dfNN_test_div = (torch.autograd.grad(
+            outputs = y_test_dfNN_predicted,
+            inputs = x_test_grad,
+            grad_outputs = u_indicator_test,
+            create_graph = True
+        )[0][:, 0] + torch.autograd.grad(
+            outputs = y_test_dfNN_predicted,
+            inputs = x_test_grad,
+            grad_outputs = v_indicator_test,
+            create_graph = True
+        )[0][:, 1]).abs().sum().item() # v with respect to y
 
         # Compute metrics (convert tensors to float)
         dfNN_train_RMSE = compute_RMSE(y_train, y_train_dfNN_predicted.cpu()).item()
@@ -273,9 +309,13 @@ for sim_name, sim_func in simulations.items():
     # Compute mean and standard deviation for each metric
     mean_std_df = df.iloc[:, 1:].agg(["mean", "std"])  # Exclude "Run" column
 
+    # Add sim_name and model_name as columns in the DataFrame _metrics_summary
+    mean_std_df["sim name"] = sim_name
+    mean_std_df["model name"] = model_name
+
     # Save results to CSV
     results_file = os.path.join(RESULTS_DIR, f"{sim_name}_{model_name}_metrics_per_run.csv")
-    df.to_csv(results_file, index = False)
+    df.to_csv(results_file, index = False, float_format = "%.5f")
     print(f"\nResults saved to {results_file}")
 
     # Save mean and standard deviation to CSV

@@ -1,5 +1,5 @@
-from NN_models import PINN_backbone
-from simulate import simulate_convergence, simulate_branching, simulate_ridge, simulate_merge, simulate_deflection
+from archive.NN_models_HNN_dfNN_fullmatrix import PINN_backbone
+# from simulate import simulate_convergence, simulate_branching, simulate_ridge, simulate_merge, simulate_deflection
 from metrics import compute_RMSE, compute_MAE
 from utils import set_seed
 
@@ -7,7 +7,7 @@ from utils import set_seed
 from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, LEARNING_RATE, WEIGHT_DECAY, BATCH_SIZE, N_SIDE, PINN_RESULTS_DIR, W_PINN_DIV_WEIGHT, PINN_LEARNING_RATE
 
 import torch
-from torch.func import vmap, jacfwd
+from torch.func import vmap
 from torch.utils.data import DataLoader, TensorDataset
 import torch.optim as optim
 import os
@@ -33,20 +33,20 @@ model_name = "PINN"
 
 # Import all simulation functions
 from simulate import (
-    simulate_convergence,
-    simulate_branching,
-    simulate_merge,
-    simulate_deflection,
-    simulate_ridge,
+    simulate_detailed_convergence,
+    simulate_detailed_deflection,
+    simulate_detailed_curve,
+    simulate_detailed_ridges,
+    simulate_detailed_branching,
 )
 
 # Define simulations as a dictionary with names as keys to function objects
 simulations = {
-    "convergence": simulate_convergence,
-    "branching": simulate_branching,
-    "merge": simulate_merge,
-    "deflection": simulate_deflection,
-    "ridge": simulate_ridge,
+    "convergence_dtl": simulate_detailed_convergence,
+    "deflection_dtl": simulate_detailed_deflection,
+    "curve_dtl": simulate_detailed_curve,
+    "ridges_dtl": simulate_detailed_ridges,
+    "branching_dtl": simulate_detailed_branching,
 }
 
 # Load training inputs, not weights_only = True
@@ -180,15 +180,30 @@ for sim_name, sim_func in simulations.items():
                 x_batch, y_batch = batch
                 # put on GPU
                 x_batch, y_batch = x_batch.to(device), y_batch.to(device)
+
                 # inplace
                 x_batch.requires_grad_()
 
                 # Forward pass
                 y_pred = vmap(PINN_model)(x_batch)
-                # torch.Size([32 (batch_dim), 2 (out_dim), 2 (in_dim)])
-                batch_divergence = vmap(jacfwd(PINN_model))(x_batch)
-                # sum: f1/x1 + f2/x2, square to account for negative
-                batch_divergence_loss = torch.square(torch.diagonal(batch_divergence, dim1 = -2, dim2 = -1).sum())
+
+                u_indicator_batch, v_indicator_batch = torch.zeros_like(y_pred), torch.zeros_like(y_pred)
+                u_indicator_batch[:, 0] = 1.0 # output column u selected
+                v_indicator_batch[:, 1] = 1.0 # output column v selected
+
+                # square(sum: f1/x1 + f2/x2)
+                batch_divergence_loss = (torch.autograd.grad(
+                    outputs = y_pred,
+                    inputs = x_batch, # grad is on
+                    grad_outputs = u_indicator_batch,
+                    create_graph = True
+                )[0][:, 0] + torch.autograd.grad(
+                    outputs = y_pred,
+                    inputs = x_batch,
+                    grad_outputs = v_indicator_batch,
+                    create_graph = True
+                )[0][:, 1]).abs().mean().item() # v with respect to y
+                # HERE: abs() to account for negative divergence and mean() to get avg!
 
                 # Compute loss (RMSE for same units as data) + divergence loss
                 loss = (1 - w) * torch.sqrt(criterion(y_pred, y_batch)) + w * batch_divergence_loss
@@ -204,19 +219,40 @@ for sim_name, sim_func in simulations.items():
             ### END BATCH LOOP ###
             PINN_model.eval()
 
+            x_test_grad = x_test.to(device).requires_grad_()
+
             # Test loss outside of batch loop - once per epoch
-            y_test_pred = vmap(PINN_model)(x_test.to(device))
+            y_test_pred = vmap(PINN_model)(x_test_grad)
             # compute just once
             epoch_test_rmse_loss = torch.sqrt(criterion(y_test_pred, y_test.to(device))).item()
-            epoch_test_loss = (1 - w) * torch.sqrt(criterion(y_test_pred, y_test.to(device))) + w * torch.square(torch.diagonal(vmap(jacfwd(PINN_model))(x_test.to(device)), dim1 = -2, dim2 = -1).sum()).item()
 
+            # test divergence loss
+            u_indicator_test, v_indicator_test = torch.zeros_like(y_test_pred), torch.zeros_like(y_test_pred)
+            u_indicator_test[:, 0] = 1.0 # output column u selected
+            v_indicator_test[:, 1] = 1.0 # output column v selected
+
+            epoch_div_loss = (torch.autograd.grad(
+                    outputs = y_test_pred,
+                    inputs = x_test_grad, # grad is on
+                    grad_outputs = u_indicator_test,
+                    create_graph = True
+                )[0][:, 0] + torch.autograd.grad(
+                    outputs = y_test_pred,
+                    inputs = x_test_grad,
+                    grad_outputs = v_indicator_test,
+                    create_graph = True
+                )[0][:, 1]).abs().mean().item()
+
+            # Put together
+            epoch_test_loss = (1 - w) * torch.sqrt(criterion(y_test_pred, y_test.to(device))) + w * epoch_div_loss
+ 
             # Compute average loss for the epoch and store
             epoch_train_losses[epoch] = epoch_train_loss / len(dataloader)
             epoch_train_rmse_losses[epoch] = epoch_train_rmse_loss / len(dataloader)
             epoch_test_losses[epoch] = epoch_test_loss # old calc once per epoch over all
             epoch_test_rmse_losses[epoch] = epoch_test_rmse_loss
 
-            print(f"{sim_name} {model_name} Run {run + 1}/{NUM_RUNS}, Epoch {epoch + 1}/{MAX_NUM_EPOCHS}, Training Loss (RMSE): {epoch_train_losses[epoch]:.4f}")
+            print(f"{sim_name} {model_name} Run {run + 1}/{NUM_RUNS}, Epoch {epoch + 1}/{MAX_NUM_EPOCHS}, Training Loss (RMSE): {epoch_train_rmse_losses[epoch]:.4f}, Training Loss (combined): {epoch_train_losses[epoch]:.4f}")
 
             # Early stopping check
             if epoch_train_losses[epoch] < best_loss:
@@ -242,8 +278,12 @@ for sim_name, sim_func in simulations.items():
         # Evaluate the trained model for each run
         PINN_model.eval()
 
-        y_train_PINN_predicted = vmap(PINN_model)(x_train.to(device)).detach()
-        y_test_PINN_predicted = vmap(PINN_model)(x_test.to(device)).detach()
+        # We need to set requires_grad_() for the autograd divergence
+        x_train_grad = x_train.to(device).requires_grad_()
+        x_test_grad = x_test.to(device).requires_grad_()
+
+        y_train_PINN_predicted = vmap(PINN_model)(x_train_grad)
+        y_test_PINN_predicted = vmap(PINN_model)(x_test_grad)
 
         # Only save things for one run
         if run == 0:
@@ -259,11 +299,42 @@ for sim_name, sim_func in simulations.items():
                 'Test Loss RMSE': epoch_test_rmse_losses.tolist()
                 })
             
-            df_losses.to_csv(f"{RESULTS_DIR}/{sim_name}_{model_name}_losses_over_epochs.csv", index = False)
+            df_losses.to_csv(f"{RESULTS_DIR}/{sim_name}_{model_name}_losses_over_epochs.csv", index = False, float_format = "%.5f")
 
         # Compute Divergence (convert tensor to float)
-        PINN_train_div = torch.diagonal(vmap(jacfwd(PINN_model))(x_train.to(device)), dim1 = -2, dim2 = -1).detach().sum().item()
-        PINN_test_div = torch.diagonal(vmap(jacfwd(PINN_model))(x_test.to(device)), dim1 = -2, dim2 = -1).detach().sum().item()
+        # Autograd divergence train
+        u_indicator_train, v_indicator_train = torch.zeros_like(y_train_PINN_predicted), torch.zeros_like(y_train_PINN_predicted)
+        u_indicator_train[:, 0] = 1.0 # output column u selected
+        v_indicator_train[:, 1] = 1.0 # output column v selected
+
+        PINN_train_div = (torch.autograd.grad(
+            outputs = y_train_PINN_predicted,
+            inputs = x_train_grad,
+            grad_outputs = u_indicator_train,
+            create_graph = True
+        )[0][:, 0] + torch.autograd.grad(
+            outputs = y_train_PINN_predicted,
+            inputs = x_train_grad,
+            grad_outputs = v_indicator_train,
+            create_graph = True
+        )[0][:, 1]).abs().sum().item() # v with respect to y
+
+        # autograd div test
+        u_indicator_test, v_indicator_test = torch.zeros_like(y_test_PINN_predicted), torch.zeros_like(y_test_PINN_predicted)
+        u_indicator_test[:, 0] = 1.0 # output column u selected
+        v_indicator_test[:, 1] = 1.0 # output column v selected
+
+        PINN_test_div = (torch.autograd.grad(
+            outputs = y_test_PINN_predicted,
+            inputs = x_test_grad,
+            grad_outputs = u_indicator_test,
+            create_graph = True
+        )[0][:, 0] + torch.autograd.grad(
+            outputs = y_test_PINN_predicted,
+            inputs = x_test_grad,
+            grad_outputs = v_indicator_test,
+            create_graph = True
+        )[0][:, 1]).abs().sum().item() # v with respect to y
 
         # Compute metrics (convert tensors to float)
         dfNN_train_RMSE = compute_RMSE(y_train, y_train_PINN_predicted.cpu()).item()
@@ -289,9 +360,13 @@ for sim_name, sim_func in simulations.items():
     # Compute mean and standard deviation for each metric
     mean_std_df = df.iloc[:, 1:].agg(["mean", "std"])  # Exclude "Run" column
 
+    # Add sim_name and model_name as columns in the DataFrame _metrics_summary
+    mean_std_df["sim name"] = sim_name
+    mean_std_df["model name"] = model_name
+
     # Save results to CSV
     results_file = os.path.join(RESULTS_DIR, f"{sim_name}_{model_name}_metrics_per_run.csv")
-    df.to_csv(results_file, index = False)
+    df.to_csv(results_file, index = False, float_format = "%.5f")
     print(f"\nResults saved to {results_file}")
 
     # Save mean and standard deviation to CSV
