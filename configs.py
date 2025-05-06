@@ -16,6 +16,7 @@ BATCH_SIZE = 32
 
 # Discretization for test data
 N_SIDE = 20
+N_SIDE_VIS = 15
 
 # Paths
 DFNN_RESULTS_DIR = "results/dfNN"
@@ -24,12 +25,13 @@ HNN_RESULTS_DIR = "results/HNN"
 PINN_RESULTS_DIR = "results/PINN"
 DFGP_RESULTS_DIR = "results/dfGP"
 GP_RESULTS_DIR = "results/GP"
-DFGPDFNN_RESULTS_DIR = "results/dfGPdfNN"
+DFNGP_RESULTS_DIR = "results/dfNGP"
 
 # FOR PINN ONLY
 W_PINN_DIV_WEIGHT = 0.3 # 0.5 before
 
 # FOR GPs ONLY
+SIGMA_N_RANGE = (0.02, 0.07) # Initialisation range
 SIGMA_F_RANGE = (1.5, 2.0) # Initialisation range
 L_RANGE = (0.3, 0.8) # Example range for each lengthscale
 
@@ -39,4 +41,7 @@ B_OFFDIAGONAL_RANGE = (-0.2, 0.5)  # Example range for B off-diagonal
 
 # we do not need as many
 GP_MAX_NUM_EPOCHS = 1000
+
+# noise parameter for training: independent Gaussian noise
+STD_GAUSSIAN_NOISE = 0.02 # variance is 0.0004
 

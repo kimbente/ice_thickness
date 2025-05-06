@@ -180,7 +180,7 @@ def simulate_detailed_convergence(x_inputs):
         1.2,
         ] 
 
-    solid_ugm_weight = 0.5
+    ugm_weight = 0.5
     
     ###
     x_inputs = x_inputs.requires_grad_() # Set requires_grad to True for gradients i.e. to calculate the curl
@@ -197,7 +197,7 @@ def simulate_detailed_convergence(x_inputs):
     bls = get_directed_bls_long(x_inputs, angle_degree = 90) # shape: (n)
 
     # stream function: weighted sum of the BLS and UGM
-    psi = combine_bls_and_ugm(bls, ugm, ugm_weight = solid_ugm_weight) # shape: (n)
+    psi = combine_bls_and_ugm(bls, ugm, ugm_weight = ugm_weight) # shape: (n)
 
     psi_vector_field = get_vector_field_from_stream_long(x_inputs, psi) # shape: (n, 2)
 
@@ -233,7 +233,7 @@ def simulate_detailed_deflection(x_inputs):
         1.0
         ] 
 
-    solid_ugm_weight = 0.2
+    ugm_weight = 0.2
     
     ###
     x_inputs = x_inputs.requires_grad_() # Set requires_grad to True for gradients i.e. to calculate the curl
@@ -250,7 +250,7 @@ def simulate_detailed_deflection(x_inputs):
     bls = get_directed_bls_long(x_inputs, angle_degree = 90) # shape: (n)
 
     # stream function: weighted sum of the BLS and UGM
-    psi = combine_bls_and_ugm(bls, ugm, ugm_weight = solid_ugm_weight) # shape: (n)
+    psi = combine_bls_and_ugm(bls, ugm, ugm_weight = ugm_weight) # shape: (n)
 
     psi_vector_field = get_vector_field_from_stream_long(x_inputs, psi) # shape: (n, 2)
 
@@ -286,7 +286,7 @@ def simulate_detailed_curve(x_inputs):
         -1.0
         ] 
 
-    solid_ugm_weight = 0.5
+    ugm_weight = 0.5
     
     ###
     x_inputs = x_inputs.requires_grad_() # Set requires_grad to True for gradients i.e. to calculate the curl
@@ -303,7 +303,7 @@ def simulate_detailed_curve(x_inputs):
     bls = get_directed_bls_long(x_inputs, angle_degree = 90) # shape: (n)
 
     # stream function: weighted sum of the BLS and UGM
-    psi = combine_bls_and_ugm(bls, ugm, ugm_weight = solid_ugm_weight) # shape: (n)
+    psi = combine_bls_and_ugm(bls, ugm, ugm_weight = ugm_weight) # shape: (n)
 
     psi_vector_field = get_vector_field_from_stream_long(x_inputs, psi) # shape: (n, 2)
 
@@ -342,7 +342,7 @@ def simulate_detailed_ridges(x_inputs):
         0.2
         ] 
 
-    solid_ugm_weight = 0.1
+    ugm_weight = 0.1
     
     ###
     x_inputs = x_inputs.requires_grad_() # Set requires_grad to True for gradients i.e. to calculate the curl
@@ -359,7 +359,7 @@ def simulate_detailed_ridges(x_inputs):
     bls = (x_inputs[:, 0] + 0.2 * x_inputs[:, 1])**3 # shape: (n)
                           
     # stream function: weighted sum of the BLS and UGM
-    psi = combine_bls_and_ugm(bls, ugm, ugm_weight = solid_ugm_weight) # shape: (n)
+    psi = combine_bls_and_ugm(bls, ugm, ugm_weight = ugm_weight) # shape: (n)
 
     psi_vector_field = get_vector_field_from_stream_long(x_inputs, psi) # shape: (n, 2)
 
@@ -398,7 +398,7 @@ def simulate_detailed_branching(x_inputs):
         -0.03
         ] 
 
-    solid_ugm_weight = 0.2
+    ugm_weight = 0.2
     
     ###
     x_inputs = x_inputs.requires_grad_() # Set requires_grad to True for gradients i.e. to calculate the curl
@@ -415,7 +415,7 @@ def simulate_detailed_branching(x_inputs):
     bls = get_directed_bls_long(x_inputs, angle_degree = 1) # shape: (n)
 
     # stream function: weighted sum of the BLS and UGM
-    psi = combine_bls_and_ugm(bls, ugm, ugm_weight = solid_ugm_weight) # shape: (n)
+    psi = combine_bls_and_ugm(bls, ugm, ugm_weight = ugm_weight) # shape: (n)
 
     psi_vector_field = get_vector_field_from_stream_long(x_inputs, psi) # shape: (n, 2)
 
@@ -424,3 +424,51 @@ def simulate_detailed_branching(x_inputs):
     vector_field = psi_vector_field * 0.1 + simulated_vector_field # torch.Size([n, 2])
 
     return vector_field.detach().clone()
+
+def simulate_detailed_edge(x_inputs):
+    # Purely constructed from psi
+    # sigmoid for stronger edge
+
+    list_of_mus = [
+        torch.tensor([0.15, 0.5]), # first diagonal riffle
+        torch.tensor([0.7, 0.9]), # top right deterrent
+        torch.tensor([0.5, 0.5]), # big central diagonal
+        torch.tensor([0.8, 0.4]), # bottom right negative
+        ]
+
+    list_of_sigmas = [
+        torch.tensor([[0.003, 0.0], [0.005, 0.003]]), 
+        torch.tensor([[0.02, 0.001], [0.0, 0.01]]),
+        torch.tensor([[0.006, 0.0], [0.008, 0.004]]), # diag
+        torch.tensor([[0.006, 0.004], [0.002, 0.006]]),
+        ]
+
+    list_of_weights = [
+        0.005, 
+        0.1,
+        0.02,
+        -0.01
+        ] 
+    
+    ugm_weight = 0.1
+    
+    x_inputs = x_inputs.requires_grad_() # Set requires_grad to True for gradients i.e. to calculate the curl
+    
+    ugm = compose_unnormalised_gaussian_mixture_long(
+        x_inputs,
+        list_of_mus,
+        list_of_sigmas,
+        list_of_weights
+    )
+
+    # baseline stream with sigmoid to make it more pronounced
+    bls = torch.sigmoid(((get_directed_bls_long(x_inputs, angle_degree = 100)) * 6) - 4)
+    
+    # stream function
+    psi = combine_bls_and_ugm(bls, ugm, ugm_weight)
+
+    vector_field = get_vector_field_from_stream_long(x_inputs, psi)
+
+    return vector_field.detach().clone()
+
+    

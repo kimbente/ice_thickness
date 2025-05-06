@@ -52,14 +52,14 @@ The following shows the ice flux over Byrd glacier, Antarctica overlaid on MODIS
     - Plot both loss components!
     - torch.load weights only is problematic
 - **run_dfGP_experiments**
-    - no batch training but epochs are over all data at one
+    - no batch training but epochs are over all data at once
     - NLML convergence is much smoother than NN learning
-    - larger learning rate
+    - Do we need a larger learning rate?
     - NLL: sparse or full (unstable numerically)
-    - memory issue
 - **run_GP_experiments.py**
     - B is initailise in a symmetric structure which is not needed however
     - Results are a bit too good given all the data
+    - Sigma_f doesn't contain the info for B
 - **run_dfGPdfNN_experiments.py**
     - epochs exhausted
 
