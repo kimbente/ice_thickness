@@ -4,7 +4,7 @@ from metrics import compute_RMSE, compute_MAE
 from utils import set_seed
 
 # Global file for training configs
-from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, LEARNING_RATE, WEIGHT_DECAY, BATCH_SIZE, N_SIDE, DFNN_FULLMATRIX_RESULTS_DIR, DFNN_LEARNING_RATE
+from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, LEARNING_RATE, WEIGHT_DECAY, BATCH_SIZE, N_SIDE, DFNN_FULLMATRIX_RESULTS_DIR, DFNN_LEARNING_RATE, STD_GAUSSIAN_NOISE
 
 import torch
 from torch.func import vmap, jacfwd
@@ -33,6 +33,7 @@ model_name = "dfNN_fullmatrix"
 
 # Import all simulation functions
 from simulate import (
+    simulate_detailed_edge,
     simulate_detailed_convergence,
     simulate_detailed_deflection,
     simulate_detailed_curve,
@@ -42,11 +43,12 @@ from simulate import (
 
 # Define simulations as a dictionary with names as keys to function objects
 simulations = {
-    "convergence_dtl": simulate_detailed_convergence,
-    "deflection_dtl": simulate_detailed_deflection,
-    "curve_dtl": simulate_detailed_curve,
-    "ridges_dtl": simulate_detailed_ridges,
-    "branching_dtl": simulate_detailed_branching,
+    "edge": simulate_detailed_edge,
+    "curve": simulate_detailed_curve,
+    "deflection": simulate_detailed_deflection,
+    "ridges": simulate_detailed_ridges,
+    "branching": simulate_detailed_branching,
+    "convergence": simulate_detailed_convergence,
 }
 
 # Load training inputs
@@ -138,8 +140,11 @@ for sim_name, sim_func in simulations.items():
     for run in range(NUM_RUNS):
         print(f"\n--- Training Run {run + 1}/{NUM_RUNS} ---")
 
+        # Add Noise before data loader is defined
+        y_train_noisy = y_train + (torch.randn(y_train.shape, device = device) * STD_GAUSSIAN_NOISE)
+
         # Convert to DataLoader for batching
-        dataset = TensorDataset(x_train, y_train)
+        dataset = TensorDataset(x_train, y_train_noisy)
         dataloader = DataLoader(dataset, batch_size = BATCH_SIZE, shuffle = True)
 
         # Initialise fresh model
@@ -265,7 +270,7 @@ for sim_name, sim_func in simulations.items():
             inputs = x_train_grad,
             grad_outputs = v_indicator_train,
             create_graph = True
-        )[0][:, 1]).abs().sum().item() # v with respect to y
+        )[0][:, 1]).abs().mean().item() # v with respect to y
 
         # Divergence
         # autograd divergence test
@@ -283,7 +288,7 @@ for sim_name, sim_func in simulations.items():
             inputs = x_test_grad,
             grad_outputs = v_indicator_test,
             create_graph = True
-        )[0][:, 1]).abs().sum().item() # v with respect to y
+        )[0][:, 1]).abs().mean().item() # v with respect to y
 
         # Compute metrics (convert tensors to float)
         dfNN_train_RMSE = compute_RMSE(y_train, y_train_dfNN_predicted.cpu()).item()
@@ -303,8 +308,8 @@ for sim_name, sim_func in simulations.items():
     df = pd.DataFrame(
         simulation_results, 
         columns = ["Run", 
-                   "Train RMSE", "Train MAE", "Train Divergence",
-                   "Test RMSE", "Test MAE", "Test Divergence"])
+                   "Train RMSE", "Train MAE", "Train MAD",
+                   "Test RMSE", "Test MAE", "Test MAD"])
 
     # Compute mean and standard deviation for each metric
     mean_std_df = df.iloc[:, 1:].agg(["mean", "std"])  # Exclude "Run" column

@@ -1,10 +1,9 @@
 from GP_models import GP_predict
-# from simulate import simulate_convergence, simulate_branching, simulate_ridge, simulate_merge, simulate_deflection
 from utils import set_seed
 from metrics import compute_RMSE, compute_NLL, compute_MAE
 
 # Global file for training configs
-from configs import PATIENCE, GP_MAX_NUM_EPOCHS, NUM_RUNS, GP_LEARNING_RATE, WEIGHT_DECAY, N_SIDE, GP_RESULTS_DIR, L_RANGE, B_DIAGONAL_RANGE, B_OFFDIAGONAL_RANGE
+from configs import PATIENCE, GP_MAX_NUM_EPOCHS, NUM_RUNS, GP_LEARNING_RATE, WEIGHT_DECAY, N_SIDE, GP_RESULTS_DIR, SIGMA_N_RANGE, L_RANGE, B_DIAGONAL_RANGE, B_OFFDIAGONAL_RANGE, STD_GAUSSIAN_NOISE
 
 import torch
 import torch.nn as nn
@@ -32,6 +31,7 @@ model_name = "GP"
 
 # Import all simulation functions
 from simulate import (
+    simulate_detailed_edge,
     simulate_detailed_convergence,
     simulate_detailed_deflection,
     simulate_detailed_curve,
@@ -41,11 +41,12 @@ from simulate import (
 
 # Define simulations as a dictionary with names as keys to function objects
 simulations = {
-    "convergence_dtl": simulate_detailed_convergence,
-    "deflection_dtl": simulate_detailed_deflection,
-    "curve_dtl": simulate_detailed_curve,
-    "ridges_dtl": simulate_detailed_ridges,
-    "branching_dtl": simulate_detailed_branching,
+    "edge": simulate_detailed_edge,
+    "curve": simulate_detailed_curve,
+    "deflection": simulate_detailed_deflection,
+    "ridges": simulate_detailed_ridges,
+    "branching": simulate_detailed_branching,
+    "convergence": simulate_detailed_convergence,
 }
 
 # Load training inputs
@@ -141,7 +142,9 @@ for sim_name, sim_func in simulations.items():
         print(f"\n--- Training Run {run + 1}/{NUM_RUNS} ---")
 
         # Sample from uniform distributions to initialise hyperparameters
-        sigma_n = torch.tensor([0.05], requires_grad = False).to(device) # no optimisation for noise, no sampling
+        # sigma_n = torch.tensor([0.05], requires_grad = False).to(device) # no optimisation for noise, no sampling
+        sigma_n = nn.Parameter(torch.empty(1, device = device).uniform_( * SIGMA_N_RANGE)) # Trainable
+
         sigma_f = torch.tensor([1.0], requires_grad = False).to(device) # Fixed because we tune B (and sigma_f would just scale B)
         # Initialising l from a uniform distribution as nn.Param to avoid leaf variable error
         l = nn.Parameter(torch.empty(2, device = device).uniform_( * L_RANGE))
@@ -163,13 +166,14 @@ for sim_name, sim_func in simulations.items():
         # We don't need a criterion either
 
         # Define optimizer (e.g., AdamW)
-        optimizer = optim.AdamW([l, B], lr = LEARNING_RATE, weight_decay = WEIGHT_DECAY)
+        optimizer = optim.AdamW([sigma_n, l, B], lr = LEARNING_RATE, weight_decay = WEIGHT_DECAY)
 
         # Initialise tensors to store losses over epochs (for convergence plot)
         epoch_train_NLML_losses = torch.zeros(MAX_NUM_EPOCHS)
         epoch_train_RMSE_losses = torch.zeros(MAX_NUM_EPOCHS)
         epoch_test_RMSE_losses = torch.zeros(MAX_NUM_EPOCHS)
 
+        epoch_sigma_n = torch.zeros(MAX_NUM_EPOCHS)
         epoch_sigma_f = torch.zeros(MAX_NUM_EPOCHS)
         epoch_l1 = torch.zeros(MAX_NUM_EPOCHS)
         epoch_l2 = torch.zeros(MAX_NUM_EPOCHS)
@@ -177,6 +181,9 @@ for sim_name, sim_func in simulations.items():
         # Early stopping variables
         best_loss = float('inf')
         epochs_no_improve = 0
+
+        # Noise
+        y_train_noisy = y_train + (torch.randn(y_train.shape, device = device) * STD_GAUSSIAN_NOISE)
 
         ### LOOP OVER EPOCHS ###
         print("\nStart Training")
@@ -186,7 +193,7 @@ for sim_name, sim_func in simulations.items():
             if run == 0:
                 mean_pred_train, _, lml_train = GP_predict(
                         x_train,
-                        y_train,
+                        y_train_noisy,
                         x_train, # have predictions for training data again
                         [sigma_n, sigma_f, l, B], # initial hyperparameters
                         # no mean
@@ -201,7 +208,7 @@ for sim_name, sim_func in simulations.items():
                 # Compute test loss for loss convergence plot
                 mean_pred_test, _, _ = GP_predict(
                         x_train,
-                        y_train,
+                        y_train_noisy,
                         x_test.to(device), # have predictions for training data again
                         [sigma_n, sigma_f, l, B], # initial hyperparameters
                         # no mean
@@ -215,6 +222,7 @@ for sim_name, sim_func in simulations.items():
                 # epoch_test_NLML_losses[epoch] =  # train NLML
                 epoch_test_RMSE_losses[epoch] = test_RMSE
 
+                epoch_sigma_n[epoch] = sigma_n
                 epoch_sigma_f[epoch] = sigma_f
                 epoch_l1[epoch] = l[0]
                 epoch_l2[epoch] = l[1]
@@ -225,7 +233,7 @@ for sim_name, sim_func in simulations.items():
                 # Save compute after run 1
                 _, _, lml_train = GP_predict(
                         x_train,
-                        y_train,
+                        y_train_noisy,
                         x_train[0:2], # have predictions for training data again
                         [sigma_n, sigma_f, l, B], # initial hyperparameters
                         # no mean
@@ -262,7 +270,7 @@ for sim_name, sim_func in simulations.items():
 
         mean_pred_test, covar_pred_test, _ = GP_predict(
                      x_train,
-                     y_train,
+                     y_train_noisy,
                      x_test_grad,
                      [sigma_n, sigma_f, l, B], # optimal hypers
                      # no mean
@@ -292,6 +300,7 @@ for sim_name, sim_func in simulations.items():
                 'Train Loss NLML': epoch_train_NLML_losses.tolist(),
                 'Train Loss RMSE': epoch_train_RMSE_losses.tolist(),
                 'Test Loss RMSE': epoch_test_RMSE_losses.tolist(),
+                'Sigma_n': epoch_sigma_n.tolist(),
                 'Sigma_f': epoch_sigma_f.tolist(),
                 'l1': epoch_l1.tolist(),
                 'l2': epoch_l2.tolist()
@@ -299,11 +308,32 @@ for sim_name, sim_func in simulations.items():
             
             df_losses.to_csv(f"{RESULTS_DIR}/{sim_name}_{model_name}_losses_over_epochs.csv", index = False, float_format = "%.5f") # reduce to 5 decimals
 
+            # #(4) Save divergence field
+            u_indicator_test, v_indicator_test = torch.zeros_like(mean_pred_test), torch.zeros_like(mean_pred_test)
+            u_indicator_test[:, 0] = 1.0 # output column u selected
+            v_indicator_test[:, 1] = 1.0 # output column v selected
+
+            # divergence field (positive and negative divergences)
+            GP_test_div_field = (torch.autograd.grad(
+                outputs = mean_pred_test,
+                inputs = x_test_grad,
+                grad_outputs = u_indicator_test,
+                create_graph = True
+            )[0][:, 0] + torch.autograd.grad(
+                outputs = mean_pred_test,
+                inputs = x_test_grad,
+                grad_outputs = v_indicator_test,
+                create_graph = True
+            )[0][:, 1])
+
+            # Save as test predition divergence field
+            torch.save(GP_test_div_field, f"{RESULTS_DIR}/{sim_name}_{model_name}_test_prediction_divergence_field.pt")
+
         x_train_grad = x_train.to(device).requires_grad_(True)
 
         mean_pred_train, covar_pred_train, _ = GP_predict(
                      x_train,
-                     y_train,
+                     y_train_noisy,
                      x_train_grad,
                      [sigma_n, sigma_f, l, B], # optimal hypers
                      # no mean
@@ -325,7 +355,7 @@ for sim_name, sim_func in simulations.items():
             inputs = x_test_grad,
             grad_outputs = v_indicator_test,
             create_graph = True
-        )[0][:, 1]).abs().sum().item() # v with respect to y
+        )[0][:, 1]).abs().mean().item() # v with respect to y
 
         # autograd div train
         u_indicator_train, v_indicator_train = torch.zeros_like(mean_pred_train), torch.zeros_like(mean_pred_train)
@@ -342,7 +372,7 @@ for sim_name, sim_func in simulations.items():
             inputs = x_train_grad,
             grad_outputs = v_indicator_train,
             create_graph = True
-        )[0][:, 1]).abs().sum().item() # v with respect to y
+        )[0][:, 1]).abs().mean().item() # v with respect to y
 
         # Compute metrics (convert tensors to float) for every run's tuned model
         GP_train_RMSE = compute_RMSE(y_train, mean_pred_train).item()
@@ -366,8 +396,8 @@ for sim_name, sim_func in simulations.items():
     df = pd.DataFrame(
         simulation_results, 
         columns = ["Run", 
-                   "Train RMSE", "Train MAE", "Train NLL", "Train Divergence",
-                   "Test RMSE", "Test MAE", "Test NLL", "Test Divergence"])
+                   "Train RMSE", "Train MAE", "Train NLL", "Train MAD",
+                   "Test RMSE", "Test MAE", "Test NLL", "Test MAD"])
 
     # Compute mean and standard deviation for each metric
     mean_std_df = df.iloc[:, 1:].agg(["mean", "std"])  # Exclude "Run" column

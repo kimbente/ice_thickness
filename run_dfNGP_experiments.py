@@ -1,12 +1,11 @@
 from GP_models import GP_predict
 from archive.NN_models_HNN_dfNN_fullmatrix import dfNN_for_vmap
-# from simulate import simulate_convergence, simulate_branching, simulate_ridge, simulate_merge, simulate_deflection
 from metrics import compute_RMSE, compute_MAE, compute_NLL, compute_NLL_full
 from utils import set_seed
 import gc # garbage collection
 
 # Global file for training configs
-from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, GP_LEARNING_RATE, WEIGHT_DECAY, N_SIDE, DFGPDFNN_RESULTS_DIR, SIGMA_F_RANGE, L_RANGE
+from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, GP_LEARNING_RATE, WEIGHT_DECAY, N_SIDE, DFNGP_RESULTS_DIR, SIGMA_N_RANGE, SIGMA_F_RANGE, L_RANGE,  STD_GAUSSIAN_NOISE
 
 import torch
 import torch.nn as nn
@@ -27,7 +26,7 @@ print('Using device:', device)
 print()
 
 # stick to covention to keep df lower case
-model_name = "dfGPdfNN"
+model_name = "dfNGP"
 
 #########################
 ### x_train & y_train ###
@@ -35,6 +34,7 @@ model_name = "dfGPdfNN"
 
 # Import all simulation functions
 from simulate import (
+    simulate_detailed_edge,
     simulate_detailed_convergence,
     simulate_detailed_deflection,
     simulate_detailed_curve,
@@ -42,13 +42,14 @@ from simulate import (
     simulate_detailed_branching,
 )
 
-# Define simulations as a dictionary with names as keys to function objects
+# Define the simulation functions in a dictionary
 simulations = {
-    "convergence_dtl": simulate_detailed_convergence,
-    "deflection_dtl": simulate_detailed_deflection,
-    "curve_dtl": simulate_detailed_curve,
-    "ridges_dtl": simulate_detailed_ridges,
-    "branching_dtl": simulate_detailed_branching,
+    "edge": simulate_detailed_edge,
+    "curve": simulate_detailed_curve,
+    "deflection": simulate_detailed_deflection,
+    "ridges": simulate_detailed_ridges,
+    "branching": simulate_detailed_branching,
+    "convergence": simulate_detailed_convergence,
 }
 
 # Load training inputs
@@ -124,8 +125,8 @@ WEIGHT_DECAY = WEIGHT_DECAY
 # BATCH_SIZE = BATCH_SIZE
 
 # Ensure the results folder exists
-RESULTS_DIR = DFGPDFNN_RESULTS_DIR
-RESULTS_DIR = "results/dfGPdfNN"
+RESULTS_DIR = DFNGP_RESULTS_DIR
+RESULTS_DIR = "results/dfNGP"
 os.makedirs(RESULTS_DIR, exist_ok = True)
 
 ### LOOP OVER SIMULATIONS ###
@@ -151,8 +152,9 @@ for sim_name, sim_func in simulations.items():
         print(f"\n--- Training Run {run + 1}/{NUM_RUNS} ---")
 
         # Sample from uniform distributions to initialise hyperparameters
-        sigma_n = torch.tensor([0.05], requires_grad = False).to(device) # no optimisation for noise, no sampling
+        # sigma_n = torch.tensor([0.05], requires_grad = False).to(device) # no optimisation for noise, no sampling
         # nn.Parameter avoids the leaf problem
+        sigma_n = nn.Parameter(torch.empty(1, device = device).uniform_( * SIGMA_N_RANGE)) # Trainable
         sigma_f = nn.Parameter(torch.empty(1, device = device).uniform_( * SIGMA_F_RANGE)) # Trainable
         l = nn.Parameter(torch.empty(2, device = device).uniform_( * L_RANGE)) # Trainable
         
@@ -163,13 +165,14 @@ for sim_name, sim_func in simulations.items():
         # We don't need a criterion either
 
         # Define optimizer (e.g., AdamW)
-        optimizer = optim.AdamW(list(dfNN_mean_model.parameters()) + [sigma_f, l], lr = LEARNING_RATE, weight_decay = WEIGHT_DECAY)
+        optimizer = optim.AdamW(list(dfNN_mean_model.parameters()) + [sigma_n, sigma_f, l], lr = LEARNING_RATE, weight_decay = WEIGHT_DECAY)
 
         # Initialise tensors to store losses over epochs (for convergence plot)
         epoch_train_NLML_losses = torch.zeros(MAX_NUM_EPOCHS)
         epoch_train_RMSE_losses = torch.zeros(MAX_NUM_EPOCHS)
         epoch_test_RMSE_losses = torch.zeros(MAX_NUM_EPOCHS)
 
+        epoch_sigma_n = torch.zeros(MAX_NUM_EPOCHS)
         epoch_sigma_f = torch.zeros(MAX_NUM_EPOCHS)
         epoch_l1 = torch.zeros(MAX_NUM_EPOCHS)
         epoch_l2 = torch.zeros(MAX_NUM_EPOCHS)
@@ -177,6 +180,9 @@ for sim_name, sim_func in simulations.items():
         # Early stopping variables
         best_loss = float('inf')
         epochs_no_improve = 0
+
+        # Noise
+        y_train_noisy = y_train + (torch.randn(y_train.shape, device = device) * STD_GAUSSIAN_NOISE)
 
         ### LOOP OVER EPOCHS ###
         print("\nStart Training")
@@ -188,7 +194,7 @@ for sim_name, sim_func in simulations.items():
             if run == 0:
                 mean_pred_train, _, lml_train = GP_predict(
                         x_train,
-                        y_train,
+                        y_train_noisy,
                         x_train, # have predictions for training data again
                         [sigma_n, sigma_f, l], # initial hyperparameters
                         dfNN_mean_model, # vmap?
@@ -203,7 +209,7 @@ for sim_name, sim_func in simulations.items():
                 # Compute test loss for loss convergence plot
                 mean_pred_test, _, _ = GP_predict(
                         x_train,
-                        y_train,
+                        y_train_noisy,
                         x_test.to(device), # have predictions for training data again
                         [sigma_n, sigma_f, l], # initial hyperparameters
                         dfNN_mean_model,
@@ -217,6 +223,7 @@ for sim_name, sim_func in simulations.items():
                 # epoch_test_NLML_losses[epoch] =  # train NLML
                 epoch_test_RMSE_losses[epoch] = test_RMSE
 
+                epoch_sigma_n[epoch] = sigma_n
                 epoch_sigma_f[epoch] = sigma_f
                 epoch_l1[epoch] = l[0]
                 epoch_l2[epoch] = l[1]
@@ -227,7 +234,7 @@ for sim_name, sim_func in simulations.items():
                 # Save compute after run 1
                 _, _, lml_train = GP_predict(
                         x_train,
-                        y_train,
+                        y_train_noisy,
                         x_train[0:2], # have predictions for training data again
                         [sigma_n, sigma_f, l], # initial hyperparameters
                         dfNN_mean_model,
@@ -266,7 +273,7 @@ for sim_name, sim_func in simulations.items():
 
         mean_pred_test, covar_pred_test, _ = GP_predict(
                      x_train,
-                     y_train,
+                     y_train_noisy,
                      x_test_grad,
                      [sigma_n, sigma_f, l], # optimal hypers
                      dfNN_mean_model,
@@ -295,18 +302,40 @@ for sim_name, sim_func in simulations.items():
                 'Train Loss NLML': epoch_train_NLML_losses.tolist(),
                 'Train Loss RMSE': epoch_train_RMSE_losses.tolist(),
                 'Test Loss RMSE': epoch_test_RMSE_losses.tolist(),
+                'Sigma_n': epoch_sigma_n.tolist(),
                 'Sigma_f': epoch_sigma_f.tolist(),
                 'l1': epoch_l1.tolist(),
                 'l2': epoch_l2.tolist()
                 })
             
             df_losses.to_csv(f"{RESULTS_DIR}/{sim_name}_{model_name}_losses_over_epochs.csv", index = False, float_format = "%.5f")
+            
+            #(4) Save divergence field
+            u_indicator_test, v_indicator_test = torch.zeros_like(mean_pred_test), torch.zeros_like(mean_pred_test)
+            u_indicator_test[:, 0] = 1.0 # output column u selected
+            v_indicator_test[:, 1] = 1.0 # output column v selected
+
+            # divergence field (positive and negative divergences)
+            dfNGP_test_div_field = (torch.autograd.grad(
+                outputs = mean_pred_test,
+                inputs = x_test_grad,
+                grad_outputs = u_indicator_test,
+                create_graph = True
+            )[0][:, 0] + torch.autograd.grad(
+                outputs = mean_pred_test,
+                inputs = x_test_grad,
+                grad_outputs = v_indicator_test,
+                create_graph = True
+            )[0][:, 1])
+
+            # Save as test predition divergence field
+            torch.save(dfNGP_test_div_field, f"{RESULTS_DIR}/{sim_name}_{model_name}_test_prediction_divergence_field.pt")
 
         x_train_grad = x_train.to(device).requires_grad_()
 
         mean_pred_train, covar_pred_train, _ = GP_predict(
                      x_train,
-                     y_train,
+                     y_train_noisy,
                      x_train_grad,
                      [sigma_n, sigma_f, l], # optimal hypers
                      dfNN_mean_model,
@@ -319,7 +348,7 @@ for sim_name, sim_func in simulations.items():
         u_indicator_test[:, 0] = 1.0 # output column u selected
         v_indicator_test[:, 1] = 1.0 # output column v selected
 
-        dfGPdfNN_test_div = (torch.autograd.grad(
+        dfNGP_test_div = (torch.autograd.grad(
             outputs = mean_pred_test,
             inputs = x_test_grad,
             grad_outputs = u_indicator_test,
@@ -329,14 +358,14 @@ for sim_name, sim_func in simulations.items():
             inputs = x_test_grad,
             grad_outputs = v_indicator_test,
             create_graph = True
-        )[0][:, 1]).abs().sum().item() # v with respect to y
+        )[0][:, 1]).abs().mean().item() # v with respect to y
 
         # autograd div train
         u_indicator_train, v_indicator_train = torch.zeros_like(mean_pred_train), torch.zeros_like(mean_pred_train)
         u_indicator_train[:, 0] = 1.0 # output column u selected
         v_indicator_train[:, 1] = 1.0 # output column v selected
 
-        dfGPdfNN_train_div = (torch.autograd.grad(
+        dfNGP_train_div = (torch.autograd.grad(
             outputs = mean_pred_train,
             inputs = x_train_grad,
             grad_outputs = u_indicator_train,
@@ -346,22 +375,22 @@ for sim_name, sim_func in simulations.items():
             inputs = x_train_grad,
             grad_outputs = v_indicator_train,
             create_graph = True
-        )[0][:, 1]).abs().sum().item() # v with respect to y
+        )[0][:, 1]).abs().mean().item() # v with respect to y
 
         # Compute metrics (convert tensors to float) for every run's tuned model
-        dfGPdfNN_train_RMSE = compute_RMSE(y_train, mean_pred_train).item()
-        dfGPdfNN_train_MAE = compute_MAE(y_train, mean_pred_train).item()
-        dfGPdfNN_train_NLL = compute_NLL_full(y_train, mean_pred_train, covar_pred_train).item()
+        dfNGP_train_RMSE = compute_RMSE(y_train, mean_pred_train).item()
+        dfNGP_train_MAE = compute_MAE(y_train, mean_pred_train).item()
+        dfNGP_train_NLL = compute_NLL_full(y_train, mean_pred_train, covar_pred_train).item()
 
-        dfGPdfNN_test_RMSE = compute_RMSE(y_test, mean_pred_test).item()
-        dfGPdfNN_test_MAE = compute_MAE(y_test, mean_pred_test).item()
+        dfNGP_test_RMSE = compute_RMSE(y_test, mean_pred_test).item()
+        dfNGP_test_MAE = compute_MAE(y_test, mean_pred_test).item()
         # full has cuased issues
-        dfGPdfNN_test_NLL = compute_NLL(y_test, mean_pred_test, covar_pred_test).item()
+        dfNGP_test_NLL = compute_NLL(y_test, mean_pred_test, covar_pred_test).item()
 
         simulation_results.append([
             run + 1,
-            dfGPdfNN_train_RMSE, dfGPdfNN_train_MAE, dfGPdfNN_train_NLL, dfGPdfNN_train_div,
-            dfGPdfNN_test_RMSE, dfGPdfNN_test_MAE, dfGPdfNN_test_NLL, dfGPdfNN_test_div
+            dfNGP_train_RMSE, dfNGP_train_MAE, dfNGP_train_NLL, dfNGP_train_div,
+            dfNGP_test_RMSE, dfNGP_test_MAE, dfNGP_test_NLL, dfNGP_test_div
         ])
 
     ### FINISH LOOP OVER RUNS ###
@@ -369,8 +398,8 @@ for sim_name, sim_func in simulations.items():
     df = pd.DataFrame(
         simulation_results, 
         columns = ["Run", 
-                   "Train RMSE", "Train MAE", "Train NLL", "Train Divergence",
-                   "Test RMSE", "Test MAE", "Test NLL", "Test Divergence"])
+                   "Train RMSE", "Train MAE", "Train NLL", "Train MAD",
+                   "Test RMSE", "Test MAE", "Test NLL", "Test MAD"])
 
     # Compute mean and standard deviation for each metric
     mean_std_df = df.iloc[:, 1:].agg(["mean", "std"])  # Exclude "Run" column

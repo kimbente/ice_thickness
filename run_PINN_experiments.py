@@ -4,7 +4,7 @@ from metrics import compute_RMSE, compute_MAE
 from utils import set_seed
 
 # Global file for training configs
-from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, LEARNING_RATE, WEIGHT_DECAY, BATCH_SIZE, N_SIDE, PINN_RESULTS_DIR, W_PINN_DIV_WEIGHT, PINN_LEARNING_RATE
+from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, LEARNING_RATE, WEIGHT_DECAY, BATCH_SIZE, N_SIDE, PINN_RESULTS_DIR, W_PINN_DIV_WEIGHT, PINN_LEARNING_RATE, STD_GAUSSIAN_NOISE
 
 import torch
 from torch.func import vmap
@@ -33,6 +33,7 @@ model_name = "PINN"
 
 # Import all simulation functions
 from simulate import (
+    simulate_detailed_edge,
     simulate_detailed_convergence,
     simulate_detailed_deflection,
     simulate_detailed_curve,
@@ -42,11 +43,12 @@ from simulate import (
 
 # Define simulations as a dictionary with names as keys to function objects
 simulations = {
-    "convergence_dtl": simulate_detailed_convergence,
-    "deflection_dtl": simulate_detailed_deflection,
-    "curve_dtl": simulate_detailed_curve,
-    "ridges_dtl": simulate_detailed_ridges,
-    "branching_dtl": simulate_detailed_branching,
+    "edge": simulate_detailed_edge,
+    "curve": simulate_detailed_curve,
+    "deflection": simulate_detailed_deflection,
+    "ridges": simulate_detailed_ridges,
+    "branching": simulate_detailed_branching,
+    "convergence": simulate_detailed_convergence,
 }
 
 # Load training inputs, not weights_only = True
@@ -142,8 +144,11 @@ for sim_name, sim_func in simulations.items():
     for run in range(NUM_RUNS):
         print(f"\n--- Training Run {run + 1}/{NUM_RUNS} ---")
 
+        # Add Noise before data loader is defined
+        y_train_noisy = y_train + (torch.randn(y_train.shape, device = device) * STD_GAUSSIAN_NOISE)
+
         # Convert to DataLoader for batching
-        dataset = TensorDataset(x_train, y_train)
+        dataset = TensorDataset(x_train, y_train_noisy)
         dataloader = DataLoader(dataset, batch_size = BATCH_SIZE, shuffle = True)
 
         # Initialise fresh model
@@ -301,6 +306,27 @@ for sim_name, sim_func in simulations.items():
             
             df_losses.to_csv(f"{RESULTS_DIR}/{sim_name}_{model_name}_losses_over_epochs.csv", index = False, float_format = "%.5f")
 
+            #(3) Save (test) divergence field
+            u_indicator_test, v_indicator_test = torch.zeros_like(y_test_PINN_predicted), torch.zeros_like(y_test_PINN_predicted)
+            u_indicator_test[:, 0] = 1.0 # output column u selected
+            v_indicator_test[:, 1] = 1.0 # output column v selected
+
+            # divergence field (positive and negative divergences)
+            PINN_test_div_field = (torch.autograd.grad(
+                outputs = y_test_PINN_predicted,
+                inputs = x_test_grad,
+                grad_outputs = u_indicator_test,
+                create_graph = True
+            )[0][:, 0] + torch.autograd.grad(
+                outputs = y_test_PINN_predicted,
+                inputs = x_test_grad,
+                grad_outputs = v_indicator_test,
+                create_graph = True
+            )[0][:, 1])
+
+            # Save as test predition divergence field
+            torch.save(PINN_test_div_field, f"{RESULTS_DIR}/{sim_name}_{model_name}_test_prediction_divergence_field.pt")
+
         # Compute Divergence (convert tensor to float)
         # Autograd divergence train
         u_indicator_train, v_indicator_train = torch.zeros_like(y_train_PINN_predicted), torch.zeros_like(y_train_PINN_predicted)
@@ -317,7 +343,7 @@ for sim_name, sim_func in simulations.items():
             inputs = x_train_grad,
             grad_outputs = v_indicator_train,
             create_graph = True
-        )[0][:, 1]).abs().sum().item() # v with respect to y
+        )[0][:, 1]).abs().mean().item() # v with respect to y
 
         # autograd div test
         u_indicator_test, v_indicator_test = torch.zeros_like(y_test_PINN_predicted), torch.zeros_like(y_test_PINN_predicted)
@@ -334,7 +360,7 @@ for sim_name, sim_func in simulations.items():
             inputs = x_test_grad,
             grad_outputs = v_indicator_test,
             create_graph = True
-        )[0][:, 1]).abs().sum().item() # v with respect to y
+        )[0][:, 1]).abs().mean().item() # v with respect to y
 
         # Compute metrics (convert tensors to float)
         dfNN_train_RMSE = compute_RMSE(y_train, y_train_PINN_predicted.cpu()).item()
@@ -354,8 +380,8 @@ for sim_name, sim_func in simulations.items():
     df = pd.DataFrame(
         simulation_results, 
         columns = ["Run", 
-                   "Train RMSE", "Train MAE", "Train Divergence",
-                   "Test RMSE", "Test MAE", "Test Divergence"])
+                   "Train RMSE", "Train MAE", "Train MAD",
+                   "Test RMSE", "Test MAE", "Test MAD"])
 
     # Compute mean and standard deviation for each metric
     mean_std_df = df.iloc[:, 1:].agg(["mean", "std"])  # Exclude "Run" column
