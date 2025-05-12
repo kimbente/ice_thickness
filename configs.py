@@ -4,14 +4,15 @@ MAX_NUM_EPOCHS = 2000  # Adjust based on training needs - check if it gets exhau
 NUM_RUNS = 10  # Number of training runs for metric evaluation
 
 LEARNING_RATE = 0.0001
-# higher LR works better for both, maybe try higher patiene
-PINN_LEARNING_RATE = 0.0001 # back to regular lr
+
+# higher LR works better for both, maybe try higher patience
+PINN_LEARNING_RATE = 0.005 # back to regular lr
 DFNN_LEARNING_RATE = 0.0001 # back to lr
 
 GP_LEARNING_RATE = 0.01
 
-# WEIGHT_DECAY = 1e-4
-WEIGHT_DECAY = 0.01  # 1e-2
+# WEIGHT_DECAY is L2 regularisation, decay because it pulls weights towards 0
+WEIGHT_DECAY = 1e-4 # don't want it too smooth 1e-5 for PINN was slighly worse
 BATCH_SIZE = 32
 
 # Discretization for test data

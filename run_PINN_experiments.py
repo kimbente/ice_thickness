@@ -136,9 +136,9 @@ for sim_name, sim_func in simulations.items():
     simulation_results = []
 
     # x_train, x_test stays the same but select y_train
-    y_train = y_train_dict[sim_name]
+    y_train = y_train_dict[sim_name].to(device)
     # select the correct y_test (PREVIOUS ERROR)
-    y_test = y_test_dict[sim_name]
+    y_test = y_test_dict[sim_name].to(device)
 
     ### LOOP OVER RUNS ###
     for run in range(NUM_RUNS):
@@ -363,11 +363,11 @@ for sim_name, sim_func in simulations.items():
         )[0][:, 1]).abs().mean().item() # v with respect to y
 
         # Compute metrics (convert tensors to float)
-        dfNN_train_RMSE = compute_RMSE(y_train, y_train_PINN_predicted.cpu()).item()
-        dfNN_train_MAE = compute_MAE(y_train, y_train_PINN_predicted.cpu()).item()
+        dfNN_train_RMSE = compute_RMSE(y_train, y_train_PINN_predicted).item()
+        dfNN_train_MAE = compute_MAE(y_train, y_train_PINN_predicted).item()
 
-        dfNN_test_RMSE = compute_RMSE(y_test, y_test_PINN_predicted.cpu()).item()
-        dfNN_test_MAE = compute_MAE(y_test, y_test_PINN_predicted.cpu()).item()
+        dfNN_test_RMSE = compute_RMSE(y_test, y_test_PINN_predicted).item()
+        dfNN_test_MAE = compute_MAE(y_test, y_test_PINN_predicted).item()
 
         # Store results in list
         simulation_results.append([

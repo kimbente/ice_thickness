@@ -115,8 +115,11 @@ MAX_NUM_EPOCHS = MAX_NUM_EPOCHS
 
 # Number of training runs for mean and std of metrics
 NUM_RUNS = NUM_RUNS
+NUM_RUNS = 1
+
 LEARNING_RATE = DFNN_LEARNING_RATE # trying 0.001 here instead
-WEIGHT_DECAY = WEIGHT_DECAY
+WEIGHT_DECAY = WEIGHT_DECAY # L2 regularisation
+WEIGHT_DECAY = 0.01
 
 BATCH_SIZE = BATCH_SIZE
 
@@ -132,9 +135,9 @@ for sim_name, sim_func in simulations.items():
     simulation_results = []
 
     # x_train is the same, select y_train
-    y_train = y_train_dict[sim_name]
+    y_train = y_train_dict[sim_name].to(device)
     # select the correct y_test (PREVIOUS ERROR)
-    y_test = y_test_dict[sim_name]
+    y_test = y_test_dict[sim_name].to(device)
 
     ### LOOP OVER RUNS ###
     for run in range(NUM_RUNS):
@@ -265,6 +268,27 @@ for sim_name, sim_func in simulations.items():
 
             print(f"Model saved to {save_path}")
 
+            #(4) Save (test) divergence field
+            u_indicator_test, v_indicator_test = torch.zeros_like(y_test_dfNN_predicted), torch.zeros_like(y_test_dfNN_predicted)
+            u_indicator_test[:, 0] = 1.0 # output column u selected
+            v_indicator_test[:, 1] = 1.0 # output column v selected
+
+            # divergence field (positive and negative divergences)
+            dfNN_test_div_field = (torch.autograd.grad(
+                outputs = y_test_dfNN_predicted,
+                inputs = x_test_grad,
+                grad_outputs = u_indicator_test,
+                create_graph = True
+            )[0][:, 0] + torch.autograd.grad(
+                outputs = y_test_dfNN_predicted,
+                inputs = x_test_grad,
+                grad_outputs = v_indicator_test,
+                create_graph = True
+            )[0][:, 1])
+
+            # Save as test predition divergence field
+            torch.save(dfNN_test_div_field, f"{RESULTS_DIR}/{sim_name}_{model_name}_test_prediction_divergence_field.pt")
+
         # autograd divergence train
         u_indicator_train, v_indicator_train = torch.zeros_like(y_train_dfNN_predicted), torch.zeros_like(y_train_dfNN_predicted)
         u_indicator_train[:, 0] = 1.0 # output column u selected
@@ -301,11 +325,11 @@ for sim_name, sim_func in simulations.items():
         )[0][:, 1]).abs().mean().item() # v with respect to y
 
         # Compute metrics (convert tensors to float)
-        dfNN_train_RMSE = compute_RMSE(y_train, y_train_dfNN_predicted.cpu()).item()
-        dfNN_train_MAE = compute_MAE(y_train, y_train_dfNN_predicted.cpu()).item()
+        dfNN_train_RMSE = compute_RMSE(y_train, y_train_dfNN_predicted).item()
+        dfNN_train_MAE = compute_MAE(y_train, y_train_dfNN_predicted).item()
 
-        dfNN_test_RMSE = compute_RMSE(y_test, y_test_dfNN_predicted.cpu()).item()
-        dfNN_test_MAE = compute_MAE(y_test, y_test_dfNN_predicted.cpu()).item()
+        dfNN_test_RMSE = compute_RMSE(y_test, y_test_dfNN_predicted).item()
+        dfNN_test_MAE = compute_MAE(y_test, y_test_dfNN_predicted).item()
 
         # Store results in list
         simulation_results.append([
