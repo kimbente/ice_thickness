@@ -33,22 +33,22 @@ model_name = "PINN"
 
 # Import all simulation functions
 from simulate import (
-    simulate_detailed_edge,
-    simulate_detailed_convergence,
-    simulate_detailed_deflection,
-    simulate_detailed_curve,
-    simulate_detailed_ridges,
     simulate_detailed_branching,
+    # simulate_detailed_convergence,
+    simulate_detailed_curve,
+    simulate_detailed_deflection,
+    simulate_detailed_edge,
+    simulate_detailed_ridges,
 )
 
 # Define simulations as a dictionary with names as keys to function objects
+# alphabectic order here
 simulations = {
-    "edge": simulate_detailed_edge,
+    "branching": simulate_detailed_branching,
     "curve": simulate_detailed_curve,
     "deflection": simulate_detailed_deflection,
+    "edge": simulate_detailed_edge,
     "ridges": simulate_detailed_ridges,
-    "branching": simulate_detailed_branching,
-    "convergence": simulate_detailed_convergence,
 }
 
 # Load training inputs, not weights_only = True
@@ -140,12 +140,15 @@ for sim_name, sim_func in simulations.items():
     # select the correct y_test (PREVIOUS ERROR)
     y_test = y_test_dict[sim_name].to(device)
 
+    # calculate the mean magnitude of the test data as we use this to scale the noise
+    sim_mean_magnitude_for_noise = torch.norm(y_test, dim = -1).mean()
+
     ### LOOP OVER RUNS ###
     for run in range(NUM_RUNS):
         print(f"\n--- Training Run {run + 1}/{NUM_RUNS} ---")
 
         # Add Noise before data loader is defined
-        y_train_noisy = y_train + (torch.randn(y_train.shape, device = device) * STD_GAUSSIAN_NOISE)
+        y_train_noisy = y_train + (torch.randn(y_train.shape, device = device) * STD_GAUSSIAN_NOISE * sim_mean_magnitude_for_noise)
 
         # Convert to DataLoader for batching
         dataset = TensorDataset(x_train, y_train_noisy)

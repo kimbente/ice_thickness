@@ -7,12 +7,13 @@ LEARNING_RATE = 0.0001
 
 # higher LR works better for both, maybe try higher patience
 PINN_LEARNING_RATE = 0.005 # back to regular lr
-DFNN_LEARNING_RATE = 0.0001 # back to lr
+DFNN_LEARNING_RATE = 0.001 # larger than regular lr works better~~
 
 GP_LEARNING_RATE = 0.01
+DFNGP_LEARNING_RATE = 0.001
 
 # WEIGHT_DECAY is L2 regularisation, decay because it pulls weights towards 0
-WEIGHT_DECAY = 1e-4 # don't want it too smooth 1e-5 for PINN was slighly worse
+WEIGHT_DECAY = 1e-4 # (0.0001) don't want it too smooth 1e-5 for PINN was slighly worse
 BATCH_SIZE = 32
 
 # Discretization for test data

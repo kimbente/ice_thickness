@@ -1,12 +1,12 @@
 from GP_models import GP_predict
-from archive.NN_models_HNN_dfNN_fullmatrix import dfNN_for_vmap
+from NN_models import dfNN
 # from simulate import simulate_convergence, simulate_branching, simulate_ridge, simulate_merge, simulate_deflection
 from metrics import compute_RMSE, compute_MAE, compute_NLL, compute_NLL_full
 from utils import set_seed
 import gc # garbage collection
 
 # Global file for training configs
-from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, GP_LEARNING_RATE, WEIGHT_DECAY, N_SIDE, DFGPDFNN_RESULTS_DIR, SIGMA_F_RANGE, SIGMA_N_RANGE, L_RANGE, STD_GAUSSIAN_NOISE
+from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, DFNGP_LEARNING_RATE, WEIGHT_DECAY, N_SIDE, DFGPDFNN_RESULTS_DIR, SIGMA_F_RANGE, SIGMA_N_RANGE, L_RANGE, STD_GAUSSIAN_NOISE
 
 import torch
 import torch.nn as nn
@@ -35,22 +35,22 @@ model_name = "dfGPdfNN"
 
 # Import all simulation functions
 from simulate import (
-    simulate_detailed_edge,
-    simulate_detailed_convergence,
-    simulate_detailed_deflection,
-    simulate_detailed_curve,
-    simulate_detailed_ridges,
     simulate_detailed_branching,
+    # simulate_detailed_convergence,
+    simulate_detailed_curve,
+    simulate_detailed_deflection,
+    simulate_detailed_edge,
+    simulate_detailed_ridges,
 )
 
 # Define simulations as a dictionary with names as keys to function objects
+# alphabectic order here
 simulations = {
-    "edge": simulate_detailed_edge,
+    "branching": simulate_detailed_branching,
     "curve": simulate_detailed_curve,
     "deflection": simulate_detailed_deflection,
+    "edge": simulate_detailed_edge,
     "ridges": simulate_detailed_ridges,
-    "branching": simulate_detailed_branching,
-    "convergence": simulate_detailed_convergence,
 }
 
 # Load training inputs
@@ -119,7 +119,9 @@ MAX_NUM_EPOCHS = 2000
 
 # Number of training runs for mean and std of metrics
 NUM_RUNS = NUM_RUNS
-LEARNING_RATE = GP_LEARNING_RATE
+
+LEARNING_RATE = DFNGP_LEARNING_RATE
+LEARNING_RATE = 0.001
 WEIGHT_DECAY = WEIGHT_DECAY
 
 # Pass in all the training data
@@ -148,6 +150,9 @@ for sim_name, sim_func in simulations.items():
     # select the correct y_test (PREVIOUS ERROR)
     y_test = y_test_dict[sim_name].to(device)
 
+    # calculate the mean magnitude of the test data as we use this to scale the noise
+    sim_mean_magnitude_for_noise = torch.norm(y_test, dim = -1).mean()
+
     ### LOOP OVER RUNS ###
     for run in range(NUM_RUNS):
         print(f"\n--- Training Run {run + 1}/{NUM_RUNS} ---")
@@ -162,7 +167,7 @@ for sim_name, sim_func in simulations.items():
         # Initialise a fixed pretrained model
         pretrained_model_path = (f"dfNN_pretrained/dfNN_pretrained_{sim_name}.pth")
 
-        dfNN_mean_model = dfNN_for_vmap()
+        dfNN_mean_model = dfNN()
         dfNN_mean_model.load_state_dict(torch.load(pretrained_model_path))
         # Fixed so just in eval mode
         dfNN_mean_model.to(device).eval()
@@ -187,7 +192,7 @@ for sim_name, sim_func in simulations.items():
         epochs_no_improve = 0
 
         # Noise
-        y_train_noisy = y_train + (torch.randn(y_train.shape, device = device) * STD_GAUSSIAN_NOISE)
+        y_train_noisy = y_train + (torch.randn(y_train.shape, device = device) * STD_GAUSSIAN_NOISE * sim_mean_magnitude_for_noise)
 
         ### LOOP OVER EPOCHS ###
         print("\nStart Training")
@@ -202,7 +207,7 @@ for sim_name, sim_func in simulations.items():
                         y_train_noisy,
                         x_train, # have predictions for training data again
                         [sigma_n, sigma_f, l], # initial hyperparameters
-                        dfNN_mean_model, # vmap?
+                        dfNN_mean_model, 
                         divergence_free_bool = True)
                 
                 loss = - lml_train
@@ -391,7 +396,7 @@ for sim_name, sim_func in simulations.items():
         dfGPdfNN_test_RMSE = compute_RMSE(y_test, mean_pred_test).item()
         dfGPdfNN_test_MAE = compute_MAE(y_test, mean_pred_test).item()
         # full has cuased issues
-        dfGPdfNN_test_NLL = compute_NLL(y_test, mean_pred_test, covar_pred_test).item()
+        dfGPdfNN_test_NLL = compute_NLL_full(y_test, mean_pred_test, covar_pred_test).item()
 
         simulation_results.append([
             run + 1,

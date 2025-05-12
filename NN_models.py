@@ -1,47 +1,44 @@
 import torch
 import torch.nn as nn
-from torch.func import jacfwd
 
 ##########################
 ### dfNN == NCL == HNN ###
 ##########################
-
-class dfNN_for_vmap(nn.Module):
-    # for a single point
+    
+class dfNN(nn.Module):
     def __init__(self, input_dim = 2, hidden_dim = 32):
         super().__init__()
-
         self.input_dim = input_dim
-        
-        # Scalar output: maps R^2 -> R
-        self.output_dim = int(1)
+        self.output_dim = 1  # Scalar potential
 
-        # Replace with something more sophisticated
         self.net = nn.Sequential(
             nn.Linear(input_dim, hidden_dim),
             nn.ReLU(),
             nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU(),
-            nn.Linear(hidden_dim, self.output_dim)
+            nn.Linear(hidden_dim, self.output_dim),
         )
 
     def forward(self, x):
-        # put deterministic transformations here with torch functional
+        """
+        Turn x1, x2 locations into vector fields
+        x: [batch_size, input_dim]
+        Returns: [batch_size, input_dim]  # Symplectic gradient
+        """
+        # Retrieve scalar potential
+        H = self.net(x)
 
-        def H(x):
+        partials = torch.autograd.grad(
+                outputs = H.sum(), # we can sum here because every H row only depend on every x row
+                inputs = x,
+                create_graph = True
+            )[0]
+        
+        # Symplectic gradient
+        # flip columns (last dim) for x2, x1 order. Multiply x2 by -1
+        symp = partials.flip(-1) * torch.tensor([1, -1], dtype = torch.float32, device = x.device)
 
-            # RUN THROUGH NET
-            # Retrieve scalar potential
-            H = self.net(x)
-
-            return H
-
-        # The Jacobian of H has shape torch.Size([1, 2]) (1 batch, 2 output dims)
-        # reshape to torch.Size([2])
-        jac_H = jacfwd(H)(x).squeeze()
-
-        # flip the order of the output dims and multiply second dim by -1
-        return jac_H.flip(0) * torch.tensor([1, -1], device = jac_H.device)
+        return symp
 
 ####################
 ### MLP for PINN ###

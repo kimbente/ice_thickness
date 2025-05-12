@@ -1,5 +1,4 @@
-from archive.NN_models_HNN_dfNN_fullmatrix import dfNN_for_vmap
-# from simulate import simulate_convergence, simulate_branching, simulate_ridge, simulate_merge, simulate_deflection
+from NN_models import dfNN
 from metrics import compute_RMSE, compute_MAE
 from utils import set_seed
 
@@ -7,7 +6,6 @@ from utils import set_seed
 from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, LEARNING_RATE, WEIGHT_DECAY, BATCH_SIZE, N_SIDE, DFNN_RESULTS_DIR, DFNN_LEARNING_RATE, STD_GAUSSIAN_NOISE
 
 import torch
-from torch.func import vmap
 from torch.utils.data import DataLoader, TensorDataset
 import torch.optim as optim
 import os
@@ -33,22 +31,22 @@ model_name = "dfNN"
 
 # Import all simulation functions
 from simulate import (
-    simulate_detailed_edge,
-    simulate_detailed_convergence,
-    simulate_detailed_deflection,
-    simulate_detailed_curve,
-    simulate_detailed_ridges,
     simulate_detailed_branching,
+    # simulate_detailed_convergence,
+    simulate_detailed_curve,
+    simulate_detailed_deflection,
+    simulate_detailed_edge,
+    simulate_detailed_ridges,
 )
 
 # Define simulations as a dictionary with names as keys to function objects
+# alphabectic order here
 simulations = {
-    "edge": simulate_detailed_edge,
+    "branching": simulate_detailed_branching,
     "curve": simulate_detailed_curve,
     "deflection": simulate_detailed_deflection,
+    "edge": simulate_detailed_edge,
     "ridges": simulate_detailed_ridges,
-    "branching": simulate_detailed_branching,
-    "convergence": simulate_detailed_convergence,
 }
 
 # Load training inputs
@@ -117,9 +115,8 @@ MAX_NUM_EPOCHS = MAX_NUM_EPOCHS
 NUM_RUNS = NUM_RUNS
 NUM_RUNS = 1
 
-LEARNING_RATE = DFNN_LEARNING_RATE # trying 0.001 here instead
-WEIGHT_DECAY = WEIGHT_DECAY # L2 regularisation
-WEIGHT_DECAY = 0.01
+LEARNING_RATE = DFNN_LEARNING_RATE # set to 0.001 here instead
+WEIGHT_DECAY = WEIGHT_DECAY # L2 regularisation set to 0.0001
 
 BATCH_SIZE = BATCH_SIZE
 
@@ -139,12 +136,15 @@ for sim_name, sim_func in simulations.items():
     # select the correct y_test (PREVIOUS ERROR)
     y_test = y_test_dict[sim_name].to(device)
 
+    # calculate the mean magnitude of the test data as we use this to scale the noise
+    sim_mean_magnitude_for_noise = torch.norm(y_test, dim = -1).mean()
+
     ### LOOP OVER RUNS ###
     for run in range(NUM_RUNS):
         print(f"\n--- Training Run {run + 1}/{NUM_RUNS} ---")
 
         # Add Noise before data loader is defined
-        y_train_noisy = y_train + (torch.randn(y_train.shape, device = device) * STD_GAUSSIAN_NOISE)
+        y_train_noisy = y_train + (torch.randn(y_train.shape, device = device) * STD_GAUSSIAN_NOISE * sim_mean_magnitude_for_noise)
 
         # Convert to DataLoader for batching
         dataset = TensorDataset(x_train, y_train_noisy)
@@ -152,7 +152,7 @@ for sim_name, sim_func in simulations.items():
 
         # Initialise fresh model
         # we seeded so this is reproducible
-        dfNN_model = dfNN_for_vmap().to(device)
+        dfNN_model = dfNN().to(device)
         dfNN_model.train()
 
         # Define loss function (e.g., MSE for regression)
@@ -186,7 +186,7 @@ for sim_name, sim_func in simulations.items():
                 x_batch.requires_grad_()
 
                 # Forward pass
-                y_pred = vmap(dfNN_model)(x_batch)
+                y_pred = dfNN_model(x_batch)
 
                 # Compute loss (RMSE for same units as data) - criterion(pred, target)
                 loss = torch.sqrt(criterion(y_pred, y_batch))
@@ -201,7 +201,7 @@ for sim_name, sim_func in simulations.items():
 
             dfNN_model.eval()
             # Compute test loss for loss convergence plot
-            y_test_pred = vmap(dfNN_model)(x_test.to(device))
+            y_test_pred = dfNN_model(x_test.to(device))
             test_loss = torch.sqrt(criterion(y_test_pred, y_test.to(device))).item()
             
             # Compute average loss for the epoch (e.g. 7 batches/epoch)
@@ -241,8 +241,8 @@ for sim_name, sim_func in simulations.items():
         x_train_grad = x_train.to(device).requires_grad_()
         x_test_grad = x_test.to(device).requires_grad_()
 
-        y_train_dfNN_predicted = vmap(dfNN_model)(x_train_grad)
-        y_test_dfNN_predicted = vmap(dfNN_model)(x_test_grad)
+        y_train_dfNN_predicted = dfNN_model(x_train_grad)
+        y_test_dfNN_predicted = dfNN_model(x_test_grad)
 
         # Only save things for one run
         if run == 0:

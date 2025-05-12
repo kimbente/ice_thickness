@@ -31,22 +31,22 @@ model_name = "GP"
 
 # Import all simulation functions
 from simulate import (
-    simulate_detailed_edge,
-    simulate_detailed_convergence,
-    simulate_detailed_deflection,
-    simulate_detailed_curve,
-    simulate_detailed_ridges,
     simulate_detailed_branching,
+    # simulate_detailed_convergence,
+    simulate_detailed_curve,
+    simulate_detailed_deflection,
+    simulate_detailed_edge,
+    simulate_detailed_ridges,
 )
 
 # Define simulations as a dictionary with names as keys to function objects
+# alphabectic order here
 simulations = {
-    "edge": simulate_detailed_edge,
+    "branching": simulate_detailed_branching,
     "curve": simulate_detailed_curve,
     "deflection": simulate_detailed_deflection,
+    "edge": simulate_detailed_edge,
     "ridges": simulate_detailed_ridges,
-    "branching": simulate_detailed_branching,
-    "convergence": simulate_detailed_convergence,
 }
 
 # Load training inputs
@@ -137,6 +137,9 @@ for sim_name, sim_func in simulations.items():
     # select the correct y_test (PREVIOUS ERROR)
     y_test = y_test_dict[sim_name].to(device)
 
+     # calculate the mean magnitude of the test data as we use this to scale the noise
+    sim_mean_magnitude_for_noise = torch.norm(y_test, dim = -1).mean()
+
     ### LOOP OVER RUNS ###
     for run in range(NUM_RUNS):
         print(f"\n--- Training Run {run + 1}/{NUM_RUNS} ---")
@@ -183,7 +186,7 @@ for sim_name, sim_func in simulations.items():
         epochs_no_improve = 0
 
         # Noise
-        y_train_noisy = y_train + (torch.randn(y_train.shape, device = device) * STD_GAUSSIAN_NOISE)
+        y_train_noisy = y_train + (torch.randn(y_train.shape, device = device) * STD_GAUSSIAN_NOISE * sim_mean_magnitude_for_noise)
 
         ### LOOP OVER EPOCHS ###
         print("\nStart Training")
@@ -377,13 +380,13 @@ for sim_name, sim_func in simulations.items():
         # Compute metrics (convert tensors to float) for every run's tuned model
         GP_train_RMSE = compute_RMSE(y_train, mean_pred_train).item()
         GP_train_MAE = compute_MAE(y_train, mean_pred_train).item()
-        GP_train_NLL = compute_NLL(y_train, mean_pred_train, covar_pred_train).item()
+        GP_train_NLL = compute_NLL_full(y_train, mean_pred_train, covar_pred_train).item()
 
         GP_test_RMSE = compute_RMSE(y_test, mean_pred_test).item()
         GP_test_MAE = compute_MAE(y_test, mean_pred_test).item()
         # full NLL has caused instability issues due to the logdet
         # now we use sparse
-        GP_test_NLL = compute_NLL(y_test, mean_pred_test, covar_pred_test).item()
+        GP_test_NLL = compute_NLL_full(y_test, mean_pred_test, covar_pred_test).item()
 
         simulation_results.append([
             run + 1,

@@ -27,8 +27,6 @@
 
 import torch
 import torch.optim as optim
-from torch.func import vmap
-
 import numpy as np
 import math
 
@@ -71,9 +69,8 @@ def GP_predict(
         mean_y_train = torch.zeros_like(x_train)
         mean_y_test = torch.zeros_like(x_test)
     else:
-        # apply model with vmap
-        mean_y_train = vmap(mean_func)(x_train)
-        mean_y_test = vmap(mean_func)(x_test)
+        mean_y_train = mean_func(x_train)
+        mean_y_test = mean_func(x_test)
 
     # Outputs kernel of shape torch.Size([2 * n_train, 2 * n_train])
     K_train_train = kernel_func(
