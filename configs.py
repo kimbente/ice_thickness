@@ -25,8 +25,10 @@ DFNN_RESULTS_DIR = "results/dfNN"
 DFNN_FULLMATRIX_RESULTS_DIR = "results/dfNN_fullmatrix"
 HNN_RESULTS_DIR = "results/HNN"
 PINN_RESULTS_DIR = "results/PINN"
+PINN_DOMAIN_DIV_RESULTS_DIR = "results/PINN_domain_div"
 DFGP_RESULTS_DIR = "results/dfGP"
 GP_RESULTS_DIR = "results/GP"
+GP_ONEL_RESULTS_DIR = "results/GP_one_l"
 DFNGP_RESULTS_DIR = "results/dfNGP"
 
 # FOR PINN ONLY
@@ -40,9 +42,6 @@ L_RANGE = (0.3, 0.8) # Example range for each lengthscale
 # For regular GP only
 B_DIAGONAL_RANGE = SIGMA_F_RANGE  # Example range for B diagonal
 B_OFFDIAGONAL_RANGE = (-0.2, 0.5)  # Example range for B off-diagonal
-
-# we do not need as many
-GP_MAX_NUM_EPOCHS = 1000
 
 # noise parameter for training: independent Gaussian noise
 STD_GAUSSIAN_NOISE = 0.02 # variance is 0.0004

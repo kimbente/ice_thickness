@@ -1,0 +1,3 @@
+name,x_min,x_max,y_min,y_max,coord_units
+RegionA,425000,450000,-875000,-850000,EPSG:3031
+RegionB,450000,475000,-875000,-850000,

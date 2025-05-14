@@ -8,7 +8,7 @@ def compute_MAE(y_true, y_pred):
 
 def compute_NLL(y_true, y_mean_pred, y_covar_pred):
     """NLL quantifies how well the predicted Gaussian distribution fits the observed data.
-    Sparse format: each of the N points has its own 2×2 covariance matrix.
+    Sparse format: each of the N points has its own 2×2 covariance matrix. (This is more than just the diagonal of the covariance matrix, but not the full covar.)
 
     Args:
         y_true (torch.Size([N, 2])): true, observed vectors
@@ -51,6 +51,7 @@ def compute_NLL(y_true, y_mean_pred, y_covar_pred):
     # torch.inverse(covar_N22): Inverts each (2×2) covariance matrix
     # diff.unsqueeze(-1): Reshapes (N, 2) → (N, 2, 1) for matrix multiplication
     # .sum(dim=-1): Sum across both dimensions (y1, y2).
+    # the inverse is batchwise
     mahalanobis_dist = torch.mul(torch.matmul(torch.inverse(covar_N22), diff.unsqueeze(-1)).squeeze(-1), diff).sum(dim = -1)
 
     # element-wise determenant of all 2x2 matrices
@@ -72,7 +73,7 @@ def compute_NLL_full(y_true, y_mean_pred, y_covar_pred, jitter = 1e-3):
     Args:
         y_true (torch.Tensor): True observations of shape (N, 2).
         y_mean_pred (torch.Tensor): Mean predictions of shape (N, 2).
-        y_covar_pred (torch.Tensor): Full predicted covariance matrix of shape (N*2, N*2).
+        y_covar_pred (torch.Tensor): Full predicted covariance matrix of shape (N*2, N*2).(BLOCK FORMAT)
         jitter (float, optional): Small value added to the diagonal for numerical stability. Defaults to 1e-3 - quite high.
 
     Returns:
@@ -82,6 +83,7 @@ def compute_NLL_full(y_true, y_mean_pred, y_covar_pred, jitter = 1e-3):
     N = y_true.shape[0]
     
     # Flatten y_true and y_mean_pred to match covariance matrix shape
+    # Reshape makes it [u1, v1, u2, v2, u3, v3, ...] instead of [u1, u2, u3, ..., v1, v2, v3, ...]
     y_true_flat = y_true.reshape(-1, 1)  # Shape: (N*2, 1)
     y_mean_pred_flat = y_mean_pred.reshape(-1, 1)  # Shape: (N*2, 1)
 

@@ -4,7 +4,7 @@ from metrics import compute_RMSE, compute_MAE
 from utils import set_seed
 
 # Global file for training configs
-from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, LEARNING_RATE, WEIGHT_DECAY, BATCH_SIZE, N_SIDE, PINN_RESULTS_DIR, W_PINN_DIV_WEIGHT, PINN_LEARNING_RATE, STD_GAUSSIAN_NOISE
+from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, LEARNING_RATE, WEIGHT_DECAY, BATCH_SIZE, N_SIDE, PINN_DOMAIN_DIV_RESULTS_DIR, W_PINN_DIV_WEIGHT, PINN_LEARNING_RATE, STD_GAUSSIAN_NOISE
 
 import torch
 from torch.func import vmap
@@ -117,6 +117,7 @@ NUM_RUNS = NUM_RUNS
 
 # higher lr for PINN
 LEARNING_RATE = PINN_LEARNING_RATE
+LEARNING_RATE = 0.01
 WEIGHT_DECAY = WEIGHT_DECAY
 
 BATCH_SIZE = BATCH_SIZE
@@ -124,7 +125,7 @@ BATCH_SIZE = BATCH_SIZE
 w = W_PINN_DIV_WEIGHT
 
 # Ensure the results folder exists
-RESULTS_DIR = PINN_RESULTS_DIR # Change this to "results" for full training
+RESULTS_DIR = PINN_DOMAIN_DIV_RESULTS_DIR # Change this to "results" for full training
 
 os.makedirs(RESULTS_DIR, exist_ok = True)
 
@@ -223,6 +224,50 @@ for sim_name, sim_func in simulations.items():
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
+
+            ##########################
+            # Domain divergence loss #
+            ##########################
+            # In every epoch do a step on the divergence across the domain
+            PINN_model.train()
+
+            # Select random points
+            # indices = torch.randperm(x_test.shape[0])[:BATCH_SIZE]
+            # x_domain = x_test.to(device).requires_grad_()[indices]
+            # full domain
+            x_domain = x_test.to(device).requires_grad_()
+        
+            torch.randperm(x_test.shape[0])[:BATCH_SIZE]
+
+            # Forward pass
+            y_pred_domain = vmap(PINN_model)(x_domain)
+
+            u_indicator_domain, v_indicator_domain = torch.zeros_like(y_pred_domain), torch.zeros_like(y_pred_domain)
+            u_indicator_domain[:, 0] = 1.0 # output column u selected
+            v_indicator_domain[:, 1] = 1.0 # output column v selected
+
+            # square(sum: f1/x1 + f2/x2)
+            domain_divergence_loss = (torch.autograd.grad(
+                outputs = y_pred_domain,
+                inputs = x_domain, # grad is on
+                grad_outputs = u_indicator_domain,
+                create_graph = True
+            )[0][:, 0] + torch.autograd.grad(
+                outputs = y_pred_domain,
+                inputs = x_domain,
+                grad_outputs = v_indicator_domain,
+                create_graph = True
+            )[0][:, 1]).abs().mean() # v with respect to y, don't item() it because for the loss we need a tensor
+            # HERE: abs() to account for negative divergence and mean() to get avg!
+
+            # Use only divergence loss but use the same weight as before 
+            domain_div_loss =  w * domain_divergence_loss
+
+            # Backpropagation
+            # AFTER
+            optimizer.zero_grad()
+            domain_div_loss.backward()
+            optimizer.step()
 
             ### END BATCH LOOP ###
             PINN_model.eval()

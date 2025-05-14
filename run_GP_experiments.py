@@ -3,7 +3,7 @@ from utils import set_seed
 from metrics import compute_RMSE, compute_NLL, compute_MAE
 
 # Global file for training configs
-from configs import PATIENCE, GP_MAX_NUM_EPOCHS, NUM_RUNS, GP_LEARNING_RATE, WEIGHT_DECAY, N_SIDE, GP_RESULTS_DIR, SIGMA_N_RANGE, L_RANGE, B_DIAGONAL_RANGE, B_OFFDIAGONAL_RANGE, STD_GAUSSIAN_NOISE
+from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, GP_LEARNING_RATE, WEIGHT_DECAY, N_SIDE, GP_RESULTS_DIR, SIGMA_N_RANGE, L_RANGE, B_DIAGONAL_RANGE, B_OFFDIAGONAL_RANGE, STD_GAUSSIAN_NOISE
 
 import torch
 import torch.nn as nn
@@ -109,7 +109,7 @@ for sim_name, sim_func in simulations.items():
 
 # Early stopping parameters
 PATIENCE = PATIENCE
-MAX_NUM_EPOCHS = GP_MAX_NUM_EPOCHS
+MAX_NUM_EPOCHS = MAX_NUM_EPOCHS
 
 # Number of training runs for mean and std of metrics
 NUM_RUNS = NUM_RUNS
@@ -380,13 +380,13 @@ for sim_name, sim_func in simulations.items():
         # Compute metrics (convert tensors to float) for every run's tuned model
         GP_train_RMSE = compute_RMSE(y_train, mean_pred_train).item()
         GP_train_MAE = compute_MAE(y_train, mean_pred_train).item()
-        GP_train_NLL = compute_NLL_full(y_train, mean_pred_train, covar_pred_train).item()
+        GP_train_NLL = compute_NLL(y_train, mean_pred_train, covar_pred_train).item()
 
         GP_test_RMSE = compute_RMSE(y_test, mean_pred_test).item()
         GP_test_MAE = compute_MAE(y_test, mean_pred_test).item()
         # full NLL has caused instability issues due to the logdet
         # now we use sparse
-        GP_test_NLL = compute_NLL_full(y_test, mean_pred_test, covar_pred_test).item()
+        GP_test_NLL = compute_NLL(y_test, mean_pred_test, covar_pred_test).item()
 
         simulation_results.append([
             run + 1,

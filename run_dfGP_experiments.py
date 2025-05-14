@@ -3,7 +3,7 @@ from metrics import compute_RMSE, compute_MAE, compute_NLL, compute_NLL_full
 from utils import set_seed
 
 # Global file for training configs
-from configs import PATIENCE, GP_MAX_NUM_EPOCHS, NUM_RUNS, GP_LEARNING_RATE, WEIGHT_DECAY, N_SIDE, DFGP_RESULTS_DIR, SIGMA_N_RANGE, SIGMA_F_RANGE, L_RANGE, STD_GAUSSIAN_NOISE
+from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, GP_LEARNING_RATE, WEIGHT_DECAY, N_SIDE, DFGP_RESULTS_DIR, SIGMA_N_RANGE, SIGMA_F_RANGE, L_RANGE, STD_GAUSSIAN_NOISE
 
 import torch
 import torch.nn as nn
@@ -109,7 +109,7 @@ for sim_name, sim_func in simulations.items():
 
 # Early stopping parameters
 PATIENCE = PATIENCE
-MAX_NUM_EPOCHS = GP_MAX_NUM_EPOCHS
+MAX_NUM_EPOCHS = MAX_NUM_EPOCHS
 
 # Number of training runs for mean and std of metrics
 NUM_RUNS = NUM_RUNS
@@ -370,12 +370,12 @@ for sim_name, sim_func in simulations.items():
         # Compute metrics (convert tensors to float) for every run's tuned model
         dfGP_train_RMSE = compute_RMSE(y_train, mean_pred_train).item()
         dfGP_train_MAE = compute_MAE(y_train, mean_pred_train).item()
-        dfGP_train_NLL = compute_NLL_full(y_train, mean_pred_train, covar_pred_train).item()
+        dfGP_train_NLL = compute_NLL(y_train, mean_pred_train, covar_pred_train).item()
 
         dfGP_test_RMSE = compute_RMSE(y_test, mean_pred_test).item()
         dfGP_test_MAE = compute_MAE(y_test, mean_pred_test).item()
         # full has cuased issues
-        dfGP_test_NLL = compute_NLL_full(y_test, mean_pred_test, covar_pred_test).item()
+        dfGP_test_NLL = compute_NLL(y_test, mean_pred_test, covar_pred_test).item()
 
         simulation_results.append([
             run + 1,

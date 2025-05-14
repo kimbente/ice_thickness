@@ -113,7 +113,6 @@ MAX_NUM_EPOCHS = MAX_NUM_EPOCHS
 
 # Number of training runs for mean and std of metrics
 NUM_RUNS = NUM_RUNS
-NUM_RUNS = 1
 
 LEARNING_RATE = DFNN_LEARNING_RATE # set to 0.001 here instead
 WEIGHT_DECAY = WEIGHT_DECAY # L2 regularisation set to 0.0001

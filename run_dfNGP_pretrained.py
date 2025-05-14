@@ -115,7 +115,6 @@ for sim_name, sim_func in simulations.items():
 PATIENCE = PATIENCE
 # More params than GP models so we need more epochs
 MAX_NUM_EPOCHS = MAX_NUM_EPOCHS
-MAX_NUM_EPOCHS = 2000
 
 # Number of training runs for mean and std of metrics
 NUM_RUNS = NUM_RUNS
@@ -391,12 +390,12 @@ for sim_name, sim_func in simulations.items():
         # Compute metrics (convert tensors to float) for every run's tuned model
         dfGPdfNN_train_RMSE = compute_RMSE(y_train, mean_pred_train).item()
         dfGPdfNN_train_MAE = compute_MAE(y_train, mean_pred_train).item()
-        dfGPdfNN_train_NLL = compute_NLL_full(y_train, mean_pred_train, covar_pred_train).item()
+        dfGPdfNN_train_NLL = compute_NLL(y_train, mean_pred_train, covar_pred_train).item()
 
         dfGPdfNN_test_RMSE = compute_RMSE(y_test, mean_pred_test).item()
         dfGPdfNN_test_MAE = compute_MAE(y_test, mean_pred_test).item()
         # full has cuased issues
-        dfGPdfNN_test_NLL = compute_NLL_full(y_test, mean_pred_test, covar_pred_test).item()
+        dfGPdfNN_test_NLL = compute_NLL(y_test, mean_pred_test, covar_pred_test).item()
 
         simulation_results.append([
             run + 1,

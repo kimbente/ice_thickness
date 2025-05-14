@@ -1,11 +1,9 @@
 from GP_models import GP_predict
-from NN_models import dfNN
-from metrics import compute_RMSE, compute_MAE, compute_NLL, compute_NLL_full
 from utils import set_seed
-import gc # garbage collection
+from metrics import compute_RMSE, compute_NLL, compute_MAE
 
 # Global file for training configs
-from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, GP_LEARNING_RATE, WEIGHT_DECAY, N_SIDE, DFNGP_RESULTS_DIR, SIGMA_N_RANGE, SIGMA_F_RANGE, L_RANGE,  STD_GAUSSIAN_NOISE
+from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, GP_LEARNING_RATE, WEIGHT_DECAY, N_SIDE, GP_ONEL_RESULTS_DIR, SIGMA_N_RANGE, L_RANGE, B_DIAGONAL_RANGE, B_OFFDIAGONAL_RANGE, STD_GAUSSIAN_NOISE
 
 import torch
 import torch.nn as nn
@@ -25,8 +23,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print('Using device:', device)
 print()
 
-# stick to covention to keep df lower case
-model_name = "dfNGP"
+model_name = "GP"
 
 #########################
 ### x_train & y_train ###
@@ -112,10 +109,10 @@ for sim_name, sim_func in simulations.items():
 
 # Early stopping parameters
 PATIENCE = PATIENCE
-# More params than GP models so we need more epochs
 MAX_NUM_EPOCHS = MAX_NUM_EPOCHS
 
 # Number of training runs for mean and std of metrics
+NUM_RUNS = NUM_RUNS
 LEARNING_RATE = GP_LEARNING_RATE
 WEIGHT_DECAY = WEIGHT_DECAY
 
@@ -123,16 +120,11 @@ WEIGHT_DECAY = WEIGHT_DECAY
 # BATCH_SIZE = BATCH_SIZE
 
 # Ensure the results folder exists
-RESULTS_DIR = DFNGP_RESULTS_DIR
-RESULTS_DIR = "results/dfNGP"
+RESULTS_DIR = GP_ONEL_RESULTS_DIR
 os.makedirs(RESULTS_DIR, exist_ok = True)
 
 ### LOOP OVER SIMULATIONS ###
 for sim_name, sim_func in simulations.items():
-
-    gc.collect()  # Collect unused Python objects
-    torch.cuda.empty_cache()
-
     print(f"\nTraining for {sim_name.upper()}...")
 
     # Store metrics for the current simulation
@@ -145,7 +137,7 @@ for sim_name, sim_func in simulations.items():
     # select the correct y_test (PREVIOUS ERROR)
     y_test = y_test_dict[sim_name].to(device)
 
-    # calculate the mean magnitude of the test data as we use this to scale the noise
+     # calculate the mean magnitude of the test data as we use this to scale the noise
     sim_mean_magnitude_for_noise = torch.norm(y_test, dim = -1).mean()
 
     ### LOOP OVER RUNS ###
@@ -154,19 +146,30 @@ for sim_name, sim_func in simulations.items():
 
         # Sample from uniform distributions to initialise hyperparameters
         # sigma_n = torch.tensor([0.05], requires_grad = False).to(device) # no optimisation for noise, no sampling
-        # nn.Parameter avoids the leaf problem
         sigma_n = nn.Parameter(torch.empty(1, device = device).uniform_( * SIGMA_N_RANGE)) # Trainable
-        sigma_f = nn.Parameter(torch.empty(1, device = device).uniform_( * SIGMA_F_RANGE)) # Trainable
-        l = nn.Parameter(torch.empty(2, device = device).uniform_( * L_RANGE)) # Trainable
+
+        sigma_f = torch.tensor([1.0], requires_grad = False).to(device) # Fixed because we tune B (and sigma_f would just scale B)
+        # Initialising l from a uniform distribution as nn.Param to avoid leaf variable error
+        l = nn.Parameter(torch.empty(1, device = device).uniform_( * L_RANGE))
+
+        # Trainable B matrix components
+        B_diag = nn.Parameter(torch.empty(1, device = device).uniform_( * B_DIAGONAL_RANGE))  
+        B_off_diag = nn.Parameter(torch.empty(1, device = device).uniform_( * B_OFFDIAGONAL_RANGE)) 
+
+        # Construct B using a proper tensor operation (not `torch.tensor()`)
+        # squeeze to make 2 x 2 
+        B = torch.stack([
+            torch.stack([B_diag, B_off_diag], dim = 0),
+            torch.stack([B_off_diag, B_diag], dim = 0)
+        ], dim = 0).squeeze()
+
+        B = nn.Parameter(B)
         
-        # We do not need to "initialse" the GP model but the mean model
-        # Initialise fresh model
-        dfNN_mean_model = dfNN()
-        dfNN_mean_model.to(device)
+        # We do not need to "initialse" the GP model
         # We don't need a criterion either
 
         # Define optimizer (e.g., AdamW)
-        optimizer = optim.AdamW(list(dfNN_mean_model.parameters()) + [sigma_n, sigma_f, l], lr = LEARNING_RATE, weight_decay = WEIGHT_DECAY)
+        optimizer = optim.AdamW([sigma_n, l, B], lr = LEARNING_RATE, weight_decay = WEIGHT_DECAY)
 
         # Initialise tensors to store losses over epochs (for convergence plot)
         epoch_train_NLML_losses = torch.zeros(MAX_NUM_EPOCHS)
@@ -188,8 +191,6 @@ for sim_name, sim_func in simulations.items():
         ### LOOP OVER EPOCHS ###
         print("\nStart Training")
         for epoch in range(MAX_NUM_EPOCHS):
-            
-            dfNN_mean_model.train()
 
             # No batching - full epoch pass in one
             if run == 0:
@@ -197,9 +198,9 @@ for sim_name, sim_func in simulations.items():
                         x_train,
                         y_train_noisy,
                         x_train, # have predictions for training data again
-                        [sigma_n, sigma_f, l], # initial hyperparameters
-                        dfNN_mean_model,
-                        divergence_free_bool = True)
+                        [sigma_n, sigma_f, torch.cat([l, l]), B], # initial hyperparameters
+                        # no mean
+                        divergence_free_bool = False)
                 
                 loss = - lml_train
                 # Backpropagation
@@ -212,9 +213,9 @@ for sim_name, sim_func in simulations.items():
                         x_train,
                         y_train_noisy,
                         x_test.to(device), # have predictions for training data again
-                        [sigma_n, sigma_f, l], # initial hyperparameters
-                        dfNN_mean_model,
-                        divergence_free_bool = True)
+                        [sigma_n, sigma_f, l, B], # initial hyperparameters
+                        # no mean
+                        divergence_free_bool = False)
                 
                 train_RMSE = compute_RMSE(y_train, mean_pred_train)
                 test_RMSE = compute_RMSE(y_test, mean_pred_test)
@@ -227,7 +228,7 @@ for sim_name, sim_func in simulations.items():
                 epoch_sigma_n[epoch] = sigma_n
                 epoch_sigma_f[epoch] = sigma_f
                 epoch_l1[epoch] = l[0]
-                epoch_l2[epoch] = l[1]
+                epoch_l2[epoch] = l[0] # same
 
                 print(f"{sim_name} {model_name} Run {run + 1}/{NUM_RUNS}, Epoch {epoch + 1}/{MAX_NUM_EPOCHS}, Training Loss (NLML): {loss:.4f}, (RMSE): {train_RMSE:.4f}")
             
@@ -237,9 +238,9 @@ for sim_name, sim_func in simulations.items():
                         x_train,
                         y_train_noisy,
                         x_train[0:2], # have predictions for training data again
-                        [sigma_n, sigma_f, l], # initial hyperparameters
-                        dfNN_mean_model,
-                        divergence_free_bool = True)
+                        [sigma_n, sigma_f, l, B], # initial hyperparameters
+                        # no mean
+                        divergence_free_bool = False)
                 
                 loss = - lml_train
                 # Backpropagation
@@ -253,7 +254,6 @@ for sim_name, sim_func in simulations.items():
             if loss < best_loss:
                 best_loss = loss
                 epochs_no_improve = 0  # Reset counter
-                # best_model_state = dfGP_model.state_dict()  # Save best model
             else:
                 epochs_no_improve += 1
 
@@ -265,20 +265,19 @@ for sim_name, sim_func in simulations.items():
         ### EVALUATE ###
         ################
 
-        dfNN_mean_model.eval()
-
         # Now HPs should be tuned
         # Evaluate the trained model after all epochs are finished/early stopping
 
-        x_test_grad = x_test.to(device).requires_grad_()
+        # Need gradients for autograd divergence
+        x_test_grad = x_test.to(device).requires_grad_(True)
 
         mean_pred_test, covar_pred_test, _ = GP_predict(
                      x_train,
                      y_train_noisy,
                      x_test_grad,
-                     [sigma_n, sigma_f, l], # optimal hypers
-                     dfNN_mean_model,
-                     divergence_free_bool = True)
+                     [sigma_n, sigma_f, l, B], # optimal hypers
+                     # no mean
+                     divergence_free_bool = False)
 
         # Only save things for one run
         if run == 0:
@@ -286,12 +285,13 @@ for sim_name, sim_func in simulations.items():
             torch.save(mean_pred_test, f"{RESULTS_DIR}/{sim_name}_{model_name}_test_mean_predictions.pt")
             torch.save(covar_pred_test, f"{RESULTS_DIR}/{sim_name}_{model_name}_test_covar_predictions.pt")
 
-            #(2) Save best hyperparameters for run 1
+            #(2) Save best hyperparameters from run 1
             # Stack tensors into a single tensor
             best_hypers_tensor = torch.cat([
                 sigma_n.reshape(-1),  # Ensure 1D shape
                 sigma_f.reshape(-1),
-                l.reshape(-1)
+                l.reshape(-1),
+                B.reshape(-1)
             ])
 
             # Save the tensor
@@ -309,15 +309,15 @@ for sim_name, sim_func in simulations.items():
                 'l2': epoch_l2.tolist()
                 })
             
-            df_losses.to_csv(f"{RESULTS_DIR}/{sim_name}_{model_name}_losses_over_epochs.csv", index = False, float_format = "%.5f")
-            
-            #(4) Save divergence field
+            df_losses.to_csv(f"{RESULTS_DIR}/{sim_name}_{model_name}_losses_over_epochs.csv", index = False, float_format = "%.5f") # reduce to 5 decimals
+
+            # #(4) Save divergence field
             u_indicator_test, v_indicator_test = torch.zeros_like(mean_pred_test), torch.zeros_like(mean_pred_test)
             u_indicator_test[:, 0] = 1.0 # output column u selected
             v_indicator_test[:, 1] = 1.0 # output column v selected
 
             # divergence field (positive and negative divergences)
-            dfNGP_test_div_field = (torch.autograd.grad(
+            GP_test_div_field = (torch.autograd.grad(
                 outputs = mean_pred_test,
                 inputs = x_test_grad,
                 grad_outputs = u_indicator_test,
@@ -330,26 +330,25 @@ for sim_name, sim_func in simulations.items():
             )[0][:, 1])
 
             # Save as test predition divergence field
-            torch.save(dfNGP_test_div_field, f"{RESULTS_DIR}/{sim_name}_{model_name}_test_prediction_divergence_field.pt")
+            torch.save(GP_test_div_field, f"{RESULTS_DIR}/{sim_name}_{model_name}_test_prediction_divergence_field.pt")
 
-        x_train_grad = x_train.to(device).requires_grad_()
+        x_train_grad = x_train.to(device).requires_grad_(True)
 
         mean_pred_train, covar_pred_train, _ = GP_predict(
                      x_train,
                      y_train_noisy,
                      x_train_grad,
-                     [sigma_n, sigma_f, l], # optimal hypers
-                     dfNN_mean_model,
-                     divergence_free_bool = True)
+                     [sigma_n, sigma_f, l, B], # optimal hypers
+                     # no mean
+                     divergence_free_bool = False)
 
-        ### Divergence
-       ### Divergence: Total absolute divergence (sum divergence at each point, after summing dims)
+        ### Divergence: Total absolute divergence (sum divergence at each point, after summing dims)
         # autograd div test
         u_indicator_test, v_indicator_test = torch.zeros_like(mean_pred_test), torch.zeros_like(mean_pred_test)
         u_indicator_test[:, 0] = 1.0 # output column u selected
         v_indicator_test[:, 1] = 1.0 # output column v selected
 
-        dfNGP_test_div = (torch.autograd.grad(
+        GP_test_div = (torch.autograd.grad(
             outputs = mean_pred_test,
             inputs = x_test_grad,
             grad_outputs = u_indicator_test,
@@ -366,7 +365,7 @@ for sim_name, sim_func in simulations.items():
         u_indicator_train[:, 0] = 1.0 # output column u selected
         v_indicator_train[:, 1] = 1.0 # output column v selected
 
-        dfNGP_train_div = (torch.autograd.grad(
+        GP_train_div = (torch.autograd.grad(
             outputs = mean_pred_train,
             inputs = x_train_grad,
             grad_outputs = u_indicator_train,
@@ -379,19 +378,20 @@ for sim_name, sim_func in simulations.items():
         )[0][:, 1]).abs().mean().item() # v with respect to y
 
         # Compute metrics (convert tensors to float) for every run's tuned model
-        dfNGP_train_RMSE = compute_RMSE(y_train, mean_pred_train).item()
-        dfNGP_train_MAE = compute_MAE(y_train, mean_pred_train).item()
-        dfNGP_train_NLL = compute_NLL(y_train, mean_pred_train, covar_pred_train).item()
+        GP_train_RMSE = compute_RMSE(y_train, mean_pred_train).item()
+        GP_train_MAE = compute_MAE(y_train, mean_pred_train).item()
+        GP_train_NLL = compute_NLL(y_train, mean_pred_train, covar_pred_train).item()
 
-        dfNGP_test_RMSE = compute_RMSE(y_test, mean_pred_test).item()
-        dfNGP_test_MAE = compute_MAE(y_test, mean_pred_test).item()
-        # full has cuased issues
-        dfNGP_test_NLL = compute_NLL(y_test, mean_pred_test, covar_pred_test).item()
+        GP_test_RMSE = compute_RMSE(y_test, mean_pred_test).item()
+        GP_test_MAE = compute_MAE(y_test, mean_pred_test).item()
+        # full NLL has caused instability issues due to the logdet
+        # now we use sparse
+        GP_test_NLL = compute_NLL(y_test, mean_pred_test, covar_pred_test).item()
 
         simulation_results.append([
             run + 1,
-            dfNGP_train_RMSE, dfNGP_train_MAE, dfNGP_train_NLL, dfNGP_train_div,
-            dfNGP_test_RMSE, dfNGP_test_MAE, dfNGP_test_NLL, dfNGP_test_div
+            GP_train_RMSE, GP_train_MAE, GP_train_NLL, GP_train_div,
+            GP_test_RMSE, GP_test_MAE, GP_test_NLL, GP_test_div
         ])
 
     ### FINISH LOOP OVER RUNS ###
@@ -411,7 +411,7 @@ for sim_name, sim_func in simulations.items():
 
     # Save results to CSV
     results_file = os.path.join(RESULTS_DIR, f"{sim_name}_{model_name}_metrics_per_run.csv")
-    df.to_csv(results_file, index = False, float_format = "%.5f")
+    df.to_csv(results_file, index = False, float_format = "%.5f") # reduce to 5 decimals
     print(f"\nResults saved to {results_file}")
 
     # Save mean and standard deviation to CSV
@@ -426,7 +426,7 @@ elapsed_time = end_time - start_time  # Compute elapsed time
 # Convert elapsed time to minutes
 elapsed_time_minutes = elapsed_time / 60
 
-if torch.cuda.is_available():
+if device == "cuda":
     gpu_name = torch.cuda.get_device_name(0)  # Get GPU model
 else:
     gpu_name = "N/A"
