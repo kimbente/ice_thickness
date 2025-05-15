@@ -84,7 +84,7 @@ def block_diagonal_se_kernel(
     
     """
     Calculate the SE kernel for two sets of points in 2D space.
-    The parameter B controls the cross correlation between the two outputs.
+    The parameter B controls the cross correlation between the two outputs. For symmtry, the off-diagonal element B must be the same.
     R^2 -> R^2
 
     Inputs:
@@ -106,6 +106,9 @@ def block_diagonal_se_kernel(
     sigma_f = hyperparameters[1]
     l = hyperparameters[2]
     B = hyperparameters[3]
+
+    # ensuring that B is symmetric (i.e. the off diagnal elements must be the same for symmetry)
+    B = (B + B.T) / 2
 
     # Accommodate for single or double lengthscale
 

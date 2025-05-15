@@ -29,17 +29,19 @@ import torch
 import torch.optim as optim
 import numpy as np
 import math
+import gc
 
 from kernels import *
 from simulate import *
 
 def GP_predict(
-        x_train,
-        y_train,
-        x_test, 
-        hyperparameters,
-        mean_func = None,
-        divergence_free_bool = True):
+    x_train,
+    y_train,
+    x_test, 
+    hyperparameters,
+    mean_func = None,
+    divergence_free_bool = True,
+    train_noise_input = None):
     """ 
     Predicts the mean and covariance of the test data given the training data and hyperparameters
 
@@ -58,6 +60,9 @@ def GP_predict(
     """
     # Extract first hyperparameter sigma_n: noise - given, not optimised
     sigma_n = hyperparameters[0]
+
+    # Ensure positivity
+    sigma_n = torch.clip(sigma_n, min = 2e-6)
     
     # Extract number of rows (data points) in x_test
     n_test = x_test.shape[0]
@@ -79,7 +84,16 @@ def GP_predict(
         hyperparameters)
 
     # Add noise to the diagonal
-    K_train_train_noisy = K_train_train + torch.eye(K_train_train.shape[0], device = K_train_train.device) * sigma_n**2
+    if train_noise_input is not None:
+        # print(K_train_train.shape)
+        K_train_train_noisy = K_train_train + train_noise_input
+    else:
+        # fixed noise level
+        K_train_train_noisy = K_train_train + torch.eye(K_train_train.shape[0], device = K_train_train.device) * sigma_n**2
+
+    # Symmetry check
+    if (K_train_train_noisy != K_train_train_noisy.mT).any():
+        print("K_train_train_noisy is not symmetric")
 
     # torch.Size([2 * n_train, 2 * n_test])
     # K_* in Rasmussen is (x_train, X_test)
@@ -98,8 +112,27 @@ def GP_predict(
         hyperparameters)
     
     # Determine L - torch.Size([2 * n_train, 2 * n_train])
-    L = torch.linalg.cholesky(K_train_train_noisy, upper = False)
+    # L = torch.linalg.cholesky(K_train_train_noisy, upper = False)
     # L.T \ (L \ y) in one step - torch.Size([2 * n_train, 1])
+
+    jitter = 0.0  # Start with no jitter
+    max_tries = 6
+    attempt = 0
+    I = torch.eye(K_train_train_noisy.size(0), device = K_train_train_noisy.device)
+
+    while attempt < max_tries:
+        try:
+            L = torch.linalg.cholesky(K_train_train_noisy + jitter * I)
+            if jitter > 0:
+               print(f"Cholesky succeeded with jitter = {jitter}")
+            break  # Success!
+        except RuntimeError:
+            if attempt == 0:
+                print("Cholesky failed without jitter. Adding jitter...")
+            attempt += 1
+            jitter = 1e-6 * (10 ** attempt)  # Exponential backoff
+    else:
+        raise RuntimeError(f"Cholesky decomposition failed after {max_tries} attempts. Final jitter: {jitter}")
 
     # Make y flat by concatenating u and v (both columns) AFTER each other
     # torch.Size([2 x n_train, 1])
@@ -142,6 +175,10 @@ def GP_predict(
     lml_term3 = - (y_train.shape[0]/2) * torch.log(torch.tensor(2 * math.pi))
 
     lml = lml_term1 + lml_term2 + lml_term3
+
+    # del K_train_train, K_train_train_noisy, K_train_test, K_test_train, K_test_test, L, v
+    # gc.collect()
+    # torch.cuda.empty_cache()
 
     return predictive_mean, predictive_covariance, lml
 
