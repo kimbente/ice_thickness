@@ -33,6 +33,7 @@ import gc
 
 from kernels import *
 from simulate import *
+from metrics import compute_RMSE
 
 def GP_predict(
     x_train,
@@ -40,8 +41,7 @@ def GP_predict(
     x_test, 
     hyperparameters,
     mean_func = None,
-    divergence_free_bool = True,
-    train_noise_input = None):
+    divergence_free_bool = True):
     """ 
     Predicts the mean and covariance of the test data given the training data and hyperparameters
 
@@ -59,10 +59,12 @@ def GP_predict(
         lml (torch.Size([1])): (positive) log marginal likelihood
     """
     # Extract first hyperparameter sigma_n: noise - given, not optimised
+    # sigma_n can be a tensor or a scalar
     sigma_n = hyperparameters[0]
 
     # Ensure positivity
-    sigma_n = torch.clip(sigma_n, min = 2e-6)
+    # TODO: check if this is needed
+    # sigma_n = torch.clip(sigma_n, min = 2e-6)
     
     # Extract number of rows (data points) in x_test
     n_test = x_test.shape[0]
@@ -84,12 +86,8 @@ def GP_predict(
         hyperparameters)
 
     # Add noise to the diagonal
-    if train_noise_input is not None:
-        # print(K_train_train.shape)
-        K_train_train_noisy = K_train_train + train_noise_input
-    else:
-        # fixed noise level
-        K_train_train_noisy = K_train_train + torch.eye(K_train_train.shape[0], device = K_train_train.device) * sigma_n**2
+    # NOTE: This should works for scalar and vectors
+    K_train_train_noisy = K_train_train + torch.eye(K_train_train.shape[0], device = K_train_train.device) * sigma_n**2
 
     # Symmetry check
     if (K_train_train_noisy != K_train_train_noisy.mT).any():
@@ -181,6 +179,35 @@ def GP_predict(
     # torch.cuda.empty_cache()
 
     return predictive_mean, predictive_covariance, lml
+
+
+def forward_trainlml_and_rmse(
+            x_train, 
+            y_train, 
+            xtest_or_xtrain, 
+            ytest_or_ytrain, 
+            list_of_hypers,  
+            div_free_bool,
+            mean_func = None):
+    
+    # NOTE: Keep order but therefore also have default for div-free, because non-default argument can' follow default args.
+    
+    # Wrapper function
+
+    mean_pred, _, lml_train = GP_predict(
+           x_train,
+           y_train,
+           xtest_or_xtrain, # predict training data
+           list_of_hypers, # list of (initial) hypers
+           mean_func, # no mean aka "zero-mean function"
+           div_free_bool)
+    
+    # order: true, pred
+    RMSE = compute_RMSE(ytest_or_ytrain, mean_pred)
+
+    return lml_train, RMSE
+
+############
 
 def predict(X_train,
             Y_train_noisy,

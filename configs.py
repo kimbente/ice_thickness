@@ -31,12 +31,23 @@ GP_RESULTS_DIR = "results/GP"
 GP_ONEL_RESULTS_DIR = "results/GP_one_l"
 DFNGP_RESULTS_DIR = "results/dfNGP"
 
-# Path for real data experiments
+#################
+### REAL DATA ###
+#################
+
+# Directories
 GP_REAL_RESULTS_DIR = "results_byrd/GP"
 dfGP_REAL_RESULTS_DIR = "results_byrd/dfGP"
 dfNGP_REAL_RESULTS_DIR = "results_byrd/dfNGP"
 PINN_REAL_RESULTS_DIR = "results_byrd/PINN"
 dfNN_REAL_RESULTS_DIR = "results_byrd/dfNN"
+
+# Learning rates
+GP_REAL_LEARNING_RATE = 0.01
+dfGP_REAL_LEARNING_RATE = 0.01
+dfNGP_REAL_LEARNING_RATE = 0.01
+PINN_REAL_LEARNING_RATE = 0.001
+dfNN_REAL_LEARNING_RATE = 0.001
 
 # FOR PINN ONLY
 W_PINN_DIV_WEIGHT = 0.3 # 0.5 before

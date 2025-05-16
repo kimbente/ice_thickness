@@ -93,6 +93,7 @@ for region_name in ["regionc"]:
     # Early stopping parameters
     PATIENCE = PATIENCE
     MAX_NUM_EPOCHS = MAX_NUM_EPOCHS
+    MAX_NUM_EPOCHS = 700
 
     # Number of training runs for mean and std of metrics
     NUM_RUNS = NUM_RUNS

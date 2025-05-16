@@ -93,13 +93,13 @@ for region_name in ["regionc"]:
     # Early stopping parameters
     PATIENCE = PATIENCE
     MAX_NUM_EPOCHS = MAX_NUM_EPOCHS
-    # MAX_NUM_EPOCHS = 400
+    MAX_NUM_EPOCHS = 330
 
     # Number of training runs for mean and std of metrics
     NUM_RUNS = NUM_RUNS
     NUM_RUNS = 1
     LEARNING_RATE = GP_LEARNING_RATE
-    LEARNING_RATE = 0.0001
+    LEARNING_RATE = 0.001
     WEIGHT_DECAY = WEIGHT_DECAY
 
     # Pass in all the training data for GPs
