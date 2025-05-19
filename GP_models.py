@@ -26,15 +26,16 @@
 # this is a constant term
 
 import torch
-import torch.optim as optim
-import numpy as np
-import math
-import gc
 
 from kernels import *
 from simulate import *
-from metrics import compute_RMSE
 
+###############################
+### INTERWOVEN structure GP ###
+###############################
+# NOTE: In the experiment the interwoven structure is more stable during training
+
+# try interleaved variant
 def GP_predict(
     x_train,
     y_train,
@@ -43,35 +44,274 @@ def GP_predict(
     mean_func = None,
     divergence_free_bool = True):
     """ 
-    Predicts the mean and covariance of the test data given the training data and hyperparameters
+    Predicts the mean and covariance of the test data given the training data and hyperparameters (or fixed noise inputs). This implementation uses the interleaved structure.
 
     Args:
         x_train (torch.Size([n_train, 2])): x1 and x2 coordinates
         y_train (torch.Size([n_train, 2])): u and v, might be noisy
         x_test (torch.Size([n_test, 2])): x1 and x2 coordinates
-        hyperparameters (list): varying length depending on kernel
-        mean_func (function, optional): mean function. Defaults to None. Inputs torch.Size([n_test, 2]) and returns torch.Size([n_test, 2] too
-        divergence_free_bool (bool, optional): _description_. Defaults to True.
+
+        hyperparameters (list):    
+            varying length depending on kernel
+            [sigma_n, sigma_f, l]: 
+                sigma_n can either be a torch.Size([1]) or a torch.Size([y_train.shape[0]])
+
+        mean_func (function, optional): 
+            mean function. Defaults to None. Inputs torch.Size([n_test, 2]) and returns torch.Size([n_test, 2] too.
+
+        divergence_free_bool (bool, optional): Indicating whether we use a df kernel or a regular kernel. Defaults to True.
 
     Returns:
         predictive_mean (torch.Size([n_test, 2])):
         predictive_covariance (torch.Size([n_test, n_test])):
-        lml (torch.Size([1])): (positive) log marginal likelihood
+        lml (torch.Size([1])): (positive) log marginal likelihood of (x_train, y_train)
     """
-    # Extract first hyperparameter sigma_n: noise - given, not optimised
-    # sigma_n can be a tensor or a scalar
+    # Extract the first hyperparameter from the list (the noise level) - this can be a tensor of size [1] or [n_train] which is the vector diagonal
     sigma_n = hyperparameters[0]
 
-    # Ensure positivity
-    # TODO: check if this is needed
+    # TODO: check if we need to enforce positivity for the experiments where sigma_n is treated as hyperparameter
     # sigma_n = torch.clip(sigma_n, min = 2e-6)
     
     # Extract number of rows (data points) in x_test
     n_test = x_test.shape[0]
     
+    # Select kernel function
     kernel_func = divergence_free_se_kernel if divergence_free_bool else block_diagonal_se_kernel
 
-    # default is zero mean
+    ### MEAN FUNCTION ###
+    # the default is a zero mean function
+    if mean_func == None:
+        mean_y_train = torch.zeros_like(x_train)
+        mean_y_test = torch.zeros_like(x_test) # torch.Size([n_test, 2]
+    else:
+        mean_y_train = mean_func(x_train)
+        mean_y_test = mean_func(x_test) # torch.Size([n_test, 2]
+
+    # Outputs kernel of shape torch.Size([2 * n_train, 2 * n_train])
+    K_train_train = kernel_func(
+        x_train, 
+        x_train, 
+        hyperparameters)
+
+    # Add noise to the diagonal (variance) of the training data
+    # NOTE: This should works for both a scalar and a vector with locally varying noise levels. std gets squared.
+    K_train_train_noisy = K_train_train + torch.eye(K_train_train.shape[0], device = K_train_train.device) * sigma_n**2
+
+    # reshape after adding noise (block form)
+    K_train_train_noisy_interleaved = reformat_block_kernel_to_interleaved_kernel(K_train_train_noisy)
+
+    # Symmetry check
+    if (K_train_train_noisy_interleaved != K_train_train_noisy_interleaved.mT).any():
+        print("K_train_train_noisy is not symmetric")
+
+    # K_* in Rasmussen is K(x_train, x_test)
+    K_train_test = kernel_func(
+        x_train, 
+        x_test,
+        hyperparameters) # shape: torch.Size([2 * n_test, 2 * n_train])
+    
+    K_train_test_interleaved = reformat_block_kernel_to_interleaved_kernel(K_train_test)
+
+    # transpose K_train_test_interleaved to get K_test_train_interleaved
+    K_test_train_interleaved = K_train_test_interleaved.mT  # shape: torch.Size([2 * n_test, 2 * n_train])
+
+    K_test_test = kernel_func(
+        x_test,
+        x_test,
+        hyperparameters)
+    
+    K_test_test_interleaved = reformat_block_kernel_to_interleaved_kernel(K_test_test)
+    
+    # Determine L - torch.Size([2 * n_train, 2 * n_train])
+    # L.T \ (L \ y) in one step - torch.Size([2 * n_train, 1])
+
+    ### Step 2: Cholesky decomposition with jitter
+    jitter = 0.0  # Start with no jitter
+    max_tries = 6
+    attempt = 0
+
+    I = torch.eye(K_train_train_noisy_interleaved.size(0), device = K_train_train_noisy_interleaved.device)
+
+    while attempt < max_tries:
+        try:
+            L = torch.linalg.cholesky(K_train_train_noisy_interleaved + jitter * I)
+            # if jitter > 0:
+               # print(f"Cholesky succeeded with jitter = {jitter}")
+            break  # Success!
+        except RuntimeError:
+            # if attempt == 0:
+                # print("Cholesky failed without jitter. Adding jitter...")
+            attempt += 1
+            jitter = 1e-6 * (10 ** attempt)  # Exponential backoff
+    else:
+        raise RuntimeError(f"Cholesky decomposition failed after {max_tries} attempts. Final jitter: {jitter}")
+
+    y_train_minus_mean = y_train - mean_y_train # both inputs: torch.Size([2 x n_train, 1])
+
+    # NOTE: this is the interleaved version
+    y_train_minus_mean_flat_interleaved = y_train_minus_mean.reshape(-1).unsqueeze(-1) # torch.Size([2 x n_train, 1])
+
+    # alpha: torch.Size([2 x n_train, 1])
+    alpha = torch.cholesky_solve(y_train_minus_mean_flat_interleaved, L, upper = False)
+
+    # matrix multiplication
+    # torch.Size([2 * n_test, 2 * n_train]) * torch.Size([2 * n_train, 1])
+    # alpha needs to be changed to datatype double because K is
+    # predictive mean now is torch.Size([2 * n_test]) (after squeezing explicit last dimension)
+    predictive_mean_interleaved = torch.matmul(K_test_train_interleaved, alpha).squeeze()
+
+    # Make mean torch.Size([n_test, 2]) and add mean_y_test which has the same format
+    # NOTE: predictive mean is returned with two columns so we rename this just predictive_mean
+    predictive_mean = predictive_mean_interleaved.reshape(-1, 2) + mean_y_test
+
+    # Step 3: Solve for V = L^-1 * K(X_*, X)
+    # K_* is K_train_test
+    # L is lower triangular
+    v = torch.linalg.solve_triangular(L, K_train_test_interleaved, upper = False)
+    # same as
+    # v = torch.linalg.solve(L, K_train_test)
+    # torch.matmul(v, v.T) would give the wrong shape
+    predictive_covariance_interleaved = K_test_test_interleaved - torch.matmul(v.T, v)
+
+    # reshape to block form
+    predictive_covariance = reformat_interleaved_kernel_to_block_kernel(predictive_covariance_interleaved)
+
+    #################################################
+    ### Log Marginal Likelihood (LML) Calculation ###
+    #################################################
+    # How well does the model fit the training data we have access to?
+
+    # 0.5 * y^T * alpha
+    # squeeze to remove redundant dimension
+    # y_train are noisy data observations
+    lml_term1 = - 0.5 * torch.matmul(y_train_minus_mean_flat_interleaved.T, alpha).squeeze()
+
+    # Is uses only training data
+    # sum(log(L_ii)))
+    lml_term2 = - torch.sum(torch.log(torch.diagonal(L)))
+
+    # Constant term - technically not optimised 
+    # n/2 * log(2 * pi)
+    lml_term3 = - (y_train.shape[0]/2) * torch.log(torch.tensor(2 * torch.pi))
+
+    lml = lml_term1 + lml_term2 + lml_term3
+
+    # print(f"lml: {lml}")
+    return predictive_mean, predictive_covariance, lml
+
+#########################################################################################################
+# helper functions
+
+def reformat_block_kernel_to_interleaved_kernel(K):
+    """
+    Reformats any block covariance matrix (i.e. kernel) to the interleaved format. This works on square and non-square (i.e. K_train_test) matrices
+
+    Args:
+        K (torch.Size([2 * n_rows, 2 * n_columns])): Block kernel
+            Shape is like: (4 big blocks for a 2D kernel)
+            [[UU, UV],
+            [VU, VV]]
+    Returns:
+        K_interleaved (torch.Size([2 * n_rows, 2 * n_columns])): Interleaved kernel
+            Shape is like of both rows and columns is like [u1, v1, u2, v2, ...] where u and v (both output dims are interwoven)
+    """
+    # Extract dims from kernel directly
+    n_rows = K.shape[0] // 2
+    n_columns = K.shape[1] // 2
+
+    # Initialise a container where we have a 2 x 2 mini covariance matrix for each pair of points
+    K_interleaved = torch.zeros((n_rows, n_columns, 2, 2), device = K.device)
+    
+    # Fill in the interleaved kernel in 2 x 2 shape
+    # e.g. the upper left block populates all upper left corners of the mini covariance matrices
+    K_interleaved[:, :, 0, 0] = K[:n_rows, :n_columns]
+    K_interleaved[:, :, 0, 1] = K[:n_rows, n_columns:]
+    K_interleaved[:, :, 1, 0] = K[n_rows:, :n_columns]
+    K_interleaved[:, :, 1, 1] = K[n_rows:, n_columns:]
+
+    K_interleaved = K_interleaved.permute(0, 2, 1, 3).reshape(n_rows * 2, n_columns * 2)
+
+    return K_interleaved
+
+def reformat_interleaved_kernel_to_block_kernel(K):
+    """
+    Reformats any interwoven covariance matrix (i.e. kernel) to the block format. This works on square and non-square (i.e. K_train_test) matrices
+
+    Args:
+        K_interleaved (torch.Size([2 * n_rows, 2 * n_columns])): Interleaved kernel
+            Shape is like of both rows and columns is like [u1, v1, u2, v2, ...] where u and v (both output dims are interwoven)
+    Returns:
+        K (torch.Size([2 * n_rows, 2 * n_columns])): Block kernel
+            Shape is like: (4 big blocks for a 2D kernel)
+            [[UU, UV],
+            [VU, VV]]
+    """
+    # Extract dims from kernel directly
+    n_rows = K.shape[0] // 2
+    n_columns = K.shape[1] // 2
+
+    # Reshape to (n_rows, n_columns, 2, 2), i.e. a mini covariance matrix for each pair of points
+    K_reshaped = K.reshape(n_rows, 2, n_columns, 2).permute(0, 2, 1, 3) # shape: (n_rows, n_columns, 2, 2)
+
+    # Now extract the 2x2 blocks into the block kernel
+    K_block = torch.zeros((2 * n_rows, 2 * n_columns), device = K.device)
+
+    K_block[:n_rows, :n_columns] = K_reshaped[:, :, 0, 0]
+    K_block[:n_rows, n_columns:] = K_reshaped[:, :, 0, 1]
+    K_block[n_rows:, :n_columns] = K_reshaped[:, :, 1, 0]
+    K_block[n_rows:, n_columns:] = K_reshaped[:, :, 1, 1]
+
+    return K_block
+
+
+##########################
+### Block structure GP ###
+##########################
+
+def GP_predict_block(
+    x_train,
+    y_train,
+    x_test, 
+    hyperparameters,
+    mean_func = None,
+    divergence_free_bool = True):
+    """ 
+    Predicts the mean and covariance of the test data given the training data and hyperparameters (or fixed noise inputs). This implementation uses the block structure.
+
+    Args:
+        x_train (torch.Size([n_train, 2])): x1 and x2 coordinates
+        y_train (torch.Size([n_train, 2])): u and v, might be noisy
+        x_test (torch.Size([n_test, 2])): x1 and x2 coordinates
+
+        hyperparameters (list):    
+            varying length depending on kernel
+            [sigma_n, sigma_f, l]: 
+                sigma_n can either be a torch.Size([1]) or a torch.Size([y_train.shape[0]])
+
+        mean_func (function, optional): 
+            mean function. Defaults to None. Inputs torch.Size([n_test, 2]) and returns torch.Size([n_test, 2] too.
+
+        divergence_free_bool (bool, optional): Indicating whether we use a df kernel or a regular kernel. Defaults to True.
+
+    Returns:
+        predictive_mean (torch.Size([n_test, 2])):
+        predictive_covariance (torch.Size([n_test, n_test])):
+        lml (torch.Size([1])): (positive) log marginal likelihood of (x_train, y_train)
+    """
+    # Extract the first hyperparameter from the list (the noise level) - this can be a tensor of size [1] or [n_train]
+    sigma_n = hyperparameters[0]
+
+    # TODO: check if we need to enforce positivity for the experiments where sigma_n is treated as hyperparameter
+    # sigma_n = torch.clip(sigma_n, min = 2e-6)
+    
+    # Extract number of rows (data points) in x_test
+    n_test = x_test.shape[0]
+    
+    # Select kernel function
+    kernel_func = divergence_free_se_kernel if divergence_free_bool else block_diagonal_se_kernel
+
+    ### MEAN FUNCTION ###
+    # the default is a zero mean function
     if mean_func == None:
         mean_y_train = torch.zeros_like(x_train)
         mean_y_test = torch.zeros_like(x_test)
@@ -85,24 +325,22 @@ def GP_predict(
         x_train, 
         hyperparameters)
 
-    # Add noise to the diagonal
-    # NOTE: This should works for scalar and vectors
+    # Add noise to the diagonal (variance) of the training data
+    # NOTE: This should works for both a scalar and a vector with locally varying noise levels. std gets squared.
     K_train_train_noisy = K_train_train + torch.eye(K_train_train.shape[0], device = K_train_train.device) * sigma_n**2
 
     # Symmetry check
     if (K_train_train_noisy != K_train_train_noisy.mT).any():
         print("K_train_train_noisy is not symmetric")
 
-    # torch.Size([2 * n_train, 2 * n_test])
-    # K_* in Rasmussen is (x_train, X_test)
+    # K_* in Rasmussen is K(x_train, x_test)
     K_train_test = kernel_func(
         x_train, 
         x_test,
-        hyperparameters)
+        hyperparameters) # shape: torch.Size([2 * n_test, 2 * n_train])
 
-    # matrix transpose
-    # torch.Size([2 * n_test, 2 * n_train])
-    K_test_train = K_train_test.mT
+    # transpose K_train_test to get K_test_train
+    K_test_train = K_train_test.mT  # shape: torch.Size([2 * n_test, 2 * n_train])
 
     K_test_test = kernel_func(
         x_test,
@@ -113,6 +351,7 @@ def GP_predict(
     # L = torch.linalg.cholesky(K_train_train_noisy, upper = False)
     # L.T \ (L \ y) in one step - torch.Size([2 * n_train, 1])
 
+    ### Step 2: Cholesky decomposition with jitter
     jitter = 0.0  # Start with no jitter
     max_tries = 6
     attempt = 0
@@ -159,280 +398,24 @@ def GP_predict(
     # torch.matmul(v, v.T) would give the wrong shape
     predictive_covariance = K_test_test - torch.matmul(v.T, v)
 
-    # matmul: torch.Size([1, 10]) * torch.Size([10, 1])
+    #################################################
+    ### Log Marginal Likelihood (LML) Calculation ###
+    #################################################
+    # How well does the model fit the training data we have access to?
+
     # 0.5 * y^T * alpha
     # squeeze to remove redundant dimension
     # y_train are noisy data observations
     lml_term1 = - 0.5 * torch.matmul(y_train_minus_mean_flat.T, alpha).squeeze()
 
+    # Is uses only training data
     # sum(log(L_ii)))
     lml_term2 = - torch.sum(torch.log(torch.diagonal(L)))
 
     # Constant term - technically not optimised 
     # n/2 * log(2 * pi)
-    lml_term3 = - (y_train.shape[0]/2) * torch.log(torch.tensor(2 * math.pi))
-
-    lml = lml_term1 + lml_term2 + lml_term3
-
-    # del K_train_train, K_train_train_noisy, K_train_test, K_test_train, K_test_test, L, v
-    # gc.collect()
-    # torch.cuda.empty_cache()
-
-    return predictive_mean, predictive_covariance, lml
-
-
-def forward_trainlml_and_rmse(
-            x_train, 
-            y_train, 
-            xtest_or_xtrain, 
-            ytest_or_ytrain, 
-            list_of_hypers,  
-            div_free_bool,
-            mean_func = None):
-    
-    # NOTE: Keep order but therefore also have default for div-free, because non-default argument can' follow default args.
-    
-    # Wrapper function
-
-    mean_pred, _, lml_train = GP_predict(
-           x_train,
-           y_train,
-           xtest_or_xtrain, # predict training data
-           list_of_hypers, # list of (initial) hypers
-           mean_func, # no mean aka "zero-mean function"
-           div_free_bool)
-    
-    # order: true, pred
-    RMSE = compute_RMSE(ytest_or_ytrain, mean_pred)
-
-    return lml_train, RMSE
-
-############
-
-def predict(X_train,
-            Y_train_noisy,
-            X_test, 
-            hyperparameters,
-            divergence_free_bool = True):
-    """ 
-    Predicts the mean and covariance of the test data given the training data and hyperparameters
-
-    Args:
-        X_train (torch.Size([n_train, 2])): x1 and x2 coordinates
-        Y_train_noisy (torch.Size([n_train, 2])): u and v
-        X_test (torch.Size([n_test, 2])): x1 and x2 coordinates
-        hyperparameters (list): varying length depending on kernel
-        divergence_free_bool (bool, optional): _description_. Defaults to True.
-
-    Returns:
-        predictive_mean (torch.Size([n_test, 2])):
-        predictive_covariance (torch.Size([n_test, n_test])):
-        lml (torch.Size([1])): (positive) log marginal likelihood
-    """
-    
-    # Extract first hyperparameter sigma_n: noise - given, not optimised
-    sigma_n = hyperparameters[0]
-    
-    # Extract number of rows (data points) in X_train and X_test
-    n_test = X_test.shape[0]
-    n_train = X_train.shape[0]
-    
-    kernel_func = divergence_free_se_kernel if divergence_free_bool else block_diagonal_se_kernel
-
-    # Outputs kernel of shape torch.Size([2 * n_train, 2 * n_train])
-    K_train_train = kernel_func(
-        X_train, 
-        X_train, 
-        hyperparameters)
-
-    # Add noise to the diagonal
-    K_train_train_noisy = K_train_train + torch.eye(K_train_train.shape[0], device = K_train_train.device) * sigma_n**2
-
-    # torch.Size([2 * n_train, 2 * n_test])
-    # K_* in Rasmussen is (X_train, X_test)
-    K_train_test = kernel_func(
-        X_train, 
-        X_test,
-        hyperparameters)
-
-    # matrix transpose
-    # torch.Size([2 * n_test, 2 * n_train])
-    K_test_train = K_train_test.mT
-
-    K_test_test = kernel_func(
-        X_test,
-        X_test,
-        hyperparameters)
-    
-    # Determine L - torch.Size([2 * n_train, 2 * n_train])
-    L = torch.linalg.cholesky(K_train_train_noisy, upper = False)
-    # L.T \ (L \ y) in one step - torch.Size([2 * n_train, 1])
-
-    # Make y flat by concatenating u and v (both columns) AFTER each other
-    # torch.Size([2 x n_train, 1])
-    Y_train_noisy_flat = torch.cat([Y_train_noisy[:, 0], Y_train_noisy[:, 1]]).unsqueeze(-1)
-
-    # alpha: torch.Size([2 x n_train, 1])
-    alpha = torch.cholesky_solve(Y_train_noisy_flat, L, upper = False)
-
-    # matrix multiplication
-    # torch.Size([2 * n_test, 2 * n_train]) * torch.Size([2 * n_train, 1])
-    # alpha needs to be changed to datatype double because K is
-    # predictive mean now is torch.Size([2 * n_test]) (after squeezing explicit last dimension)
-    predictive_mean = torch.matmul(K_test_train, alpha.double()).squeeze()
-    # reshape to separate u and v (which were concatnated after each other)
-    predictive_mean = torch.cat([predictive_mean[:n_test].unsqueeze(-1), predictive_mean[n_test:].unsqueeze(-1)], dim = -1)
-
-    # Step 3: Solve for V = L^-1 * K(X_*, X)
-    # K_* is K_train_test
-    # L is lower triangular
-    v = torch.linalg.solve_triangular(L, K_train_test, upper = False)
-    # same as
-    # v = torch.linalg.solve(L, K_train_test)
-    # torch.matmul(v, v.T) would give the wrong shape
-    predictive_covariance = K_test_test - torch.matmul(v.T, v)
-
-    # matmul: torch.Size([1, 10]) * torch.Size([10, 1])
-    # 0.5 * y^T * alpha
-    # squeeze to remove redundant dimension
-    # Y_train_noisy are noisy data observations
-    lml_term1 = - 0.5 * torch.matmul(Y_train_noisy_flat.T, alpha).squeeze()
-
-    # sum(log(L_ii)))
-    lml_term2 = - torch.sum(torch.log(torch.diagonal(L)))
-
-    # Constant term - technically not optimised 
-    # n/2 * log(2 * pi)
-    lml_term3 = - (Y_train_noisy.shape[0]/2) * torch.log(torch.tensor(2 * math.pi))
+    lml_term3 = - (y_train.shape[0]/2) * torch.log(torch.tensor(2 * torch.pi))
 
     lml = lml_term1 + lml_term2 + lml_term3
 
     return predictive_mean, predictive_covariance, lml
- 
-
-from torch import optim
-
-### OPTIMISATION ###
-def optimise_hypers_on_train(
-        hyperparameters_initial, 
-        X_train, 
-        Y_train_noisy, 
-        X_test,
-        divergence_free_bool, 
-        max_optimisation_iterations = 2000,
-        patience = 20,
-        learning_rate = 0.001):
-
-        # Clone hyperparameters to avoid modifying the original tensor
-        # preserve what requires grad
-        hyperparameters = [h.clone().detach().requires_grad_(h.requires_grad) for h in hyperparameters_initial]
-
-        lml_log = []
-
-        _, _, lml_initial = predict(
-                X_train,
-                Y_train_noisy,
-                X_test,
-                hyperparameters,
-                divergence_free_bool) # Pass in the divergence free boolean
-        
-        lml_log.append(lml_initial.item())
-        
-        # print(f"Initial hyperparameters: {', '.join(f'{h.detach().numpy()[0]:.3f}' for h in hyperparameters)}")
-        formatted_hypers = []
-        for h in hyperparameters:
-                h_np = h.detach().numpy()
-                if h_np.ndim == 0:  # Scalar tensor
-                        formatted_hypers.append(f"{h_np:.3f}")
-                elif h_np.ndim == 1 and h_np.shape[0] == 1:  # Single-element 1D tensor
-                        formatted_hypers.append(f"{h_np[0]:.3f}")
-                else:  # Higher-dimensional tensors (e.g., matrices)
-                        formatted_hypers.append(str(h_np))  # Convert to string for safe printing
-
-        print(f"Initial hyperparameters: {', '.join(formatted_hypers)}")
-
-        print(f"Initial LML (higher is better): {lml_initial.item():.2f}")
-        print()
-        
-        # It doesn't hurt to pass in ones here that do NOT require grad
-        optimizer = optim.Adam(
-                hyperparameters, 
-                lr = learning_rate) 
-
-        best_loss = float('inf') # initialse as infinity
-        best_hypers = None
-        no_improvement_count = 0
-
-        for trial in range(max_optimisation_iterations):
-                
-                # Compute nlml
-                _, _, lml = predict(
-                X_train,
-                Y_train_noisy,
-                X_test,
-                hyperparameters,
-                divergence_free_bool)
-
-                lml_log.append(lml.item())
-                
-                # We are minimising the negative log marginal likelihood, like a loss function
-                loss = - lml # NLML
-
-                # Check for improvement
-                if loss < best_loss:
-                        best_loss = loss.item() # If better than current, save loss and hypers
-                        # we need to clone and not reference
-                        best_hypers = [h.clone().detach() for h in hyperparameters]
-                
-                        no_improvement_count = 0  # Reset counter
-
-                else:
-                        no_improvement_count += 1  # Increase counter
-
-                ### CASE 1: Early stopping
-                if no_improvement_count >= patience:
-                # Printing current state
-                        print(f"The optimisation processes is stopped early, after {trial+1}/{max_optimisation_iterations} iterations, due to loss stagnation.")
-
-                        formatted_hypers = []
-                        for h in best_hypers:
-                                h_np = h.detach().numpy()
-                                if h_np.ndim == 0:  # Scalar tensor
-                                        formatted_hypers.append(f"{h_np:.3f}")
-                                elif h_np.ndim == 1 and h_np.shape[0] == 1:  # Single-element 1D tensor
-                                        formatted_hypers.append(f"{h_np[0]:.3f}")
-                                else:  # Higher-dimensional tensors (e.g., matrices)
-                                        formatted_hypers.append(str(h_np))  # Convert to string for safe printing
-
-                        print(f"Best hyperparameters: {', '.join(formatted_hypers)}")
-
-                        # print(f"Best hyperparameters: {', '.join(f'{h.detach().numpy().item():.3f}' for h in best_hypers)}")
-                        print(f"Best LML (higher is better): {(- best_loss):.2f}")
-                        
-                        break
-                
-                optimizer.zero_grad()  # Reset gradients
-                loss.backward()  # Compute gradients
-                optimizer.step()  # Update hypers
-
-                # if trial % 10 == 0:  # Print every 10 iterations
-                #        print(f"Current hyperparameters: {', '.join(f'{h.detach().numpy()[0]:.3f}' for h in hyperparameters)}")
-                #        print(f"Current NLML: {nlml.item():.2f}")
-
-        ### CASE 2: Regular stopping after iterations are up
-        print(f"Optimisation complete after {trial+1}/{max_optimisation_iterations} iterations. Maybe consider adjusting the optimisation scheme (e.g. learning rate, max iterations, patience, etc.).")
-
-        formatted_hypers = []
-        for h in best_hypers:
-                h_np = h.detach().numpy()
-                if h_np.ndim == 0:  # Scalar tensor
-                        formatted_hypers.append(f"{h_np:.3f}")
-                elif h_np.ndim == 1 and h_np.shape[0] == 1:  # Single-element 1D tensor
-                        formatted_hypers.append(f"{h_np[0]:.3f}")
-                else:  # Higher-dimensional tensors (e.g., matrices)
-                        formatted_hypers.append(str(h_np))  # Convert to string for safe printing
-
-        print(f"Best hyperparameters: {', '.join(formatted_hypers)}")
-        print(f"Best LML (higher is better): {(- best_loss):.2f}") # The loss is NLML so LML is - loss
-        
-        return best_hypers, lml_log

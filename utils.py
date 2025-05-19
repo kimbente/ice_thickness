@@ -76,40 +76,6 @@ def make_grid(n_side, start = 0.0, end = 1.0):
     
     return x_test_grid, x_test_long
 
-def compute_divergence_field(mean_pred, x_grad):
-    """_summary_
-
-    Args:
-        mean_pred (torch.Size(N, 2)): _description_
-        x_grad (torch.Size(N, 2)): _description_
-
-    Returns:
-        torch.Size(N, 1): The div field is scalar because we add the two components
-    """
-    # Because autograd computes gradients of the output w.r.t. the inputs...
-    # ... we specify which component of the output you want the gradient of via masking
-    # mean_pred is a vector values output
-    u_indicator, v_indicator = torch.zeros_like(mean_pred), torch.zeros_like(mean_pred)
-
-    # output mask
-    u_indicator[:, 0] = 1.0 # output column u selected
-    v_indicator[:, 1] = 1.0 # output column v selected
-
-    # divergence field (positive and negative divergences in case of non-divergence-free models)
-    # NOTE: We can imput a whole field because it only depends on the point input
-    div_field = (torch.autograd.grad(
-        outputs = mean_pred,
-        inputs = x_grad,
-        grad_outputs = u_indicator,
-        create_graph = True
-        )[0][:, 0] + torch.autograd.grad(
-        outputs = mean_pred,
-        inputs = x_grad,
-        grad_outputs = v_indicator,
-        create_graph = True
-        )[0][:, 1])
-    
-    return div_field
 
 
 def draw_n_samples_block_input(mean, covar, n_samples, max_jitter = 1e-2):

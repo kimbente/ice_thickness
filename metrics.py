@@ -1,29 +1,46 @@
 import torch
 
+##############################
+### Root Mean Square Error ###
+##############################
+
 def compute_RMSE(y_true, y_pred):
     return torch.sqrt(torch.mean(torch.square(y_true - y_pred)))
+
+############################
+### Mean Absolute Error ###
+############################
 
 def compute_MAE(y_true, y_pred):
     return torch.mean(torch.abs(y_true - y_pred))
 
-def compute_NLL(y_true, y_mean_pred, y_covar_pred):
-    """NLL quantifies how well the predicted Gaussian distribution fits the observed data.
+##########################
+### NLL sparse version ###
+##########################
+
+def compute_NLL_sparse(y_true, y_mean_pred, y_covar_pred):
+    """ Computes a sparse version of the Negative Log-Likelihood (NLL) for a 2D Gaussian distribution. This sparse version neglects cross-covariance terms and is more efficient for large datasets.
+    
+    NLL: The NLL quantifies how well the predicted Gaussian distribution fits the observed data.
     Sparse format: each of the N points has its own 2×2 covariance matrix. (This is more than just the diagonal of the covariance matrix, but not the full covar.)
 
     Args:
-        y_true (torch.Size([N, 2])): true, observed vectors
-        y_mean_pred (torch.Size([N, 2])): mean predictions
-        y_covar_pred (torch.Size([N x 2, N x 2])): predicted covariance matrix
-            if N = 400, then y_covar_pred is torch.Size([800, 800]) so 640000 elements
-            N x 2 x 2 = only 1600 elements
+        y_true (torch.Tensor): True observations of shape (N, 2).
+        y_mean_pred (torch.Tensor): Mean predictions of shape (N, 2).
+        y_covar_pred (torch.Tensor): Full predicted covariance matrix of shape (N * 2, N * 2).(BLOCK FORMAT) [u1, u2, u3, ..., v1, v2, v3, ...]
+            If N = 400, then y_covar_pred is torch.Size([800, 800]) so 640000 elements N x 2 x 2 = only 1600 elements.
+        jitter (float, optional): Small value added to the diagonal for numerical stability. Defaults to 0.5 * 1e-2 - quite high but we need to keep it consistent across all models.
+
+    Returns:
+        torch.Tensor(): Negative Log-Likelihood (NLL) scalar.
     """
-    # Extract number of points/cardinality
+    # Extract number of points
     N = y_true.shape[0]
 
-    ### STEP 1:
-    # We reshape y_covar_pred, the predictive covariance matrix, to a sparse format
-    # Change format of y_covar_pred from (N x 2, N x 2) to (N, 2, 2) so N (2, 2) matrices:
-    
+    # Step 1: Sparsify the covariance matrix
+    # Change format of y_covar_pred from (N x 2, N x 2) to (N, 2, 2) so N (2, 2) matrices.
+    # NOTE: This is a sparse version of the covariance matrix, neglecting cross-covariance terms.
+
     # extract diagonal of upper left quadrant: variance of the first output (y1) at each point.
     var_y1_y1 = torch.diag(y_covar_pred[:N, :N])
     # extract diagonal of ulower right quadrant: variance of the second output (y2) at each point
@@ -37,116 +54,147 @@ def compute_NLL(y_true, y_mean_pred, y_covar_pred):
     col1 = torch.cat([var_y1_y1.unsqueeze(-1), covar_y1_y2.unsqueeze(-1)], dim = -1)
     col2 = torch.cat([covar_y2_y1.unsqueeze(-1), var_y2_y2.unsqueeze(-1)], dim = -1)
 
-    # batch tensor
-    # At each point N, what is the predicted variance of y1 and y2 and what is the predicted covariance between y1 and y2? (symmetric)
-    covar_N22 = torch.cat([col1.unsqueeze(-1), col2.unsqueeze(-1)], dim = -1)
+    # At each point N, what is the predicted variance of y1 and y2 and 
+    # what is the predicted covariance between y1 and y2? (symmetric)
+    covar_N22 = torch.cat([col1.unsqueeze(-1), col2.unsqueeze(-1)], dim = -1) # shape: torch.Size([N, 2, 2])
+
+
+    # STEP 2: Compute Mahalanobis distance efficiently
+    # Compute the difference between the true and predicted values (y - μ)
+    # NOTE: order is (true - pred) to match the Mahalanobis distance formula
+    # NOTE: we can also keep this shape
+    diff = y_true - y_mean_pred   # Shape: (N, 2)
     
-    ### STEP 2:
-    # Calculate the log likelihood in torch
+    # Reshape diff to (N, 2, 1) to do matrix multiplication with (N, 2, 2)
+    diff = diff.unsqueeze(-1)  # shape: (N, 2, 1)
 
-    # torch.Size([N, 2]) differences in y
-    diff = y_mean_pred - y_true
+    sigma_inverse = torch.inverse(covar_N22) # shape: torch.Size([N, 2, 2])
 
-    # batch matrix multiplication (n, 2) * (n, 2, 2) -> (n, 2)
-    # torch.inverse(covar_N22): Inverts each (2×2) covariance matrix
-    # diff.unsqueeze(-1): Reshapes (N, 2) → (N, 2, 1) for matrix multiplication
-    # .sum(dim=-1): Sum across both dimensions (y1, y2).
-    # the inverse is batchwise
-    mahalanobis_dist = torch.mul(torch.matmul(torch.inverse(covar_N22), diff.unsqueeze(-1)).squeeze(-1), diff).sum(dim = -1)
+    # Compute (Σ⁻¹ @ diff) → shape: (N, 2, 1)
+    maha_component = torch.matmul(sigma_inverse, diff)
 
-    # element-wise determenant of all 2x2 matrices
-    log_det_Sigma = torch.logdet(covar_N22)
+    # Compute (diff^T @ Σ⁻¹ @ diff) for each point → shape: (N, 1, 1)
+    # transpose diff to (N, 1, 2) for matrix multiplication
+    mahalanobis_distances = torch.matmul(diff.transpose(1, 2), maha_component)
 
-    # element-wise log likelihood
+    # Sum (N, ) distances to get a single value
+    mahalanobis_distances = mahalanobis_distances.squeeze().sum()
+
+
+    # STEP 3: Log determinant of the covariance matrix
+
+    # element-wise determinant of all 2x2 matrices: sum
+    sign, log_absdet = torch.slogdet(covar_N22)
+    if not torch.all(sign > 0):
+        print("Warning: Non-positive definite matrix encountered.")
+        return torch.tensor(float("inf"), device = covar_N22.device)
+    log_det_Sigma = log_absdet.sum()
+
+
+    # STEP 4: Compute normalisation term
+    d = N * 2  # Dimensionality (since we have two outputs per point)
+    normalisation_term = d * torch.log(torch.tensor(2 * torch.pi, device = y_true.device))
+
+    # Step 5: Combine 3 scalars into negative log-likelihood (NLL)
     # Gaussian log-likelihood formula: 2D
-    log_likelihood_tensor = -0.5 * (mahalanobis_dist + log_det_Sigma + 2 * torch.log(torch.tensor(2 * torch.pi)))
+    # NOTE: Gaussian log-likelihood 2D formula
+    log_likelihood =  - 0.5 * (mahalanobis_distances + log_det_Sigma + normalisation_term)
 
-    # sum over all N (because we are in the log domain)
-    nll = - log_likelihood_tensor.sum()
+    # return the negative log-likelihood
+    return - log_likelihood
 
-    return nll
+########################
+### NLL Full version ###
+########################
 
-#### Full version
-def compute_NLL_full(y_true, y_mean_pred, y_covar_pred, jitter = 1e-3):
+def compute_NLL_full(y_true, y_mean_pred, y_covar_pred, jitter = 0.5 * 1e-2):
     """Computes Negative Log-Likelihood (NLL) using the full covariance matrix.
 
     Args:
         y_true (torch.Tensor): True observations of shape (N, 2).
         y_mean_pred (torch.Tensor): Mean predictions of shape (N, 2).
-        y_covar_pred (torch.Tensor): Full predicted covariance matrix of shape (N*2, N*2).(BLOCK FORMAT)
-        jitter (float, optional): Small value added to the diagonal for numerical stability. Defaults to 1e-3 - quite high.
+        y_covar_pred (torch.Tensor): Full predicted covariance matrix of shape (N*2, N*2).(BLOCK FORMAT) [u1, u2, u3, ..., v1, v2, v3, ...]
+        jitter (float, optional): Small value added to the diagonal for numerical stability. Defaults to 0.5 * 1e-2 - quite high but we need to keep it consistent across all models.
 
     Returns:
-        torch.Tensor: Negative Log-Likelihood (NLL) scalar.
+        torch.Tensor(): Negative Log-Likelihood (NLL) scalar.
     """
-    # Number of points
+    # Extract number of points
     N = y_true.shape[0]
     
-    # Flatten y_true and y_mean_pred to match covariance matrix shape
-    # Reshape makes it [u1, v1, u2, v2, u3, v3, ...] instead of [u1, u2, u3, ..., v1, v2, v3, ...]
-    y_true_flat = y_true.reshape(-1, 1)  # Shape: (N*2, 1)
-    y_mean_pred_flat = y_mean_pred.reshape(-1, 1)  # Shape: (N*2, 1)
+    # STEP 1: Compute Mahalanobis distance efficiently
 
-    ### STEP 1: Stabilize covariance matrix
-    eps = torch.eye(y_covar_pred.shape[0], device = y_covar_pred.device) * jitter
-    y_covar_pred_stable = y_covar_pred + eps  # Regularization to ensure invertibility
+    # NOTE: Flatten y_true and y_mean_pred & match covariance matrix shape (BLOCK structure)
+    y_true_flat = torch.concat([y_true[:, 0], y_true[:, 1]], dim = 0).unsqueeze(-1)  # Shape: (2 * N, 1)
+    y_mean_pred_flat = torch.concat([y_mean_pred[:, 0], y_mean_pred[:, 1]], dim = 0).unsqueeze(-1)  # Shape: (2 * N, 1)
 
-    ### STEP 2: Compute Mahalanobis distance efficiently
-    diff = y_mean_pred_flat - y_true_flat  # Shape: (N*2, 1)
+    # Compute the difference between the true and predicted values (y - μ)
+    # NOTE: order is (true - pred) to match the Mahalanobis distance formula
+    diff = y_true_flat - y_mean_pred_flat   # Shape: (2 * N, 1)
+
+    # STEP 2: Stabilize covariance matrix with fixed jitter to ensure torch.linalg.cholesky() works
+    # NOTE: as this is our key metric it is better to add the same jitter to all elements. Thus rather than a loop, we add a fixed small value to the diagonal
+    y_covar_pred_stable = y_covar_pred + torch.eye(y_covar_pred.shape[0], device = y_covar_pred.device) * jitter
     
-    # Solve Σ⁻¹ (y - μ) using Cholesky decomposition for better stability
-    chol = torch.linalg.cholesky(y_covar_pred_stable)
-    mahalanobis_dist = torch.cholesky_solve(diff, chol).T @ diff
-    mahalanobis_dist = mahalanobis_dist.squeeze()
+    # Solve Σ⁻¹ using Cholesky decomposition to get lower-triangular matrix L for LL^T = Σ
+    chol = torch.linalg.cholesky(y_covar_pred_stable) # Shape: (2 * N, 2 * N)
 
-    ### STEP 3: Compute log-determinant robustly
-    sign, log_det_Sigma = torch.linalg.slogdet(y_covar_pred_stable)
+    # Solve (y - μ)T Σ⁻¹ (y - μ) using Cholesky decomposition for better stability
+    mahalanobis_dist = (torch.cholesky_solve(diff, chol).T @ diff).squeeze() # Shape: (1,)
+
+    # STEP 3: Compute log-determinant robustly
+    # HACK: avoids underflow/overflow
+    sign, log_det_Sigma = torch.linalg.slogdet(y_covar_pred_stable) # sign = 1 or -1, log_det_Sigma = log determinant (scalar)
     
     # If the determinant is non-positive, return a large NLL to indicate instability
     if sign <= 0:
+        print("Warning: Non-positive determinant encountered. Returning large NLL.")
         return torch.tensor(float("inf"), device = y_true.device)
     
-    ### STEP 4: Compute negative log-likelihood (NLL)
+    # STEP 4: Compute normalisation term
     d = N * 2  # Dimensionality (since we have two outputs per point)
-    log_likelihood = -0.5 * (mahalanobis_dist + log_det_Sigma + d * torch.log(torch.tensor(2 * torch.pi, device = y_true.device)))
+    normalisation_term = d * torch.log(torch.tensor(2 * torch.pi, device = y_true.device))
+
+    # Step 5: Combine 3 terms into negative log-likelihood (NLL)
+    log_likelihood = -0.5 * (mahalanobis_dist + log_det_Sigma + normalisation_term)
 
     return - log_likelihood  # Negative log-likelihood
 
-# This was replaced
-    """def log_likelihood_test(predictive_mean, predictive_covar, Y_test):
+########################
+### Divergence field ###
+########################
 
-    ### STEP 1 ###
-    # Change format of predctive covar from (N x 2, N x 2) to (N, 2, 2) so N (2, 2) matrices:
-    n_test = Y_test.shape[0]
+def compute_divergence_field(mean_pred, x_grad):
+    """_summary_
 
-    var_y1_y1 = torch.diag(predictive_covar[:n_test, :n_test])
-    var_y2_y2 = torch.diag(predictive_covar[n_test:, n_test:])
+    Args:
+        mean_pred (torch.Size(N, 2)): _description_
+        x_grad (torch.Size(N, 2)): _description_
 
-    covar_y1_y2 = torch.diag(predictive_covar[:n_test, n_test:])
-    covar_y2_y1 = torch.diag(predictive_covar[n_test:, :n_test])
-
-    col1 = torch.cat([var_y1_y1.unsqueeze(-1), covar_y1_y2.unsqueeze(-1)], dim = -1)
-    col2 = torch.cat([covar_y2_y1.unsqueeze(-1), var_y2_y2.unsqueeze(-1)], dim = -1)
-    
-    covar_N22 = torch.cat([col1.unsqueeze(-1), col2.unsqueeze(-1)], dim = -1)
-
-    ### STEP 2 ###
-    # cal log likelihood in torch 
-    # torch.Size([N, 2]) differences in y
-    diff = predictive_mean - Y_test
-
-    # batch matrix multiplication (n, 2) * (n, 2, 2) -> (n, 2)
-    mahalanobis_dist = torch.mul(torch.matmul(torch.inverse(covar_N22), diff.unsqueeze(-1)).squeeze(-1), diff).sum(dim = -1)
-    
-    # element-wise determenant of all 2x2 matrices
-    log_det_Sigma = torch.logdet(covar_N22)
-
-    # element-wise log likelihood
-    log_likelihood_tensor = -0.5 * (mahalanobis_dist + log_det_Sigma + 2 * torch.log(torch.tensor(2 * torch.pi)))
-
-    # sum over all N (because we are in the log domain)
-    log_likelihood = log_likelihood_tensor.sum()
-    
-    # scalar
-    return log_likelihood
+    Returns:
+        torch.Size(N, 1): The div field is scalar because we add the two components
     """
+    # Because autograd computes gradients of the output w.r.t. the inputs...
+    # ... we specify which component of the output you want the gradient of via masking
+    # mean_pred is a vector values output
+    u_indicator, v_indicator = torch.zeros_like(mean_pred), torch.zeros_like(mean_pred)
+
+    # output mask
+    u_indicator[:, 0] = 1.0 # output column u selected
+    v_indicator[:, 1] = 1.0 # output column v selected
+
+    # divergence field (positive and negative divergences in case of non-divergence-free models)
+    # NOTE: We can imput a whole field because it only depends on the point input
+    div_field = (torch.autograd.grad(
+        outputs = mean_pred,
+        inputs = x_grad,
+        grad_outputs = u_indicator,
+        create_graph = True
+        )[0][:, 0] + torch.autograd.grad(
+        outputs = mean_pred,
+        inputs = x_grad,
+        grad_outputs = v_indicator,
+        create_graph = True
+        )[0][:, 1])
+    
+    return div_field

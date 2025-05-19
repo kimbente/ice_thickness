@@ -15,7 +15,7 @@ def divergence_free_se_kernel(
         hyperparameters: list of length 3 containing sigma_n, sigma_f and l
 
     Returns:
-        K: torch.Size([n_rows * 2, n_columns * 2])
+        K: torch.Size([n_rows * 2, n_columns * 2]) returned in block structure
     """
     
     # We calculate the kernel for each pair of points
@@ -25,6 +25,9 @@ def divergence_free_se_kernel(
     # sigma_f_squared = hyperparameters[1]
     sigma_f = hyperparameters[1].to(row_tensor.device)
     l = hyperparameters[2].to(row_tensor.device)
+
+    # HACK: ensure that lengthscale is positive (add small value to avoid division by zero)
+    l = torch.nn.functional.softplus(l) + 1e-6
 
     if l.shape[0] == 1:
         lx1 = l
@@ -121,6 +124,7 @@ def block_diagonal_se_kernel(
     # torch.Size([n_rows, n_columns, 2])
     # Mahalanobis Distance (scaled)
     # l can be torch.Size([1]) or torch.Size([2]): both works
+    # l is squared here so we don't need to ensure positivity
     scaled_diff = (rows_expanded - columns_expanded) / l**2
 
     # square and reduce dimensions

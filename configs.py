@@ -1,5 +1,7 @@
 # Hyperparameters
 PATIENCE = 200  # Stop after 100 epochs with no improvement (50 before)
+GP_PATIENCE = 50 # GP convergence is more smooth so less patience is needed
+
 MAX_NUM_EPOCHS = 2000  # Adjust based on training needs - check if it gets exhausted
 NUM_RUNS = 10  # Number of training runs for metric evaluation
 
