@@ -1,5 +1,6 @@
 figures/
-results/
-results_byrd/
+results_sim/
+results_real/
 archive/
 dfNN_pretrained/
+__pychache__/

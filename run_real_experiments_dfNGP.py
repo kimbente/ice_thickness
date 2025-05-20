@@ -80,7 +80,7 @@ for region_name in ["regionc"]:
 
     print(f"\nTraining for {region_name.upper()}...")
 
-    # Store metrics for the current region (used for metrics_summary report)
+    # Store metrics for the current region (used for *metrics_summary* report and *metrics_per_run*)
     region_results = []
 
     ##########################################
