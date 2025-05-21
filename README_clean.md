@@ -21,5 +21,15 @@ Created data structure in your `path_to_bedmap_data_folder`
         - BEDMAP3 - Ice thickness, bed and surface elevation for Antarctica - standardised data points/AWI_2014_Recovery-Glacier_AIR_BM3.csv
         - [...]
 
+## Intructions for preprocessing the real data
+- In `preprocess_bedmap123.py`, specify your preference about which variable you care about by setting bool_remove_rows_without_ice_thickness and/or bool_remove_rows_without_bed_elevation. Also make sure you set `path_to_bedmap_data_folder` to the same path you used for the download scrip. We set `bool_remove_rows_without_ice_thickness = True` because we will be using ice thickness measurements.
+    - For only `bool_remove_rows_without_ice_thickness = True` the resulting data set contains ~ 82 M points (i.e. rows.) and is 9.5 GB large.
+    - For only `bool_remove_rows_without_bed_elevation = True` the resulting data set contains ~ 67 M points (i.e. rows.)
+- The script combines all csv files into a standardised pd Dataframe and performs some cleaning and preprocessing steps.
+- Number of csv files to combine: 151 
+    - Number of bedmap1 csv files: 1
+    - Number of bedmap2 csv files: 66
+    - Number of bedmap3 csv files: 84
+- The subset for the 300 x 300 km Byrd glacier catchments is more managable in size and only contains 750 k data points and is only 0.085 GB.
 
 
