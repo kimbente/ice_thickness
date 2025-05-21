@@ -201,7 +201,7 @@ for sim_name, sim_func in simulations.items():
         # B = nn.Parameter(B)
 
         # AdamW as optimizer for some regularisation/weight decay
-        optimizer = optim.AdamW([sigma_n, B_diag_two, B_off_diag], lr = MODEL_LEARNING_RATE, weight_decay = WEIGHT_DECAY)
+        optimizer = optim.AdamW([sigma_n, l, B_diag_two, B_off_diag], lr = MODEL_LEARNING_RATE, weight_decay = WEIGHT_DECAY)
         # NOTE: No need to initialise GP model like we initialise a NN model in torch
         
         # _________________

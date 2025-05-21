@@ -27,7 +27,8 @@ def divergence_free_se_kernel(
     l = hyperparameters[2].to(row_tensor.device)
 
     # HACK: ensure that lengthscale is positive (add small value to avoid division by zero)
-    l = torch.nn.functional.softplus(l) + 1e-6
+    # with beta = 5.0 the softplus function is very close to the identity function, so that values are interpretable
+    l = torch.nn.functional.softplus(l, beta = 5.0) + 1e-8
 
     if l.shape[0] == 1:
         lx1 = l
@@ -109,6 +110,9 @@ def block_diagonal_se_kernel(
     sigma_f = hyperparameters[1]
     l = hyperparameters[2]
     B = hyperparameters[3]
+
+    # NOTE: this is technically not needed (l is squared), but we apply it for consistency
+    l = torch.nn.functional.softplus(l, beta = 5.0) + 1e-8
 
     # ensuring that B is symmetric (i.e. the off diagnal elements must be the same for symmetry)
     B = (B + B.T) / 2

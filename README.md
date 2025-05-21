@@ -66,3 +66,7 @@ The following shows the ice flux over Byrd glacier, Antarctica overlaid on MODIS
 # Compare Posteriors of dfGP and regular GP
 
 ![divergence-free and divergent posterior](images/compare_dfGP_GP_posterior_divergence.png)
+
+# Instructions to run experiments
+
+conda 3.9.20
