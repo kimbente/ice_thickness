@@ -264,7 +264,7 @@ def simulate_detailed_deflection(x_inputs):
 ### FUNTION 3 ###
 #################
 
-def simulate_detailed_curve(x_inputs):
+def simulate_detailed_curve(x_inputs, return_components_bool = False):
     # mean magnitude is 1.57
 
     ### Fixed ###
@@ -311,7 +311,10 @@ def simulate_detailed_curve(x_inputs):
 
     vector_field = psi_vector_field * 0.2 + simulated_vector_field # torch.Size([n, 2])
 
-    return vector_field.detach().clone()
+    if return_components_bool:
+        return vector_field.detach().clone(), psi, psi_vector_field, simulated_vector_field
+    else:
+        return vector_field.detach().clone()
 
 #################
 ### FUNTION 4 ###

@@ -1,4 +1,5 @@
 # SIMULATED DATA EXPERIMENTS
+# # RUN WITH python run_sim_experiments_dfGP.py
 # 
 #       ooooooooooooooooooooooooooooooooooooo
 #      8                                .d88

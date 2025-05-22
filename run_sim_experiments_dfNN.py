@@ -1,4 +1,5 @@
 # SIMULATED DATA EXPERIMENTS
+# RUN WITH python run_sim_experiments_dfNN.py
 # 
 #       ooooooooooooooooooooooooooooooooooooo
 #      8                                .d88
@@ -35,11 +36,11 @@ from configs import N_SIDE, STD_GAUSSIAN_NOISE
 # Reiterating import for visibility
 MAX_NUM_EPOCHS = MAX_NUM_EPOCHS
 NUM_RUNS = NUM_RUNS
-WEIGHT_DECAY = WEIGHT_DECAY
+WEIGHT_DECAY = WEIGHT_DECAY * 100
 PATIENCE = PATIENCE
 
 # TODO: Delete overwrite, run full
-NUM_RUNS = 1
+NUM_RUNS = 10
 
 # assign model-specific variable
 MODEL_LEARNING_RATE = getattr(configs, f"{model_name}_SIM_LEARNING_RATE")
@@ -346,8 +347,11 @@ for sim_name, sim_func in simulations.items():
             
             df_losses.to_csv(f"{MODEL_SIM_RESULTS_DIR}/{sim_name}_{model_name}_losses_over_epochs.csv", index = False, float_format = "%.5f")
 
+            # del for run 1 only
+            del dfNN_test_div_field, train_losses_RMSE_over_epochs, test_losses_RMSE_over_epochs
+
         # Free up memory at end of each run
-        del dfNN_model, y_train_dfNN_predicted, y_test_dfNN_predicted, dfNN_test_div_field, dfNN_train_MAD, dfNN_test_MAD, dfNN_test_MAE, dfNN_test_RMSE, dfNN_train_MAE, dfNN_train_RMSE, train_losses_RMSE_over_batches, train_losses_RMSE_over_epochs, test_losses_RMSE_over_epochs
+        del dfNN_model, y_train_dfNN_predicted, y_test_dfNN_predicted, dfNN_train_MAD, dfNN_test_MAD, dfNN_test_MAE, dfNN_test_RMSE, dfNN_train_MAE, dfNN_train_RMSE, train_losses_RMSE_over_batches
 
         # Call garbage collector to free up memory
         gc.collect()

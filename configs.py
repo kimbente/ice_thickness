@@ -15,7 +15,7 @@ GP_SIM_LEARNING_RATE = 0.01
 dfGP_SIM_LEARNING_RATE = 0.01 # NOTE: same as GP
 dfNGP_SIM_LEARNING_RATE = 0.001
 PINN_SIM_LEARNING_RATE = 0.005 # NOTE: larger lrs worked better for NN models
-dfNN_SIM_LEARNING_RATE = 0.001 
+dfNN_SIM_LEARNING_RATE = 0.005 # NOTE: We can it with 0.001 before but that was too small. This makes quite a difference
 
 # sim specific hyperparameters
 # test grid resolution
@@ -47,11 +47,11 @@ dfNN_REAL_LEARNING_RATE = 0.001
 NUM_RUNS = 10
 MAX_NUM_EPOCHS = 2000
 
-PATIENCE = 200  # Stop after {PATIENCE} epochs with no improvement
+PATIENCE = 100  # Stop after {PATIENCE} epochs with no improvement 200 before
 GP_PATIENCE = 50 # NOTE: GP convergence is more smooth so less patience is needed
 
 # WEIGHT_DECAY is L2 regularisation, decay because it pulls weights towards 0
-WEIGHT_DECAY = 1e-4 
+WEIGHT_DECAY = 1e-4 # 0.0001
 BATCH_SIZE = 32
 
 # FOR PINN ONLY

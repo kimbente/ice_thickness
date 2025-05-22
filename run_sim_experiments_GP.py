@@ -1,4 +1,5 @@
 # SIMULATED DATA EXPERIMENTS
+# RUN WITH python run_sim_experiments_GP.py
 # 
 #       ooooooooooooooooooooooooooooooooooooo
 #      8                                .d88

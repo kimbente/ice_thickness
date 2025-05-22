@@ -1,4 +1,5 @@
 # REAL DATA EXPERIMENTS
+# RUN WITH python run_real_experiments_dfNGP.py
 #               _                 _   _      
 #              | |               | | (_)     
 #    __ _ _ __ | |_ __ _ _ __ ___| |_ _  ___ 

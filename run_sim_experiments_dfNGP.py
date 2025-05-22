@@ -1,4 +1,5 @@
 # SIMULATED DATA EXPERIMENTS
+# RUN WITH python run_sim_experiments_dfNGP.py
 # 
 #       ooooooooooooooooooooooooooooooooooooo
 #      8                                .d88
@@ -190,7 +191,12 @@ for sim_name, sim_func in simulations.items():
         # NOTE: We don't need a criterion either
 
         # AdamW as optimizer for some regularisation/weight decay
-        optimizer = optim.AdamW(list(dfNN_mean_model.parameters()) + [sigma_n, sigma_f, l], lr = MODEL_LEARNING_RATE, weight_decay = WEIGHT_DECAY)
+        # optimizer = optim.AdamW(list(dfNN_mean_model.parameters()) + [sigma_n, sigma_f, l], lr = MODEL_LEARNING_RATE, weight_decay = WEIGHT_DECAY)
+        # HACK: create two param groups: one for the dfNN and one for the hypers
+        optimizer = optim.AdamW([
+            {"params": dfNN_mean_model.parameters(), "weight_decay": WEIGHT_DECAY * 100, "lr": MODEL_LEARNING_RATE * 5},
+            {"params": [sigma_n, sigma_f, l], "weight_decay": 0.0, "lr": MODEL_LEARNING_RATE * 10},
+            ])
 
         # _________________
         # BEFORE EPOCH LOOP
