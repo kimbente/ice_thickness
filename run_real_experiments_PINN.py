@@ -67,7 +67,7 @@ start_time = time.time()  # Start timing after imports
 #############################
 
 # For region_name in ["regiona", "regionb", "regionc"]:
-for region_name in ["regionc"]:
+for region_name in ["regionc", "regiond"]:
 
     print(f"\nTraining for {region_name.upper()}...")
 

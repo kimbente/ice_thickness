@@ -249,3 +249,63 @@ def find_very_close_points(region_df, threshold):
     print(f"Rows to remove: {to_remove}")
 
     return sorted(to_remove)
+
+def df_to_tensor(df, x_min, x_max, y_min, y_max, flux_scale, surface_scale = 1000):
+    """
+    Convert a DataFrame to a tensor and scale as we need.
+    
+    Parameters:
+    - df: DataFrame containing the data
+    - x_min, x_max, y_min, y_max: coordinates for normalisation
+    - flux_scale: scaling factor for fluxes. We will devide by this.
+    - surface_scale: scaling factor for surface. We will devide by this value.
+    
+    Returns:
+    - Tensor with the data
+    """
+    
+    x_tensor = torch.tensor(
+        ((df.x - x_min) / (x_max - x_min)).to_numpy(),
+        dtype = torch.float32
+    )
+
+    y_tensor = torch.tensor(
+        ((df.y - y_min) / (y_max - y_min)).to_numpy(),
+        dtype = torch.float32
+    )
+
+    s_tensor = torch.tensor(
+        (df.s / surface_scale).to_numpy(),
+        dtype = torch.float32
+    )
+
+    xflux_tensor = torch.tensor(
+        (df.xflux / flux_scale).to_numpy(),
+        dtype = torch.float32
+    )
+
+    yflux_tensor = torch.tensor(
+        (df.yflux / flux_scale).to_numpy(),
+        dtype = torch.float32
+    )
+
+    xfluxerr_tensor = torch.tensor(
+        (df.xflux_err / flux_scale).to_numpy(),
+        dtype = torch.float32
+    )
+
+    yfluxerr_tensor = torch.tensor(
+        (df.yflux_err / flux_scale).to_numpy(),
+        dtype = torch.float32
+    )
+
+    return torch.cat(
+        (x_tensor.unsqueeze(0), 
+         y_tensor.unsqueeze(0), 
+         s_tensor.unsqueeze(0), 
+         xflux_tensor.unsqueeze(0), 
+         yflux_tensor.unsqueeze(0),
+         xfluxerr_tensor.unsqueeze(0),
+         yfluxerr_tensor.unsqueeze(0)),
+        dim = 0
+    )
