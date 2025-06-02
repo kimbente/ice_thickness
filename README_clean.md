@@ -32,4 +32,9 @@ Created data structure in your `path_to_bedmap_data_folder`
     - Number of bedmap3 csv files: 84
 - The subset for the 300 x 300 km Byrd glacier catchments is more managable in size and only contains 750 k data points and is only 0.085 GB.
 
+## The environment has been generated with 
+
+``conda env export --prefix /home/kim/ice_thickness/.conda > environment.yml``
+
+
 

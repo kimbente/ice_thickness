@@ -40,9 +40,6 @@ NUM_RUNS = NUM_RUNS
 WEIGHT_DECAY = WEIGHT_DECAY
 PATIENCE = PATIENCE
 
-# TODO: Delete overwrite, run full
-NUM_RUNS = 1
-
 # assign model-specific variable
 MODEL_LEARNING_RATE = getattr(configs, f"{model_name}_SIM_LEARNING_RATE")
 MODEL_SIM_RESULTS_DIR = getattr(configs, f"{model_name}_SIM_RESULTS_DIR")
@@ -66,6 +63,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from codecarbon import EmissionsTracker
 
 # utilitarian
 from utils import set_seed, make_grid
@@ -82,6 +80,10 @@ print()
 ### START TIMING ###
 import time
 start_time = time.time()  # Start timing after imports
+
+### START TRACKING EXPERIMENT EMISSIONS ###
+tracker = EmissionsTracker(project_name = "PINN_simulation_experiments", output_dir = MODEL_SIM_RESULTS_DIR)
+tracker.start()
 
 ### SIMULATION ###
 # Import all simulation functions
@@ -386,8 +388,10 @@ for sim_name, sim_func in simulations.items():
             
             df_losses.to_csv(f"{MODEL_SIM_RESULTS_DIR}/{sim_name}_{model_name}_losses_over_epochs.csv", index = False, float_format = "%.5f")
 
+            del train_losses_RMSE_over_epochs, test_losses_RMSE_over_epochs, train_losses_PINN_over_epochs, test_losses_PINN_over_epochs
+
         # Free up memory at end of each run
-        del PINN_model, y_train_PINN_predicted, y_test_PINN_predicted, PINN_train_div_field, PINN_test_div_field, PINN_train_MAD, PINN_test_MAD, PINN_test_MAE, PINN_test_RMSE, PINN_train_MAE, PINN_train_RMSE, train_losses_PINN_over_batches, train_losses_PMSE_over_batches, train_losses_RMSE_over_epochs, test_losses_RMSE_over_epochs, train_losses_PINN_over_epochs, test_losses_PINN_over_epochs
+        del PINN_model, y_train_PINN_predicted, y_test_PINN_predicted, PINN_train_div_field, PINN_test_div_field, PINN_train_MAD, PINN_test_MAD, PINN_test_MAE, PINN_test_RMSE, PINN_train_MAE, PINN_train_RMSE, train_losses_PINN_over_batches, train_losses_PMSE_over_batches
 
         # Call garbage collector to free up memory
         gc.collect()
@@ -434,6 +438,9 @@ end_time = time.time()
 elapsed_time = end_time - start_time 
 # convert elapsed time to minutes
 elapsed_time_minutes = elapsed_time / 60
+
+# also end emission tracking. Will be saved as emissions.csv
+tracker.stop()
 
 if device == "cuda":
     # get name of GPU model

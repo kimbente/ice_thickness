@@ -1,5 +1,4 @@
 # REAL DATA EXPERIMENTS
-# RUN WITH python run_real_experiments_PINN.py
 #               _                 _   _      
 #              | |               | | (_)     
 #    __ _ _ __ | |_ __ _ _ __ ___| |_ _  ___ 
@@ -36,6 +35,9 @@ if model_name in ["dfNGP", "dfNN", "PINN"]:
 if model_name == "PINN":
     from NN_models import PINN_backbone
     from configs import W_PINN_DIV_WEIGHT
+    # for PINN domain div reduction
+    from configs import N_SIDE
+    from utils import make_grid
 
 # universals 
 from metrics import compute_RMSE, compute_MAE, compute_divergence_field
@@ -45,6 +47,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from codecarbon import EmissionsTracker
 
 # utilitarian
 from utils import set_seed
@@ -62,12 +65,16 @@ print()
 import time
 start_time = time.time()  # Start timing after imports
 
+### START TRACKING EXPERIMENT EMISSIONS ###
+tracker = EmissionsTracker(project_name = "PINN_real_experiments", output_dir = MODEL_REAL_RESULTS_DIR)
+tracker.start()
+
 #############################
 ### LOOP 1 - over REGIONS ###
 #############################
 
 # For region_name in ["regiona", "regionb", "regionc"]:
-for region_name in ["regionc", "regiond"]:
+for region_name in ["regionc"]:
 
     print(f"\nTraining for {region_name.upper()}...")
 
@@ -206,6 +213,34 @@ for region_name in ["regionc", "regiond"]:
             ###############################
             ### END LOOP 4 over BATCHES ###
             ###############################
+
+            ########################################
+            ### TRAIN DIV REDUCTION OVER DOMAIN  ###
+            ########################################
+            # NOTE: Technically this gives it more time to converge: Maybe halve the epochs do effective epochs are equal?
+
+            # In every epoch we do a learning step on the divergence loss only across the domain
+            PINN_model.train()
+
+            # Lay grid over full domain
+            _, x_domain = make_grid(N_SIDE)
+
+            # full domain, permutation invariant
+            x_domain = x_domain.to(device).requires_grad_()
+            y_pred_domain = PINN_model(x_domain)
+
+            # use only divergence loss but use the same weight as before to maintain scale
+            # NOTE: here we do not .item() as we want to backpropagate on a tensor
+            domain_div_loss =  W_PINN_DIV_WEIGHT * compute_divergence_field(y_pred_domain, x_domain).abs().mean()
+
+            # backpropagation
+            optimizer.zero_grad()
+            domain_div_loss.backward()
+            optimizer.step()
+
+            ################################
+            ### DIV REDUCTION STEP DONE  ###
+            ################################
 
             # for every epoch...
 
@@ -364,6 +399,9 @@ end_time = time.time()
 elapsed_time = end_time - start_time 
 # convert elapsed time to minutes
 elapsed_time_minutes = elapsed_time / 60
+
+# also end emission tracking. Will be saved as emissions.csv
+tracker.stop()
 
 if device == "cuda":
     # get name of GPU model

@@ -46,6 +46,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from codecarbon import EmissionsTracker
 
 # utilitarian
 from utils import set_seed
@@ -62,6 +63,10 @@ print()
 ### START TIMING ###
 import time
 start_time = time.time()  # Start timing after imports
+
+### START TRACKING EXPERIMENT EMISSIONS ###
+tracker = EmissionsTracker(project_name = "dfNN_real_experiments", output_dir = MODEL_REAL_RESULTS_DIR)
+tracker.start()
 
 #############################
 ### LOOP 1 - over REGIONS ###
@@ -354,6 +359,9 @@ end_time = time.time()
 elapsed_time = end_time - start_time 
 # convert elapsed time to minutes
 elapsed_time_minutes = elapsed_time / 60
+
+# also end emission tracking. Will be saved as emissions.csv
+tracker.stop()
 
 if device == "cuda":
     # get name of GPU model

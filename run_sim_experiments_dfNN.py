@@ -39,9 +39,6 @@ NUM_RUNS = NUM_RUNS
 WEIGHT_DECAY = WEIGHT_DECAY * 100
 PATIENCE = PATIENCE
 
-# TODO: Delete overwrite, run full
-NUM_RUNS = 10
-
 # assign model-specific variable
 MODEL_LEARNING_RATE = getattr(configs, f"{model_name}_SIM_LEARNING_RATE")
 MODEL_SIM_RESULTS_DIR = getattr(configs, f"{model_name}_SIM_RESULTS_DIR")
@@ -64,6 +61,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from codecarbon import EmissionsTracker
 
 # utilitarian
 from utils import set_seed, make_grid
@@ -80,6 +78,10 @@ print()
 ### START TIMING ###
 import time
 start_time = time.time()  # Start timing after imports
+
+### START TRACKING EXPERIMENT EMISSIONS ###
+tracker = EmissionsTracker(project_name = "dfNN_simulation_experiments", output_dir = MODEL_SIM_RESULTS_DIR)
+tracker.start()
 
 ### SIMULATION ###
 # Import all simulation functions
@@ -398,6 +400,9 @@ end_time = time.time()
 elapsed_time = end_time - start_time 
 # convert elapsed time to minutes
 elapsed_time_minutes = elapsed_time / 60
+
+# also end emission tracking. Will be saved as emissions.csv
+tracker.stop()
 
 if device == "cuda":
     # get name of GPU model
