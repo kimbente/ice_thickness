@@ -12,16 +12,17 @@ roman_numerals = ["I", "II", "III", "IV", "V"]
 # Initialize the LaTeX lines list
 latex_lines = []
 
-# Iterate over simulates data experiments
+# Iterate over simulations
 for idx, sim_name in enumerate(simulations):
     roman = roman_numerals[idx]
     latex_lines.append(rf"\multicolumn{{5}}{{l}}{{\textbf{{{roman}. {sim_name.capitalize()}}}}} \\")
     latex_lines.append(r"\midrule")
 
-    # STEP 1: find best (lowest) NLL (ignoring n.a.)
-    # NOTE: We will format this as green
+    # Find the best (lowest) NLL and RMSE (ignoring n.a.)
     best_nll_mean = None
-    best_model = None
+    best_model_nll = None
+    best_rmse_mean = None
+    best_model_rmse = None
 
     for model in models:
         file_path = os.path.join(RESULTS_DIR, model, f"{sim_name}_{model}_metrics_summary.csv")
@@ -31,24 +32,37 @@ for idx, sim_name in enumerate(simulations):
         df = pd.read_csv(file_path)
         mean_row = df[df.iloc[:, 0] == "mean"].iloc[0]
 
+        # Best NLL
         if "Test full NLL" in mean_row.index and model not in ["dfNN", "PINN"]:
             nll_mean = mean_row["Test full NLL"]
             if (best_nll_mean is None) or (nll_mean < best_nll_mean):
                 best_nll_mean = nll_mean
-                best_model = model
+                best_model_nll = model
 
-    # STEP 2: Loop over models and make rows
+        # Best RMSE
+        rmse_mean = mean_row["Test RMSE"]
+        if (best_rmse_mean is None) or (rmse_mean < best_rmse_mean):
+            best_rmse_mean = rmse_mean
+            best_model_rmse = model
+
+    # Loop over models to generate LaTeX rows
     for model in models:
         print(f"Processing {model} for simulation {sim_name}...")
         file_path = os.path.join(RESULTS_DIR, model, f"{sim_name}_{model}_metrics_summary.csv")
+        if not os.path.exists(file_path):
+            print(f"Warning: {file_path} not found. Skipping.")
+            continue
 
         df = pd.read_csv(file_path)
         mean_row = df[df.iloc[:, 0] == "mean"].iloc[0]
         std_row = df[df.iloc[:, 0] == "std"].iloc[0]
 
-        # Truncate numeric strings to 4 characters, no scientific notation
-        rmse_mean = "{:.4f}".format(mean_row["Test RMSE"])[:5]
-        rmse_std = "{:.4f}".format(std_row["Test RMSE"])[:5]
+        # Truncate numeric strings to 5 characters, no scientific notation
+        rmse_mean_val = mean_row["Test RMSE"]
+        rmse_std_val = std_row["Test RMSE"]
+        rmse_mean = "{:.4f}".format(rmse_mean_val)[:5]
+        rmse_std = "{:.4f}".format(rmse_std_val)[:5]
+
         mae_mean = "{:.4f}".format(mean_row["Test MAE"])[:5]
         mae_std = "{:.4f}".format(std_row["Test MAE"])[:5]
         mad_mean = "{:.4f}".format(mean_row["Test MAD"])[:5]
@@ -63,12 +77,19 @@ for idx, sim_name in enumerate(simulations):
             nll_str_raw = f"{nll_mean} \\footnotesize{{± {nll_std}}}"
 
             # Highlight if this is the best NLL
-            if model == best_model:
+            if model == best_model_nll:
                 nll_str = r"\textcolor{OliveGreen}{" + nll_str_raw + "}"
             else:
                 nll_str = nll_str_raw
         else:
             nll_str = r"\footnotesize{n.a.}"
+
+        # Highlight if this is the best RMSE
+        rmse_str_raw = f"{rmse_mean} \\footnotesize{{± {rmse_std}}}"
+        if model == best_model_rmse:
+            rmse_str = r"\textcolor{OliveGreen}{" + rmse_str_raw + "}"
+        else:
+            rmse_str = rmse_str_raw
 
         # MAD cleanup for zeros
         if float(mad_mean) == 0.0:
@@ -81,12 +102,12 @@ for idx, sim_name in enumerate(simulations):
         else:
             mad_str = f"{mad_mean} \\footnotesize{{± {mad_std}}}"
 
-        # Compose LaTeX row
+        # Compose LaTeX row with new column order: RMSE, MAE, NLL, MAD
         row = (
             f"{model} & "
-            f"{nll_str} & "
-            f"{rmse_mean} \\footnotesize{{± {rmse_std}}} & "
+            f"{rmse_str} & "
             f"{mae_mean} \\footnotesize{{± {mae_std}}} & "
+            f"{nll_str} & "
             f"{mad_str} \\\\"
         )
         latex_lines.append(row)
@@ -100,8 +121,8 @@ for idx, sim_name in enumerate(simulations):
         latex_lines.append(r"\toprule")
 
 # Save to file
-with open("results_sim_latex_table.txt", "w") as f:
+with open("generated_results_sim_latex_table.txt", "w") as f:
     for line in latex_lines:
         f.write(line + "\n")
 
-print("LaTeX table generated: results_sim_latex_table.txt")
+print("LaTeX table generated: generated_results_sim_latex_table.txt")

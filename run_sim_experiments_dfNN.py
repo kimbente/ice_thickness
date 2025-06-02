@@ -33,10 +33,14 @@ from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, WEIGHT_DECAY
 # also import x_test grid size and std noise for training data
 from configs import N_SIDE, STD_GAUSSIAN_NOISE
 
+# custom weight decay
+if model_name == "dfNN":
+    from configs import dfNN_SIM_WEIGHT_DECAY
+
 # Reiterating import for visibility
 MAX_NUM_EPOCHS = MAX_NUM_EPOCHS
 NUM_RUNS = NUM_RUNS
-WEIGHT_DECAY = WEIGHT_DECAY * 100
+WEIGHT_DECAY = dfNN_SIM_WEIGHT_DECAY
 PATIENCE = PATIENCE
 
 # assign model-specific variable
