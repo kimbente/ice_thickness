@@ -13,7 +13,7 @@ PINN_SIM_RESULTS_DIR = "results_sim/PINN"
 # NOTE: df is always smallcap.
 # NOTE: We use a GP and a NN lr
 dfGP_SIM_LEARNING_RATE = 0.01 
-dfNGP_SIM_LEARNING_RATE = 0.01
+dfNGP_SIM_LEARNING_RATE = 0.01 # lr x 0.1 for NN mean function params
 dfNN_SIM_LEARNING_RATE = 0.005
 GP_SIM_LEARNING_RATE = 0.01
 PINN_SIM_LEARNING_RATE = 0.005
@@ -36,10 +36,10 @@ PINN_REAL_RESULTS_DIR = "results_real/PINN"
 
 # learning rates (alphabetic order)
 dfGP_REAL_LEARNING_RATE = 0.01
-dfNGP_REAL_LEARNING_RATE = 0.01
-dfNN_REAL_LEARNING_RATE = 0.001
+dfNGP_REAL_LEARNING_RATE = 0.01 # lr x 0.1 for NN mean function params
+dfNN_REAL_LEARNING_RATE = 0.005
 GP_REAL_LEARNING_RATE = 0.01
-PINN_REAL_LEARNING_RATE = 0.001
+PINN_REAL_LEARNING_RATE = 0.005
 
 ################################
 ### TRAINING HYPERPARAMETERS ###
@@ -69,5 +69,6 @@ L_RANGE = (0.3, 0.8)
 B_DIAGONAL_RANGE = SIGMA_F_RANGE
 B_OFFDIAGONAL_RANGE = (-0.2, 0.5) 
 
+# FOR SIM
 # Noise parameter for training: independent Gaussian noise
 STD_GAUSSIAN_NOISE = 0.02 # variance is 0.0004

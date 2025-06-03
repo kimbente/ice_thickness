@@ -81,8 +81,7 @@ tracker.start()
 ### LOOP 1 - over REGIONS ###
 #############################
 
-# For region_name in ["regiona", "regionb", "regionc"]:
-for region_name in ["regionc", "regiond"]:
+for region_name in ["region_upper_byrd", "region_mid_byrd", "region_lower_byrd"]:
 
     print(f"\nTraining for {region_name.upper()}...")
 
@@ -168,12 +167,12 @@ for region_name in ["regionc", "regiond"]:
         # NOTE: We don't need a criterion either
 
         # AdamW as optimizer for some regularisation/weight decay
-         # HACK: create two param groups: one for the dfNN and one for the hypers
+        # HACK: create two param groups: one for the dfNN and one for the hypers
         optimizer = optim.AdamW([
-            {"params": dfNN_mean_model.parameters(), "weight_decay": WEIGHT_DECAY * 100, "lr": MODEL_LEARNING_RATE * 0.5},
-            {"params": [sigma_f, l], "weight_decay": WEIGHT_DECAY, "lr": MODEL_LEARNING_RATE * 1},
+            {"params": dfNN_mean_model.parameters(), "weight_decay": WEIGHT_DECAY, "lr": (0.1 * MODEL_LEARNING_RATE)},
+            {"params": [sigma_f, l], "weight_decay": WEIGHT_DECAY, "lr": MODEL_LEARNING_RATE},
             ])
-
+        
         # _________________
         # BEFORE EPOCH LOOP
         

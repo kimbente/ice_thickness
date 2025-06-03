@@ -73,8 +73,7 @@ tracker.start()
 ### LOOP 1 - over REGIONS ###
 #############################
 
-# For region_name in ["regiona", "regionb", "regionc"]:
-for region_name in ["regionc"]:
+for region_name in ["region_upper_byrd", "region_mid_byrd", "region_lower_byrd"]:
 
     print(f"\nTraining for {region_name.upper()}...")
 

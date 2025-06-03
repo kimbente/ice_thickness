@@ -73,8 +73,7 @@ tracker.start()
 ### LOOP 1 - over REGIONS ###
 #############################
 
-# For region_name in ["regiona", "regionb", "regionc"]:
-for region_name in ["regionc"]:
+for region_name in ["region_upper_byrd", "region_mid_byrd", "region_lower_byrd"]:
 
     print(f"\nTraining for {region_name.upper()}...")
 
@@ -101,6 +100,7 @@ for region_name in ["regionc"]:
     # [:, 4] = ice flux in y direction (v)
     # [:, 5] = ice flux error in x direction (u_err)
     # [:, 6] = ice flux error in y direction (v_err)
+    # [:, 7] = source age
 
     # train
     x_train = train[:, [0, 1]].to(device)
@@ -111,7 +111,8 @@ for region_name in ["regionc"]:
     y_test = test[:, [3, 4]].to(device)
 
     # local measurment errors as noise
-    train_noise_diag = torch.concat((train[:, 5], train[:, 6]), dim = 0).to(device)
+    train_noise_diag = torch.concat((train[:, 5], train[:, 6]), dim = 0).to(device) 
+    # torch.log(train[7, :] + 3) * 0.01
 
     # Print train details
     print(f"=== {region_name.upper()} ===")

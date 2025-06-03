@@ -68,7 +68,7 @@ def create_flux_df_for_region(region_name, thickness_points, velocity_grid, corn
     velocity_grid_interpolated = velocity_grid_ss.interp(
         y = (thickness_points_region_df["y"]), 
         x = (thickness_points_region_df["x"]), 
-        method = "quadratic") # smooth interpolation
+        method = "cubic") # smooth interpolation
 
     # I. Extract the diagonal values from each DataArray
     VX_diag = np.diag(velocity_grid_interpolated.VX.values)
@@ -89,6 +89,7 @@ def create_flux_df_for_region(region_name, thickness_points, velocity_grid, corn
         "ERRX": ERRX_diag,
         "ERRY": ERRY_diag
     })
+    # print(velocity_points_region_df)
 
     # Step 4: Combine thickness points and corresponding velocity points into a unified DataFrame
     thickness_velocity_df = pd.concat([
@@ -109,8 +110,18 @@ def create_flux_df_for_region(region_name, thickness_points, velocity_grid, corn
     # NOTE: There are no errors published for Bedmap points unfortunately
     thickness_velocity_df["yflux_err"] = thickness_velocity_df["ERRY"] * thickness_velocity_df["t"]
 
-    print(f"Subsampled data shape: {thickness_velocity_df.shape}")
+    # Step 6: Add source_age column
+    # define nominal year for surface velocity data, published 2017 (https://nsidc.org/sites/default/files/nsidc-0484-v002-userguide.pdf)   
+    nominal_year = 2017
 
+    # add new column with the year of the survey
+    thickness_velocity_df["source_age"] = thickness_velocity_df["source"].str.extract(r"(\d{4})", expand = False).astype(int)
+    # use the mean for Bedmap1 temporal range (only this dataset combines all older surveys)
+    thickness_velocity_df.loc[thickness_velocity_df["source_age"] == 1966, "source_age"] = int(np.mean([1966, 2000])) # 1988
+    # calculate difference to nominal age
+    thickness_velocity_df["source_age"] = np.abs(thickness_velocity_df["source_age"] - nominal_year)
+
+    print(f"Subsampled data shape: {thickness_velocity_df.shape}")
     return thickness_velocity_df
 
 # NOTE: dark colors for older data and color families for agencies
@@ -263,7 +274,7 @@ def df_to_tensor(df, x_min, x_max, y_min, y_max, flux_scale, surface_scale = 100
     Returns:
     - Tensor with the data
     """
-    
+    # use domain boundries to normalise the x and y coordinates into [0, 1] range
     x_tensor = torch.tensor(
         ((df.x - x_min) / (x_max - x_min)).to_numpy(),
         dtype = torch.float32
@@ -274,11 +285,13 @@ def df_to_tensor(df, x_min, x_max, y_min, y_max, flux_scale, surface_scale = 100
         dtype = torch.float32
     )
 
+    # scale surface by fixed scale (1000 m)
     s_tensor = torch.tensor(
         (df.s / surface_scale).to_numpy(),
         dtype = torch.float32
     )
 
+    # scale fluxes by the flux_scale
     xflux_tensor = torch.tensor(
         (df.xflux / flux_scale).to_numpy(),
         dtype = torch.float32
@@ -289,6 +302,7 @@ def df_to_tensor(df, x_min, x_max, y_min, y_max, flux_scale, surface_scale = 100
         dtype = torch.float32
     )
 
+    # error
     xfluxerr_tensor = torch.tensor(
         (df.xflux_err / flux_scale).to_numpy(),
         dtype = torch.float32
@@ -315,52 +329,3 @@ def df_to_tensor(df, x_min, x_max, y_min, y_max, flux_scale, surface_scale = 100
          source_age_tensor.unsqueeze(0)),
         dim = 0
     )
-
-
-### ALTERNATIVE ####
-from scipy.interpolate import griddata
-import numpy as np
-
-def create_flux_df_for_region_scipy(region_name, thickness_points, velocity_grid, corners_regions, subsample_rate = 20):
-    # This function is slower
-
-    # Step 1: Get the corner coordinates of region_name
-    x_min, x_max, y_min, y_max = corners_regions.loc[corners_regions.name == region_name, ["x_min", "x_max", "y_min", "y_max"]].values[0]
-
-    # Step 2: Crop thickness measurments dataset to region
-    thickness_points_region = thickness_points[
-        (thickness_points["x"] > x_min) & 
-        (thickness_points["x"] < x_max) & 
-        (thickness_points["y"] > y_min) & 
-        (thickness_points["y"] < y_max)]
-    
-    # Step 3: Subsample the data
-    thickness_points_region_df = thickness_points_region[::subsample_rate]
-
-    # Flatten velocity grid to use with griddata
-    x_array = velocity_grid['x'].values
-    y_array = velocity_grid['y'].values
-    xx, yy = np.meshgrid(x_array, y_array)
-    velocity_grid_points = np.column_stack([xx.ravel(), yy.ravel()]) # shape (N, 2) (flattened grid points)
-
-    # Interpolate for each velocity variable
-    interpolated_data = {}
-    for var in ["VX", "VY", "ERRX", "ERRY"]:
-        velocity_grid_values = velocity_grid[var].values.ravel()
-        interpolated = griddata(
-            velocity_grid_points,
-            velocity_grid_values,
-            (thickness_points_region_df["x"].values, thickness_points_region_df["y"].values),
-            method = "cubic"
-        )
-        interpolated_data[var] = interpolated
-
-    # Construct final DataFrame
-    velocity_points_region_df = thickness_points_region_df.copy()
-    # Add new columns for interpolated velocity data
-    velocity_points_region_df["VX"] = interpolated_data["VX"]
-    velocity_points_region_df["VY"] = interpolated_data["VY"]
-    velocity_points_region_df["ERRX"] = interpolated_data["ERRX"]
-    velocity_points_region_df["ERRY"] = interpolated_data["ERRY"]
-
-    return velocity_points_region_df
