@@ -108,7 +108,7 @@ def compute_NLL_sparse(y_true, y_mean_pred, y_covar_pred):
 ########################
 
 def compute_NLL_full(y_true, y_mean_pred, y_covar_pred, jitter = 0.5 * 1e-2):
-    """Computes Negative Log-Likelihood (NLL) using the full covariance matrix.
+    """Computes Negative Log-Likelihood (NLL) using the full covariance matrix. (Fully joined NLL)
 
     Args:
         y_true (torch.Tensor): True observations of shape (N, 2).

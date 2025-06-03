@@ -42,7 +42,8 @@ def GP_predict(
     x_test, 
     hyperparameters,
     mean_func = None,
-    divergence_free_bool = True):
+    divergence_free_bool = True, 
+    return_L = False):
     """ 
     Predicts the mean and covariance of the test data given the training data and hyperparameters (or fixed noise inputs). This implementation uses the interleaved structure.
 
@@ -65,6 +66,8 @@ def GP_predict(
         predictive_mean (torch.Size([n_test, 2])):
         predictive_covariance (torch.Size([n_test, n_test])):
         lml (torch.Size([1])): (positive) log marginal likelihood of (x_train, y_train)
+        optional: 
+        L
     """
     # Extract the first hyperparameter from the list (the noise level) - this can be a tensor of size [1] or [n_train] which is the vector diagonal
     sigma_n = hyperparameters[0]
@@ -196,8 +199,11 @@ def GP_predict(
 
     lml = lml_term1 + lml_term2 + lml_term3
 
-    # print(f"lml: {lml}")
-    return predictive_mean, predictive_covariance, lml
+    if return_L:
+        # Return L for debugging purposes
+        return predictive_mean, predictive_covariance, lml, L
+    else:
+        return predictive_mean, predictive_covariance, lml
 
 #########################################################################################################
 # helper functions

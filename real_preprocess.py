@@ -299,6 +299,11 @@ def df_to_tensor(df, x_min, x_max, y_min, y_max, flux_scale, surface_scale = 100
         dtype = torch.float32
     )
 
+    source_age_tensor = torch.tensor(
+        (df.source_age).to_numpy(),
+        dtype = torch.float32
+    )
+
     return torch.cat(
         (x_tensor.unsqueeze(0), 
          y_tensor.unsqueeze(0), 
@@ -306,6 +311,56 @@ def df_to_tensor(df, x_min, x_max, y_min, y_max, flux_scale, surface_scale = 100
          xflux_tensor.unsqueeze(0), 
          yflux_tensor.unsqueeze(0),
          xfluxerr_tensor.unsqueeze(0),
-         yfluxerr_tensor.unsqueeze(0)),
+         yfluxerr_tensor.unsqueeze(0),
+         source_age_tensor.unsqueeze(0)),
         dim = 0
     )
+
+
+### ALTERNATIVE ####
+from scipy.interpolate import griddata
+import numpy as np
+
+def create_flux_df_for_region_scipy(region_name, thickness_points, velocity_grid, corners_regions, subsample_rate = 20):
+    # This function is slower
+
+    # Step 1: Get the corner coordinates of region_name
+    x_min, x_max, y_min, y_max = corners_regions.loc[corners_regions.name == region_name, ["x_min", "x_max", "y_min", "y_max"]].values[0]
+
+    # Step 2: Crop thickness measurments dataset to region
+    thickness_points_region = thickness_points[
+        (thickness_points["x"] > x_min) & 
+        (thickness_points["x"] < x_max) & 
+        (thickness_points["y"] > y_min) & 
+        (thickness_points["y"] < y_max)]
+    
+    # Step 3: Subsample the data
+    thickness_points_region_df = thickness_points_region[::subsample_rate]
+
+    # Flatten velocity grid to use with griddata
+    x_array = velocity_grid['x'].values
+    y_array = velocity_grid['y'].values
+    xx, yy = np.meshgrid(x_array, y_array)
+    velocity_grid_points = np.column_stack([xx.ravel(), yy.ravel()]) # shape (N, 2) (flattened grid points)
+
+    # Interpolate for each velocity variable
+    interpolated_data = {}
+    for var in ["VX", "VY", "ERRX", "ERRY"]:
+        velocity_grid_values = velocity_grid[var].values.ravel()
+        interpolated = griddata(
+            velocity_grid_points,
+            velocity_grid_values,
+            (thickness_points_region_df["x"].values, thickness_points_region_df["y"].values),
+            method = "cubic"
+        )
+        interpolated_data[var] = interpolated
+
+    # Construct final DataFrame
+    velocity_points_region_df = thickness_points_region_df.copy()
+    # Add new columns for interpolated velocity data
+    velocity_points_region_df["VX"] = interpolated_data["VX"]
+    velocity_points_region_df["VY"] = interpolated_data["VY"]
+    velocity_points_region_df["ERRX"] = interpolated_data["ERRX"]
+    velocity_points_region_df["ERRY"] = interpolated_data["ERRY"]
+
+    return velocity_points_region_df
