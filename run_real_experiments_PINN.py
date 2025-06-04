@@ -111,8 +111,7 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
     x_test = test[:, [0, 1]].to(device)
     y_test = test[:, [3, 4]].to(device)
 
-    # local measurment errors as noise
-    train_noise_diag = torch.concat((train[:, 5], train[:, 6]), dim = 0).to(device)
+    # NOTE: No noise model, just real noisy data
 
     # Print train details
     print(f"=== {region_name.upper()} ===")

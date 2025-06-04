@@ -13,7 +13,7 @@ latex_lines = []
 
 # Iterate over regions
 for i, region_name in enumerate(regions):
-    latex_lines.append(rf"\multicolumn{{5}}{{l}}{{\textbf{{{region_name[7:].capitalize()}}}}} \\")
+    latex_lines.append(rf"\multicolumn{{5}}{{l}}{{\textbf{{{region_name[7:].replace('_', ' ').title()}}}}} \\")
     latex_lines.append(r"\midrule")
 
     # Find the best (lowest) NLL and RMSE (ignoring n.a.)

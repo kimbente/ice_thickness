@@ -77,7 +77,6 @@ def make_grid(n_side, start = 0.0, end = 1.0):
     return x_test_grid, x_test_long
 
 
-
 def draw_n_samples_block_input(mean, covar, n_samples, max_jitter = 1e-2):
     """We draw n samples from a bivariate normal distribution with mean and full covariance using torch.
 
@@ -170,6 +169,95 @@ def draw_n_samples_block_input(mean, covar, n_samples, max_jitter = 1e-2):
     
     for i in range(n_samples):
         sample = mvn.sample().reshape(N_SIDE, N_SIDE, 2).unsqueeze(0)
+        samples[i] = sample
+
+    return samples
+
+### 
+def draw_n_samples_real(mean, covar, n_samples, max_jitter = 1e-2):
+    """We draw n samples from a bivariate normal distribution with mean and full covariance using torch.
+
+    Args:
+        mean (torch.Size([N_FULL, 2])): 
+            The columns preseny u and v components of the mean vector
+        covar ([N_FULL * 2, N_FULL * 2]): 
+            The full covariance matrix is outputted by my model. BE AWARE THAT THIS FUNCTION HANDLES INPUTS WITH FULL BLOCK STRUCTURE (Rows: u1, u2, u3 [...], v1, v2, v3 [...] vn and Columnns also u1, u2, u3 [...], v1, v2, v3 [...]) RATHER THAN INTERLEAVE BLOCK STRUCTURE (Rows: u1, v2, u2, v2 [...] un, vn). torch takes this interleaved, mini-block structure as input
+        n_samples (int): 
+            number of samples that should be returned.
+        epsilon (float):
+            small value to ensure positive definiteness of covariance matrix
+    """
+    N = int(mean.shape[0])
+    covar_uu = covar[:N, :N]
+    covar_uv = covar[:N, N:]
+    covar_vu = covar[N:, :N]
+    covar_vv = covar[N:, N:]
+
+    mini_blocks = torch.stack([
+                torch.stack([covar_uu, covar_uv], dim = -1), # torch.Size([N, N, 2]) stack (N, N) and (N, N)
+                torch.stack([covar_vu, covar_vv], dim = -1) # torch.Size([N, N, 2])
+            ], dim = -1) # torch.Size([N, N, 2, 2])
+
+    mini_blocks = mini_blocks.permute(0, 2, 1, 3) # torch.Size([N, 2, N, 2])
+    covar_interleave = mini_blocks.reshape(N * 2, N * 2) # torch.Size([N, 2 * N, 2])
+
+    ### SAMPLE ###
+    mean_flat = mean.reshape(-1) # reshape goes row-wise so we have [u1, v1, u2, v2, ...]
+
+    # This alters the  approach a fair bit Ensures this matrix symmetric and positive definite
+    # covar_psd = covar_interleave @ covar_interleave.T  # Ensures this matrix symmetric and positive definite
+
+    # Make symmetric
+    covar_symmetric = 0.5 * (covar_interleave + covar_interleave.T)
+
+    # Determine jitter magnitude needed to make the covariance matrix positive definite
+    # min_eigval = torch.linalg.eigvalsh(covar_symmetric).min()
+    # jitter = (- min_eigval + jitter_buffer).clamp(min = jitter_buffer)
+    # covar_symmetric += torch.eye(covar_symmetric.shape[0]) * jitter
+
+    eye = torch.eye(covar_symmetric.shape[0], device = covar_symmetric.device)
+    jitter = 1e-6
+
+    # Add as much jitter to covariance matrix as needed to make it positive definite
+    while jitter <= max_jitter:
+        try:
+            # Try Cholesky
+            torch.linalg.cholesky(covar_symmetric + jitter * eye)
+
+            # Success: return adjusted matrix
+            covar_symmetric = covar_symmetric + jitter * eye
+            print(f"Jitter: {jitter}")
+            break  # <--- Exit the loop once PD is achieved
+
+        except RuntimeError:
+            jitter *= 10  # Increase jitter e.g. 1e-6 > 1e-5 > 1e-4 ...
+    
+    else:
+        warnings.warn("Failed to make matrix positive definite. Trying work around")
+        emergency_jitter = 1e-6
+        covar_symmetric = (covar_symmetric @ covar_symmetric.T)  # Ensures this matrix symmetric and positive definite
+        # Loop again
+        while emergency_jitter <= max_jitter:
+            try:
+                # Try Cholesky
+                torch.linalg.cholesky(covar_symmetric + emergency_jitter * eye)
+
+                # Success: return adjusted matrix
+                covar_symmetric = covar_symmetric + emergency_jitter * eye
+                print(f"Emergency Jitter: {emergency_jitter}")
+                break  # <--- Exit the loop once PD is achieved
+
+            except RuntimeError:
+                emergency_jitter *= 10  # Increase jitter e.g. 1e-6 > 1e-5 > 1e-4 ...
+
+    # Empty container for samples
+    samples = torch.empty((n_samples, N, 2))
+
+    # Distribution in torch
+    mvn = torch.distributions.MultivariateNormal(loc = mean_flat, covariance_matrix = covar_symmetric)
+    
+    for i in range(n_samples):
+        sample = mvn.sample().reshape(N, 2).unsqueeze(0)
         samples[i] = sample
 
     return samples

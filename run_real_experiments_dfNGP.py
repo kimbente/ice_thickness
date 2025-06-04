@@ -122,9 +122,22 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
     x_test = test[:, [0, 1]].to(device)
     y_test = test[:, [3, 4]].to(device)
 
-    # local measurment errors as noise + constant noise ~ source age (for u and v)
-    train_noise_diag = (torch.concat((train[:, 5], train[:, 6]), dim = 0) + 
-                        torch.cat(((torch.log(train[:, 7] + 3) * 0.01), (torch.log(train[:, 7] + 3) * 0.01)))).to(device) 
+    ### NOISE MODEL ###
+    # noise variance (h * sigma_u)^2 and (h * sigma_v)^2 (tensor contains std's)
+    var_h_x_uv_noise = torch.concat((train[:, 5], train[:, 6]), dim = 0)**2
+    # age dependent noise sigma_h on ice thickness measurements: ~10 - 20 m std (1000 scaling)
+    sigma_h = 0.01 * torch.log(train[:, 7] + 3)
+    # noise variance (u * sigma_h)^2 and (v * sigma_h)^2
+    var_uv_x_h_noise = (torch.concat((train[:, 3], train[:, 4]), dim = 0) * torch.cat([sigma_h, sigma_h]))**2
+    # combine both noise variances into the std for each dimension
+    train_noise_diag = torch.sqrt(var_h_x_uv_noise + var_uv_x_h_noise).to(device)
+
+    # Compute midpoint
+    midpoint = train_noise_diag.shape[0] // 2
+
+    # Print noise levels, formatted to 4 decimal places
+    print(f"Mean noise std per x dimension: {train_noise_diag[:midpoint].mean(dim = 0).item():.4f}")
+    print(f"Mean noise std per y dimension: {train_noise_diag[midpoint:].mean(dim = 0).item():.4f}")
     
     # Print train details
     print(f"=== {region_name.upper()} ===")
@@ -176,7 +189,7 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
         # AdamW as optimizer for some regularisation/weight decay
         # HACK: create two param groups: one for the dfNN and one for the hypers
         optimizer = optim.AdamW([
-            {"params": dfNN_mean_model.parameters(), "weight_decay": WEIGHT_DECAY * 100, "lr": 10 * MODEL_LEARNING_RATE},
+            {"params": dfNN_mean_model.parameters(), "weight_decay": WEIGHT_DECAY * 100, "lr": 5 * MODEL_LEARNING_RATE},
             {"params": [sigma_f, l], "weight_decay": 0.0, "lr": 0.1 * MODEL_LEARNING_RATE},
             ])
         

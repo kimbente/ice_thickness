@@ -52,8 +52,11 @@ if model_name in ["GP", "dfGP", "dfNGP"]:
     from configs import L_RANGE, SIGMA_N_RANGE, GP_PATIENCE
     # overwrite with GP_PATIENCE
     PATIENCE = GP_PATIENCE
-    if model_name in ["dfGP", "dfNGP"]:
+    if model_name == "dfGP":
         from configs import SIGMA_F_RANGE
+    if model_name == "dfNGP":
+        # NOTE: This reflects that we have a mean model and sigma f for the residuals is smaller
+        from configs import SIGMA_F_RESIDUAL_MODEL_RANGE
 
 # for all models with NN components train on batches
 if model_name in ["dfNGP", "dfNN", "PINN"]:
@@ -183,7 +186,7 @@ for sim_name, sim_func in simulations.items():
 
         # initialise trainable dfGP params
         sigma_n = nn.Parameter(torch.empty(1, device = device).uniform_( * SIGMA_N_RANGE))
-        sigma_f = nn.Parameter(torch.empty(1, device = device).uniform_( * SIGMA_F_RANGE))
+        sigma_f = nn.Parameter(torch.empty(1, device = device).uniform_( * SIGMA_F_RESIDUAL_MODEL_RANGE))
         l = nn.Parameter(torch.empty(2, device = device).uniform_( * L_RANGE))
 
         # For every run initialise a (new) mean model

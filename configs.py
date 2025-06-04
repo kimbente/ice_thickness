@@ -63,7 +63,8 @@ W_PINN_DIV_WEIGHT = 0.3
 
 # Define initialisation ranges FOR GP MODELs
 SIGMA_N_RANGE = (0.02, 0.07)
-SIGMA_F_RANGE = (1.5, 2.0) 
+# SIGMA_F_RANGE = (1.5, 2.0) 
+SIGMA_F_RANGE = (0.8, 1.5) 
 SIGMA_F_RESIDUAL_MODEL_RANGE = (0.1, 0.4) # for dfNGP we model the residuals, so we need a different sigma_f range
 L_RANGE = (0.3, 0.8) 
 
