@@ -21,6 +21,7 @@ PATIENCE = PATIENCE
 
 # TODO: Delete overwrite, run full
 NUM_RUNS = 1
+lamba_inv_lengthscale_penalty = 100
 
 # assign model-specific variable
 MODEL_LEARNING_RATE = getattr(configs, f"{model_name}_REAL_LEARNING_RATE")
@@ -73,7 +74,8 @@ tracker.start()
 ### LOOP 1 - over REGIONS ###
 #############################
 
-for region_name in ["region_upper_byrd", "region_mid_byrd", "region_lower_byrd"]:
+# alphabetic order
+for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]:
 
     print(f"\nTraining for {region_name.upper()}...")
 
@@ -100,6 +102,7 @@ for region_name in ["region_upper_byrd", "region_mid_byrd", "region_lower_byrd"]
     # [:, 4] = ice flux in y direction (v)
     # [:, 5] = ice flux error in x direction (u_err)
     # [:, 6] = ice flux error in y direction (v_err)
+    # [:, 7] = source age
 
     # train
     x_train = train[:, [0, 1]].to(device)
@@ -109,8 +112,9 @@ for region_name in ["region_upper_byrd", "region_mid_byrd", "region_lower_byrd"]
     x_test = test[:, [0, 1]].to(device)
     y_test = test[:, [3, 4]].to(device)
 
-    # local measurment errors as noise
-    train_noise_diag = torch.concat((train[:, 5], train[:, 6]), dim = 0).to(device)
+    # local measurment errors as noise + constant noise ~ source age (for u and v)
+    train_noise_diag = (torch.concat((train[:, 5], train[:, 6]), dim = 0) + 
+                        torch.cat(((torch.log(train[:, 7] + 3) * 0.01), (torch.log(train[:, 7] + 3) * 0.01)))).to(device) 
 
     # Print train details
     print(f"=== {region_name.upper()} ===")
@@ -220,7 +224,8 @@ for region_name in ["region_upper_byrd", "region_mid_byrd", "region_lower_byrd"]
                 # UPDATE HYPERS (after test loss is computed to use same model)
                 optimizer.zero_grad() # don't accumulate gradients
                 # negative for NLML. loss is always on train
-                loss = - lml_train
+                # HACK: Inverse lengthscale penalty for better extrapolation
+                loss = - lml_train + (lamba_inv_lengthscale_penalty * torch.square(1 / l.detach()).sum())
                 loss.backward()
                 optimizer.step()
 
@@ -272,7 +277,7 @@ for region_name in ["region_upper_byrd", "region_mid_byrd", "region_lower_byrd"]
                 # UPDATE HYPERS (after test loss is computed to use same model)
                 optimizer.zero_grad() # don't accumulate gradients
                 # negative for NLML
-                loss = - lml_train
+                loss = - lml_train + (lamba_inv_lengthscale_penalty * torch.square(1 / l.detach()).sum())
                 loss.backward()
                 optimizer.step()
 
@@ -411,7 +416,7 @@ for region_name in ["region_upper_byrd", "region_mid_byrd", "region_lower_byrd"]
     ### END LOOP 2 over RUNS ###
     ############################
 
- # Convert results to a Pandas DataFrame
+    # Convert results to a Pandas DataFrame
     results_per_run = pd.DataFrame(
         region_results, 
         columns = ["Run", 

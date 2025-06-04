@@ -35,10 +35,11 @@ GP_REAL_RESULTS_DIR = "results_real/GP"
 PINN_REAL_RESULTS_DIR = "results_real/PINN"
 
 # learning rates (alphabetic order)
-dfGP_REAL_LEARNING_RATE = 0.01
-dfNGP_REAL_LEARNING_RATE = 0.01 # lr x 0.1 for NN mean function params
-dfNN_REAL_LEARNING_RATE = 0.005
-GP_REAL_LEARNING_RATE = 0.01
+# NOTE: GP lrs are 1/10th of sim lrs, because real data is more complex. NN lrs are the same.
+dfGP_REAL_LEARNING_RATE = 0.001 # smaller for real data
+dfNGP_REAL_LEARNING_RATE = 0.001 # lr x 0.1 for NN mean function params
+dfNN_REAL_LEARNING_RATE = 0.005 
+GP_REAL_LEARNING_RATE = 0.001 # needs to be smaller
 PINN_REAL_LEARNING_RATE = 0.005
 
 ################################
@@ -63,6 +64,7 @@ W_PINN_DIV_WEIGHT = 0.3
 # Define initialisation ranges FOR GP MODELs
 SIGMA_N_RANGE = (0.02, 0.07)
 SIGMA_F_RANGE = (1.5, 2.0) 
+SIGMA_F_RESIDUAL_MODEL_RANGE = (0.1, 0.4) # for dfNGP we model the residuals, so we need a different sigma_f range
 L_RANGE = (0.3, 0.8) 
 
 # For regular GP only

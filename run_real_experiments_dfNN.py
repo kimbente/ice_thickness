@@ -72,7 +72,8 @@ tracker.start()
 ### LOOP 1 - over REGIONS ###
 #############################
 
-for region_name in ["region_upper_byrd", "region_mid_byrd", "region_lower_byrd"]:
+# alphabetic order
+for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]:
 
     print(f"\nTraining for {region_name.upper()}...")
 
@@ -99,6 +100,7 @@ for region_name in ["region_upper_byrd", "region_mid_byrd", "region_lower_byrd"]
     # [:, 4] = ice flux in y direction (v)
     # [:, 5] = ice flux error in x direction (u_err)
     # [:, 6] = ice flux error in y direction (v_err)
+    # [:, 7] = source age
 
     # train
     x_train = train[:, [0, 1]].to(device)
@@ -255,6 +257,11 @@ for region_name in ["region_upper_byrd", "region_mid_byrd", "region_lower_byrd"]
 
         # Load the best model for this "run"
         dfNN_model.load_state_dict(best_model_state)
+
+        if run == 0:
+            # Save best dfNN model for region
+            pretrained_model_path = f"dfNN_pretrained_real/dfNN_pretrained_{region_name}.pth"
+            torch.save(dfNN_model.state_dict(), pretrained_model_path)
 
         # Announce what we are doing
         print(f"Run {run + 1}/{NUM_RUNS}, Training of {model_name} complete for {region_name.upper()}. Restored best model.")

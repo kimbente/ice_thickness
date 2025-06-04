@@ -1,0 +1,29 @@
+\multicolumn{5}{l}{\textbf{Upper_byrd}} \\
+\midrule
+dfNN & \textcolor{OliveGreen}{0.341 \footnotesize{± nan}} & 0.246 \footnotesize{± nan} & \footnotesize{n.a.} & 0.0 \footnotesize{± nan} \\
+dfGP & 0.582 \footnotesize{± nan} & 0.405 \footnotesize{± nan} & 10625 \footnotesize{± nan} & \textcolor{BrickRed}{\footnotesize{0.010 ± nan}} \\
+dfNGP & 0.391 \footnotesize{± nan} & 0.259 \footnotesize{± nan} & 5722. \footnotesize{± nan} & \textcolor{BrickRed}{\footnotesize{0.002 ± nan}} \\
+\midrule
+PINN & 0.357 \footnotesize{± nan} & 0.243 \footnotesize{± nan} & \footnotesize{n.a.} & \textcolor{BrickRed}{\footnotesize{0.660 ± nan}} \\
+GP & 1.808 \footnotesize{± nan} & 1.211 \footnotesize{± nan} & \textcolor{OliveGreen}{156.4 \footnotesize{± nan}} & \textcolor{BrickRed}{\footnotesize{13.35 ± nan}} \\
+\bottomrule
+\toprule
+\multicolumn{5}{l}{\textbf{Mid_byrd}} \\
+\midrule
+dfNN & \textcolor{OliveGreen}{0.343 \footnotesize{± nan}} & 0.251 \footnotesize{± nan} & \footnotesize{n.a.} & 0.0 \footnotesize{± nan} \\
+dfGP & 0.814 \footnotesize{± nan} & 0.643 \footnotesize{± nan} & 3810. \footnotesize{± nan} & \textcolor{BrickRed}{\footnotesize{0.040 ± nan}} \\
+dfNGP & 0.401 \footnotesize{± nan} & 0.307 \footnotesize{± nan} & 5506. \footnotesize{± nan} & \textcolor{BrickRed}{\footnotesize{0.006 ± nan}} \\
+\midrule
+PINN & 0.668 \footnotesize{± nan} & 0.521 \footnotesize{± nan} & \footnotesize{n.a.} & \textcolor{BrickRed}{\footnotesize{1.195 ± nan}} \\
+GP & 1.004 \footnotesize{± nan} & 0.765 \footnotesize{± nan} & \textcolor{OliveGreen}{-43.0 \footnotesize{± nan}} & \textcolor{BrickRed}{\footnotesize{11.34 ± nan}} \\
+\bottomrule
+\toprule
+\multicolumn{5}{l}{\textbf{Lower_byrd}} \\
+\midrule
+dfNN & \textcolor{OliveGreen}{0.195 \footnotesize{± nan}} & 0.145 \footnotesize{± nan} & \footnotesize{n.a.} & 0.0 \footnotesize{± nan} \\
+dfGP & 0.283 \footnotesize{± nan} & 0.186 \footnotesize{± nan} & 1440. \footnotesize{± nan} & \textcolor{BrickRed}{\footnotesize{0.026 ± nan}} \\
+dfNGP & 0.205 \footnotesize{± nan} & 0.139 \footnotesize{± nan} & 1230. \footnotesize{± nan} & \textcolor{BrickRed}{\footnotesize{0.011 ± nan}} \\
+\midrule
+PINN & 0.236 \footnotesize{± nan} & 0.165 \footnotesize{± nan} & \footnotesize{n.a.} & \textcolor{BrickRed}{\footnotesize{0.558 ± nan}} \\
+GP & 1.017 \footnotesize{± nan} & 0.678 \footnotesize{± nan} & \textcolor{OliveGreen}{-110. \footnotesize{± nan}} & \textcolor{BrickRed}{\footnotesize{10.51 ± nan}} \\
+\bottomrule

@@ -21,6 +21,7 @@ PATIENCE = PATIENCE
 
 # TODO: Delete overwrite, run full
 NUM_RUNS = 1
+lamba_inv_lengthscale_penalty = 0
 
 # assign model-specific variable
 MODEL_LEARNING_RATE = getattr(configs, f"{model_name}_REAL_LEARNING_RATE")
@@ -35,8 +36,10 @@ if model_name in ["GP", "dfGP", "dfNGP"]:
     from configs import L_RANGE, GP_PATIENCE
     # overwrite with GP_PATIENCE
     PATIENCE = GP_PATIENCE
-    if model_name in ["dfGP", "dfNGP"]:
+    if model_name in ["dfGP"]:
         from configs import SIGMA_F_RANGE
+    if model_name == "dfNGP":
+        from configs import SIGMA_F_RESIDUAL_MODEL_RANGE
     if model_name == "GP":
         from configs import B_DIAGONAL_RANGE, B_OFFDIAGONAL_RANGE
 
@@ -81,7 +84,8 @@ tracker.start()
 ### LOOP 1 - over REGIONS ###
 #############################
 
-for region_name in ["region_upper_byrd", "region_mid_byrd", "region_lower_byrd"]:
+# alphabetic order
+for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]:
 
     print(f"\nTraining for {region_name.upper()}...")
 
@@ -108,6 +112,7 @@ for region_name in ["region_upper_byrd", "region_mid_byrd", "region_lower_byrd"]
     # [:, 4] = ice flux in y direction (v)
     # [:, 5] = ice flux error in x direction (u_err)
     # [:, 6] = ice flux error in y direction (v_err)
+    # [:, 7] = source age
 
     # train
     x_train = train[:, [0, 1]].to(device)
@@ -117,9 +122,10 @@ for region_name in ["region_upper_byrd", "region_mid_byrd", "region_lower_byrd"]
     x_test = test[:, [0, 1]].to(device)
     y_test = test[:, [3, 4]].to(device)
 
-    # local measurment errors as noise
-    train_noise_diag = torch.concat((train[:, 5], train[:, 6]), dim = 0).to(device)
-
+    # local measurment errors as noise + constant noise ~ source age (for u and v)
+    train_noise_diag = (torch.concat((train[:, 5], train[:, 6]), dim = 0) + 
+                        torch.cat(((torch.log(train[:, 7] + 3) * 0.01), (torch.log(train[:, 7] + 3) * 0.01)))).to(device) 
+    
     # Print train details
     print(f"=== {region_name.upper()} ===")
     print(f"Training inputs shape: {x_train.shape}")
@@ -155,11 +161,12 @@ for region_name in ["region_upper_byrd", "region_mid_byrd", "region_lower_byrd"]
         # HACK: we need to use nn.Parameter for trainable hypers to avoid leaf variable error
 
         # initialising (trainable) output scalar from a uniform distribution over a predefined range
-        sigma_f = nn.Parameter(torch.empty(1, device = device).uniform_( * SIGMA_F_RANGE))
+        sigma_f = nn.Parameter(torch.empty(1, device = device).uniform_(* SIGMA_F_RESIDUAL_MODEL_RANGE))
 
         # initialising (trainable) lengthscales from a uniform distribution over a predefined range
         # each dimension has its own lengthscale
-        l = nn.Parameter(torch.empty(2, device = device).uniform_( * L_RANGE))
+        # l = nn.Parameter(torch.empty(2, device = device).uniform_( * L_RANGE))
+        l = nn.Parameter(torch.tensor((0.5, 0.5), device = device))
 
         # For every run initialise a (new) mean model
         dfNN_mean_model = dfNN().to(device)
@@ -169,8 +176,8 @@ for region_name in ["region_upper_byrd", "region_mid_byrd", "region_lower_byrd"]
         # AdamW as optimizer for some regularisation/weight decay
         # HACK: create two param groups: one for the dfNN and one for the hypers
         optimizer = optim.AdamW([
-            {"params": dfNN_mean_model.parameters(), "weight_decay": WEIGHT_DECAY, "lr": (0.1 * MODEL_LEARNING_RATE)},
-            {"params": [sigma_f, l], "weight_decay": WEIGHT_DECAY, "lr": MODEL_LEARNING_RATE},
+            {"params": dfNN_mean_model.parameters(), "weight_decay": WEIGHT_DECAY * 100, "lr": 10 * MODEL_LEARNING_RATE},
+            {"params": [sigma_f, l], "weight_decay": 0.0, "lr": 0.1 * MODEL_LEARNING_RATE},
             ])
         
         # _________________
@@ -226,7 +233,8 @@ for region_name in ["region_upper_byrd", "region_mid_byrd", "region_lower_byrd"]
                 # UPDATE HYPERS (after test loss is computed to use same model)
                 optimizer.zero_grad() # don't accumulate gradients
                 # negative for NLML. loss is always on train
-                loss = - lml_train
+                # HACK: Inverse lengthscale penalty for better extrapolation
+                loss = - lml_train + (lamba_inv_lengthscale_penalty * torch.square(1 / l.detach()).sum())
                 loss.backward()
                 optimizer.step()
                 
@@ -270,7 +278,9 @@ for region_name in ["region_upper_byrd", "region_mid_byrd", "region_lower_byrd"]
                 # UPDATE HYPERS (after test loss is computed to use same model)
                 optimizer.zero_grad() # don't accumulate gradients
                 # negative for NLML
-                loss = - lml_train
+                # HACK: Inverse lengthscale penalty for better extrapolation
+                loss = - lml_train + (lamba_inv_lengthscale_penalty * torch.square(1 / l.detach()).sum())
+
                 loss.backward()
                 optimizer.step()
 
