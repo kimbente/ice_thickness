@@ -2,20 +2,18 @@ import os
 import pandas as pd
 
 # Define SIM results directory
-RESULTS_DIR = "results_sim"
+RESULTS_DIR = "results_real"
 
 # Define the models and simulation names in the order we want
-models = ["dfNN", "dfGP", "dfGP2", "dfNGP", "PINN", "GP"]
-simulations = ["curve", "branching", "deflection", "ridges", "edge"]
-roman_numerals = ["I", "II", "III", "IV", "V"]
+models = ["dfNN", "dfGP", "dfNGP", "PINN", "GP"]
+regions = ["region_upper_byrd", "region_mid_byrd", "region_lower_byrd"]
 
 # Initialize the LaTeX lines list
 latex_lines = []
 
-# Iterate over simulations
-for idx, sim_name in enumerate(simulations):
-    roman = roman_numerals[idx]
-    latex_lines.append(rf"\multicolumn{{5}}{{l}}{{\textbf{{{roman}. {sim_name.capitalize()}}}}} \\")
+# Iterate over regions
+for i, region_name in enumerate(regions):
+    latex_lines.append(rf"\multicolumn{{5}}{{l}}{{\textbf{{{region_name[7:].replace('_', ' ').title()}}}}} \\")
     latex_lines.append(r"\midrule")
 
     # Find the best (lowest) NLL and RMSE (ignoring n.a.)
@@ -25,7 +23,7 @@ for idx, sim_name in enumerate(simulations):
     best_model_rmse = None
 
     for model in models:
-        file_path = os.path.join(RESULTS_DIR, model, f"{sim_name}_{model}_metrics_summary.csv")
+        file_path = os.path.join(RESULTS_DIR, model, f"{region_name}_{model}_metrics_summary.csv")
         if not os.path.exists(file_path):
             continue
 
@@ -33,8 +31,8 @@ for idx, sim_name in enumerate(simulations):
         mean_row = df[df.iloc[:, 0] == "mean"].iloc[0]
 
         # Best NLL
-        if "Test full NLL" in mean_row.index and model not in ["dfNN", "PINN"]:
-            nll_mean = mean_row["Test full NLL"]
+        if "Test sparse NLL" in mean_row.index and model not in ["dfNN", "PINN"]:
+            nll_mean = mean_row["Test sparse NLL"]
             if (best_nll_mean is None) or (nll_mean < best_nll_mean):
                 best_nll_mean = nll_mean
                 best_model_nll = model
@@ -47,8 +45,8 @@ for idx, sim_name in enumerate(simulations):
 
     # Loop over models to generate LaTeX rows
     for model in models:
-        print(f"Processing {model} for simulation {sim_name}...")
-        file_path = os.path.join(RESULTS_DIR, model, f"{sim_name}_{model}_metrics_summary.csv")
+        print(f"Processing {model} for region {region_name}...")
+        file_path = os.path.join(RESULTS_DIR, model, f"{region_name}_{model}_metrics_summary.csv")
         if not os.path.exists(file_path):
             print(f"Warning: {file_path} not found. Skipping.")
             continue
@@ -69,9 +67,9 @@ for idx, sim_name in enumerate(simulations):
         mad_std = "{:.4f}".format(std_row["Test MAD"])[:5]
 
         # NLL handling
-        if "Test full NLL" in mean_row.index:
-            nll_mean_val = mean_row["Test full NLL"]
-            nll_std_val = std_row["Test full NLL"]
+        if "Test sparse NLL" in mean_row.index:
+            nll_mean_val = mean_row["Test sparse NLL"]
+            nll_std_val = std_row["Test sparse NLL"]
             nll_mean = "{:.4f}".format(nll_mean_val)[:5]
             nll_std = "{:.4f}".format(nll_std_val)[:5]
             nll_str_raw = f"{nll_mean} \\footnotesize{{± {nll_std}}}"
@@ -117,12 +115,12 @@ for idx, sim_name in enumerate(simulations):
             latex_lines.append(r"\midrule")
 
     latex_lines.append(r"\bottomrule")
-    if idx != len(simulations) - 1:
+    if i != len(regions) - 1:
         latex_lines.append(r"\toprule")
 
 # Save to file
-with open("generated_results_sim_latex_table.txt", "w") as f:
+with open("generated_results_real_latex_table_sparse.txt", "w") as f:
     for line in latex_lines:
         f.write(line + "\n")
 
-print("LaTeX table generated: generated_results_sim_latex_table.txt")
+print("LaTeX table generated: generated_results_real_latex_table_sparse.txt")

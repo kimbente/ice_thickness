@@ -289,7 +289,8 @@ for sim_name, sim_func in simulations.items():
 
                 # Save evolution of hyprs for convergence plot
                 sigman_over_epochs[epoch] = sigma_n[0]
-                l1_over_epochs[epoch] = l[0]
+                # NOTE: export raw
+                l1_over_epochs[epoch] = l[0] 
                 l2_over_epochs[epoch] = l[1]
                 Buu_over_epochs[epoch] = B[0, 0]
                 Buv_over_epochs[epoch] = B[0, 1]

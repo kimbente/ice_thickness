@@ -90,6 +90,11 @@ def GP_predict(
     elif isinstance(mean_func, torch.nn.Module):
         mean_y_train = mean_func(x_train)
         mean_y_test = mean_func(x_test) # torch.Size([n_test, 2]
+    elif isinstance(mean_func, torch.Tensor):
+        # If a tensor is passed in, it is assumed to be a constant mean function
+        mean_y_train = torch.ones_like(x_train) * mean_func # torch.Size([n_train, 2])
+        mean_y_test = torch.ones_like(x_test) * mean_func # torch.Size([n_test, 2]
+    # GP mean
     else:
         # If a list is passes in these are hps
         mean_y_train, _, _ = GP_predict(

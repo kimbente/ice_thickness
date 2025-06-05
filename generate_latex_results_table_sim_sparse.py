@@ -33,8 +33,8 @@ for idx, sim_name in enumerate(simulations):
         mean_row = df[df.iloc[:, 0] == "mean"].iloc[0]
 
         # Best NLL
-        if "Test full NLL" in mean_row.index and model not in ["dfNN", "PINN"]:
-            nll_mean = mean_row["Test full NLL"]
+        if "Test sparse NLL" in mean_row.index and model not in ["dfNN", "PINN"]:
+            nll_mean = mean_row["Test sparse NLL"]
             if (best_nll_mean is None) or (nll_mean < best_nll_mean):
                 best_nll_mean = nll_mean
                 best_model_nll = model
@@ -69,9 +69,9 @@ for idx, sim_name in enumerate(simulations):
         mad_std = "{:.4f}".format(std_row["Test MAD"])[:5]
 
         # NLL handling
-        if "Test full NLL" in mean_row.index:
-            nll_mean_val = mean_row["Test full NLL"]
-            nll_std_val = std_row["Test full NLL"]
+        if "Test sparse NLL" in mean_row.index:
+            nll_mean_val = mean_row["Test sparse NLL"]
+            nll_std_val = std_row["Test sparse NLL"]
             nll_mean = "{:.4f}".format(nll_mean_val)[:5]
             nll_std = "{:.4f}".format(nll_std_val)[:5]
             nll_str_raw = f"{nll_mean} \\footnotesize{{± {nll_std}}}"
@@ -121,8 +121,8 @@ for idx, sim_name in enumerate(simulations):
         latex_lines.append(r"\toprule")
 
 # Save to file
-with open("generated_results_sim_latex_table.txt", "w") as f:
+with open("generated_results_sim_latex_table_sparse.txt", "w") as f:
     for line in latex_lines:
         f.write(line + "\n")
 
-print("LaTeX table generated: generated_results_sim_latex_table.txt")
+print("LaTeX table generated: generated_results_sim_latex_table_sparse.txt")

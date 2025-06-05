@@ -1,17 +1,37 @@
-# REAL DATA EXPERIMENTS
-# RUN WITH python run_real_experiments_dfGP.py
-#               _                 _   _      
-#              | |               | | (_)     
-#    __ _ _ __ | |_ __ _ _ __ ___| |_ _  ___ 
-#   / _` | '_ \| __/ _` | '__/ __| __| |/ __|
-#  | (_| | | | | || (_| | | | (__| |_| | (__ 
-#   \__,_|_| |_|\__\__,_|_|  \___|\__|_|\___|
+# SIMULATED DATA EXPERIMENTS
+# # RUN WITH python run_sim_experiments_dfGP2.py
 # 
-model_name = "dfGP"
+#       ooooooooooooooooooooooooooooooooooooo
+#      8                                .d88
+#      8  oooooooooooooooooooooooooooood8888
+#      8  8888888888888888888888888P"   8888    oooooooooooooooo
+#      8  8888888888888888888888P"      8888    8              8
+#      8  8888888888888888888P"         8888    8             d8
+#      8  8888888888888888P"            8888    8            d88
+#      8  8888888888888P"               8888    8           d888
+#      8  8888888888P"                  8888    8          d8888
+#      8  8888888P"                     8888    8         d88888
+#      8  8888P"                        8888    8        d888888
+#      8  8888oooooooooooooooooooooocgmm8888    8       d8888888
+#      8 .od88888888888888888888888888888888    8      d88888888
+#      8888888888888888888888888888888888888    8     d888888888
+#                                               8    d8888888888
+#         ooooooooooooooooooooooooooooooo       8   d88888888888
+#        d                       ...oood8b      8  d888888888888
+#       d              ...oood888888888888b     8 d8888888888888
+#      d     ...oood88888888888888888888888b    8d88888888888888
+#     dood8888888888888888888888888888888888b
+#
+#
+# This artwork is a visual reminder that this script is for the sim experiments.
+
+model_name = "dfGP2"
 
 # import configs to we can access the hypers with getattr
 import configs
 from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, WEIGHT_DECAY
+# also import x_test grid size and std noise for training data
+from configs import N_SIDE, STD_GAUSSIAN_NOISE
 
 # Reiterating import for visibility
 MAX_NUM_EPOCHS = MAX_NUM_EPOCHS
@@ -19,25 +39,21 @@ NUM_RUNS = NUM_RUNS
 WEIGHT_DECAY = WEIGHT_DECAY
 PATIENCE = PATIENCE
 
-# TODO: Delete overwrite, run full
-NUM_RUNS = 1
-lamba_inv_lengthscale_penalty = 100
-
 # assign model-specific variable
-MODEL_LEARNING_RATE = getattr(configs, f"{model_name}_REAL_LEARNING_RATE")
-MODEL_REAL_RESULTS_DIR = getattr(configs, f"{model_name}_REAL_RESULTS_DIR")
+MODEL_LEARNING_RATE = getattr(configs, f"{model_name}_SIM_LEARNING_RATE")
+MODEL_SIM_RESULTS_DIR = getattr(configs, f"{model_name}_SIM_RESULTS_DIR")
 import os
-os.makedirs(MODEL_REAL_RESULTS_DIR, exist_ok = True)
+os.makedirs(MODEL_SIM_RESULTS_DIR, exist_ok = True)
 
 # imports for probabilistic models
-if model_name in ["GP", "dfGP", "dfNGP"]:
+if model_name in ["GP", "dfGP", "dfGP2", "dfNGP"]:
     from GP_models import GP_predict
     from metrics import compute_NLL_sparse, compute_NLL_full
-    from configs import L_RANGE, GP_PATIENCE
+    from configs import L_RANGE, SIGMA_N_RANGE, GP_PATIENCE
     # overwrite with GP_PATIENCE
     PATIENCE = GP_PATIENCE
-    
-    if model_name in ["dfGP", "dfNGP"]:
+
+    if model_name in ["dfGP", "dfGP2", "dfNGP"]:
         from configs import SIGMA_F_RANGE
 
 # universals 
@@ -46,12 +62,12 @@ from metrics import compute_RMSE, compute_MAE, compute_divergence_field
 # basics
 import pandas as pd
 import torch
-import torch.nn as nn
+import torch.nn as nn # NOTE: we also use this module for GP params
 import torch.optim as optim
 from codecarbon import EmissionsTracker
 
 # utilitarian
-from utils import set_seed
+from utils import set_seed, make_grid
 # reproducibility
 set_seed(42)
 import gc
@@ -67,91 +83,85 @@ import time
 start_time = time.time()  # Start timing after imports
 
 ### START TRACKING EXPERIMENT EMISSIONS ###
-tracker = EmissionsTracker(project_name = "dfGP_real_experiments", output_dir = MODEL_REAL_RESULTS_DIR)
+tracker = EmissionsTracker(project_name = "dfGP2_simulation_experiments", output_dir = MODEL_SIM_RESULTS_DIR)
 tracker.start()
 
-#############################
-### LOOP 1 - over REGIONS ###
-#############################
+### SIMULATION ###
+# Import all simulation functions
+from simulate import (
+    simulate_detailed_branching,
+    # simulate_detailed_convergence,
+    simulate_detailed_curve,
+    simulate_detailed_deflection,
+    simulate_detailed_edge,
+    simulate_detailed_ridges,
+)
 
-for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]:
+# Define simulations as a dictionary with names as keys to function objects
+# alphabectic order here
+simulations = {
+    "branching": simulate_detailed_branching,
+    "curve": simulate_detailed_curve,
+    "deflection": simulate_detailed_deflection,
+    "edge": simulate_detailed_edge,
+    "ridges": simulate_detailed_ridges,
+}
 
-    print(f"\nTraining for {region_name.upper()}...")
+########################
+### x_train & x_test ###
+########################
 
-    # Store metrics for the current region (used for *metrics_summary* report and *metrics_per_run*)
-    region_results = []
+# Load training inputs (once for all simulations)
+x_train = torch.load("data/sim_data/x_train_lines_discretised_0to1.pt", weights_only = False).float()
 
-    ##########################################
-    ### x_train & y_train, x_test & x_test ###
-    ##########################################
+# Generate x_test (long) once for all simulations
+_, x_test = make_grid(N_SIDE)
+# x_test is long format (N_SIDE ** 2, 2)
 
-    # define paths based on region_name
-    path_to_training_tensor = "data/real_data/" + region_name + "_train_tensor.pt"
-    path_to_test_tensor = "data/real_data/" + region_name + "_test_tensor.pt"
+#################################
+### LOOP 1 - over SIMULATIONS ###
+#################################
 
-    # load and tranpose to have rows as points
-    train = torch.load(path_to_training_tensor, weights_only = False).T 
-    test = torch.load(path_to_test_tensor, weights_only = False).T
+# Make y_train_dict: Iterate over all simulation functions
+for sim_name, sim_func in simulations.items():
 
-    # The train and test tensors have the following columns:
-    # [:, 0] = x
-    # [:, 1] = y
-    # [:, 2] = surface elevation (s)
-    # [:, 3] = ice flux in x direction (u)
-    # [:, 4] = ice flux in y direction (v)
-    # [:, 5] = ice flux error in x direction (u_err)
-    # [:, 6] = ice flux error in y direction (v_err)
-    # [:, 7] = source age
+    ########################
+    ### y_train & y_test ###
+    ########################
 
-    # train
-    x_train = train[:, [0, 1]].to(device)
-    y_train = train[:, [3, 4]].to(device)
+    # Generate training observations
+    # NOTE: sim_func() needs to be on CPU, so we move x_train to CPU
+    y_train = sim_func(x_train.cpu()).to(device)
+    y_test = sim_func(x_test.cpu()).to(device)
+    
+    x_test = x_test.to(device)
+    x_train = x_train.to(device)
 
-    # test
-    x_test = test[:, [0, 1]].to(device)
-    y_test = test[:, [3, 4]].to(device)
-
-    ### NOISE MODEL ###
-    # TRAIN
-    # noise variance (h * sigma_u)^2 and (h * sigma_v)^2 (tensor contains [h sig_u, h sig_v] stds)
-    noise_var_h_times_uv_train = torch.concat((train[:, 5], train[:, 6]), dim = 0)**2
-    # assume age dependent noise sigma_h on ice thickness measurements: ~10 - 20 m std (1000 scaling)
-    sigma_h = 0.01 * torch.log(train[:, 7] + 3)
-    # calculate noise variance (u * sigma_h)^2 and (v * sigma_h)^2
-    noise_var_uv_times_h_train = (torch.concat((train[:, 3], train[:, 4]), dim = 0) * torch.cat([sigma_h, sigma_h]))**2
-    # combine both noise variances into the std for each dimension
-    train_noise_diag = torch.sqrt(noise_var_h_times_uv_train + noise_var_uv_times_h_train).to(device)
-
-    # Compute midpoint
-    midpoint = train_noise_diag.shape[0] // 2
-
-    # Print noise levels for train, formatted to 4 decimal places
-    print(f"Mean noise std per x dimension: {train_noise_diag[:midpoint].mean(dim = 0).item():.4f}")
-    print(f"Mean noise std per y dimension: {train_noise_diag[midpoint:].mean(dim = 0).item():.4f}")
-
-    # TEST
-    # noise variance (h * sigma_u)^2 and (h * sigma_v)^2 (tensor contains [h sig_u, h sig_v] stds)
-    noise_var_h_times_uv_test = torch.concat((test[:, 5], test[:, 6]), dim = 0)**2
-    # assume age dependent noise sigma_h on ice thickness measurements: ~10 - 20 m std (1000 scaling)
-    sigma_h = 0.01 * torch.log(test[:, 7] + 3)
-    # calculate noise variance (u * sigma_h)^2 and (v * sigma_h)^2
-    noise_var_uv_times_h_test = (torch.concat((test[:, 3], test[:, 4]), dim = 0) * torch.cat([sigma_h, sigma_h]))**2
-    # combine both noise variances into the std for each dimension
-    test_noise_diag = torch.sqrt(noise_var_h_times_uv_test + noise_var_uv_times_h_test).to(device)
-
-    # Print train details
-    print(f"=== {region_name.upper()} ===")
+    # Print details
+    print(f"=== {sim_name.upper()} ===")
     print(f"Training inputs shape: {x_train.shape}")
     print(f"Training observations shape: {y_train.shape}")
     print(f"Training inputs dtype: {x_train.dtype}")
+    print(f"Training inputs device: {y_train.device}")
+    print(f"Training observations device: {y_train.device}")
     print()
 
-    # Print test details
-    print(f"=== {region_name.upper()} ===")
+    # Print details
+    print(f"=== {sim_name.upper()} ===")
     print(f"Test inputs shape: {x_test.shape}")
     print(f"Test observations shape: {y_test.shape}")
     print(f"Test inputs dtype: {x_test.dtype}")
+    print(f"Test inputs device: {x_test.device}")
+    print(f"Test observations device: {y_test.device}")
     print()
+
+    # NOTE: This is different to the real data experiments
+    # calculate the mean magnitude of the test data as we use this to scale the noise
+    sim_mean_magnitude_for_noise = torch.norm(y_test, dim = -1).mean().to(device)
+    sim_noise = STD_GAUSSIAN_NOISE * sim_mean_magnitude_for_noise
+
+    # Store metrics for the simulation (used for *metrics_summary* report and *metrics_per_run*)
+    simulation_results = [] 
 
     ##################################
     ### LOOP 2 - over training run ###
@@ -168,6 +178,9 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
         # NOTE: at every run this initialisation changes, introducing some randomness
         # HACK: we need to use nn.Parameter for trainable hypers to avoid leaf variable error
 
+        # initialising (trainable) noise scalar from a uniform distribution over a predefined range
+        sigma_n = nn.Parameter(torch.empty(1, device = device).uniform_( * SIGMA_N_RANGE)) # Trainable
+
         # initialising (trainable) output scalar from a uniform distribution over a predefined range
         sigma_f = nn.Parameter(torch.empty(1, device = device).uniform_( * SIGMA_F_RANGE))
 
@@ -176,12 +189,12 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
         l = nn.Parameter(torch.empty(2, device = device).uniform_( * L_RANGE))
 
         # AdamW as optimizer for some regularisation/weight decay
-        optimizer = optim.AdamW([sigma_f, l], lr = MODEL_LEARNING_RATE, weight_decay = WEIGHT_DECAY)
+        optimizer = optim.AdamW([sigma_n, sigma_f, l], lr = MODEL_LEARNING_RATE, weight_decay = WEIGHT_DECAY)
         # NOTE: No need to initialise GP model like we initialise a NN model in torch
         
         # _________________
         # BEFORE EPOCH LOOP
-        
+
         # Export the convergence just for first run only
         if run == 0:
             # initialise tensors to store losses over epochs (for convergence plot)
@@ -190,6 +203,7 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
             # monitor performance transfer to test (only RMSE easy to calc without covar)
             test_losses_RMSE_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
 
+            sigma_n_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
             sigma_f_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
             l1_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
             l2_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
@@ -199,9 +213,16 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
         # counter starts at 0
         epochs_no_improve = 0
 
+        # Additive noise model: independent Gaussian noise
+        # For every run we have a FIXED NOISY TARGET. Draw from standard normal with appropriate std
+        y_train_noisy = y_train + (torch.randn(y_train.shape, device = device) * sim_noise)
+
+        mean_vector = y_train_noisy.mean(dim = 0)
+
         ############################
         ### LOOP 3 - over EPOCHS ###
         ############################
+
         print("\nStart Training")
 
         for epoch in range(MAX_NUM_EPOCHS):
@@ -210,27 +231,26 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
             if run == 0:
                 mean_pred_train, _, lml_train = GP_predict(
                         x_train,
-                        y_train,
+                        y_train_noisy,
                         x_train, # predict training data
-                        [train_noise_diag, sigma_f, l], # list of (initial) hypers
-                        mean_func = None, # no mean aka "zero-mean function"
+                        [sigma_n, sigma_f, l], # list of (initial) hypers
+                        mean_func = mean_vector, # no mean aka "zero-mean function"
                         divergence_free_bool = True) # ensures we use a df kernel
 
                 # Compute test loss for loss convergence plot
                 mean_pred_test, _, _ = GP_predict(
                         x_train,
-                        y_train,
+                        y_train_noisy,
                         x_test.to(device), # have predictions for training data again
                         # HACK: This is rather an eval, so we use detached hypers to avoid the computational tree
-                        [train_noise_diag, sigma_f.detach().clone(), l.detach().clone()], # list of (initial) hypers
-                        mean_func = None, # no mean aka "zero-mean function"
+                        [sigma_n.detach().clone(), sigma_f.detach().clone(), l.detach().clone()], 
+                        mean_func = mean_vector, # no mean aka "zero-mean function"
                         divergence_free_bool = True) # ensures we use a df kernel
                 
                 # UPDATE HYPERS (after test loss is computed to use same model)
                 optimizer.zero_grad() # don't accumulate gradients
                 # negative for NLML. loss is always on train
-                # HACK: Inverse lengthscale penalty for better extrapolation
-                loss = - lml_train + (lamba_inv_lengthscale_penalty * torch.square(1 / l.detach()).sum())
+                loss = - lml_train
                 loss.backward()
                 optimizer.step()
                 
@@ -245,11 +265,12 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
                 test_losses_RMSE_over_epochs[epoch] = test_RMSE
 
                 # Save evolution of hyprs for convergence plot
+                sigma_n_over_epochs[epoch] = sigma_n[0]
                 sigma_f_over_epochs[epoch] = sigma_f[0]
-                l1_over_epochs[epoch] = l[0] # export effective not raw lengthscale
+                l1_over_epochs[epoch] = l[0]
                 l2_over_epochs[epoch] = l[1]
 
-                print(f"{region_name} {model_name} Run {run + 1}/{NUM_RUNS}, Epoch {epoch + 1}/{MAX_NUM_EPOCHS}, Training Loss (NLML): {loss:.4f}, (RMSE): {train_RMSE:.4f}")
+                print(f"{sim_name} {model_name} Run {run + 1}/{NUM_RUNS}, Epoch {epoch + 1}/{MAX_NUM_EPOCHS}, Training Loss (NLML): {loss:.4f}, (RMSE): {train_RMSE:.4f}")
 
                 # delete after printing and saving
                 # NOTE: keep loss for early stopping check
@@ -261,26 +282,25 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
             
             # For all runs after the first we run a minimal version using only lml_train
             else:
-
+                
                 # NOTE: We can use x_train[0:2] since the predictions doesn;t matter and we only care about lml_train
                 _, _, lml_train = GP_predict(
                         x_train,
-                        y_train,
+                        y_train_noisy,
                         x_train[0:2], # predictions don't matter and we output lml_train already
-                        [train_noise_diag, sigma_f, l], # list of (initial) hypers
-                        mean_func = None, # no mean aka "zero-mean function"
+                        [sigma_n, sigma_f, l], # list of (initial) hypers
+                        mean_func = mean_vector, # no mean aka "zero-mean function"
                         divergence_free_bool = True) # ensures we use a df kernel
                 
                 # UPDATE HYPERS (after test loss is computed to use same model)
                 optimizer.zero_grad() # don't accumulate gradients
                 # negative for NLML
-                # HACK: Inverse lengthscale penalty for better extrapolation
-                loss = - lml_train + (lamba_inv_lengthscale_penalty * torch.square(1 / l.detach()).sum())
+                loss = - lml_train
                 loss.backward()
                 optimizer.step()
 
                 # After run 1 we only print lml, nothing else
-                print(f"{region_name} {model_name} Run {run + 1}/{NUM_RUNS}, Epoch {epoch + 1}/{MAX_NUM_EPOCHS}, Training Loss (NLML): {loss:.4f}")
+                print(f"{sim_name} {model_name} Run {run + 1}/{NUM_RUNS}, Epoch {epoch + 1}/{MAX_NUM_EPOCHS}, Training Loss (NLML): {loss:.4f}")
 
                 # NOTE: keep loss for early stopping check, del lml_train
                 del lml_train
@@ -288,7 +308,7 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
                 # Free up memory every 20 epochs
                 if epoch % 20 == 0:
                     gc.collect() and torch.cuda.empty_cache()
-
+                
             # EVERY EPOCH: Early stopping check
             if loss < best_loss:
                 best_loss = loss
@@ -313,6 +333,7 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
 
         # Evaluate the trained model after all epochs are finished or early stopping was triggered
         # NOTE: Detach tuned hyperparameters from the computational graph
+        best_sigma_n = sigma_n.detach().clone()
         best_sigma_f = sigma_f.detach().clone()
         best_l = l.detach().clone()
 
@@ -321,30 +342,31 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
 
         mean_pred_test, covar_pred_test, _ = GP_predict(
             x_train,
-            y_train,
+            y_train, # NOTE: use original y_train, not y_train_noisy
             x_test_grad,
-            [train_noise_diag, best_sigma_f, best_l], # list of (initial) hypers
-            mean_func = None, # no mean aka "zero-mean function"
+            [best_sigma_n, best_sigma_f, best_l], # list of (initial) hypers
+            mean_func = mean_vector, # no mean aka "zero-mean function"
             divergence_free_bool = True) # ensures we use a df kernel
         
         # Compute divergence field
-        dfGP_test_div_field = compute_divergence_field(mean_pred_test, x_test_grad)
+        dfGP2_test_div_field = compute_divergence_field(mean_pred_test, x_test_grad)
 
         # Only save mean_pred, covar_pred and divergence fields for the first run
         if run == 0:
 
             # (1) Save predictions from first run so we can visualise them later
-            torch.save(mean_pred_test, f"{MODEL_REAL_RESULTS_DIR}/{region_name}_{model_name}_test_mean_predictions.pt")
-            torch.save(covar_pred_test, f"{MODEL_REAL_RESULTS_DIR}/{region_name}_{model_name}_test_covar_predictions.pt")
+            torch.save(mean_pred_test, f"{MODEL_SIM_RESULTS_DIR}/{sim_name}_{model_name}_test_mean_predictions.pt")
+            torch.save(covar_pred_test, f"{MODEL_SIM_RESULTS_DIR}/{sim_name}_{model_name}_test_covar_predictions.pt")
 
             # (2) Save best hyperparameters
             # Stack tensors into a single tensor
             best_hypers_tensor = torch.cat([
-                best_sigma_f,
-                best_l
+                best_sigma_n.reshape(-1),  # Ensure 1D shape
+                best_sigma_f.reshape(-1),
+                best_l.reshape(-1),
             ])
 
-            torch.save(best_hypers_tensor, f"{MODEL_REAL_RESULTS_DIR}/{region_name}_{model_name}_best_hypers.pt")
+            torch.save(best_hypers_tensor, f"{MODEL_SIM_RESULTS_DIR}/{sim_name}_{model_name}_best_hypers.pt")
 
             # (3) Since all epoch training is finished, we can save the losses over epochs
             df_losses = pd.DataFrame({
@@ -352,48 +374,52 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
                 'Train Loss NLML': train_losses_NLML_over_epochs.tolist(),
                 'Train Loss RMSE': train_losses_RMSE_over_epochs.tolist(),
                 'Test Loss RMSE': test_losses_RMSE_over_epochs.tolist(),
+                'Sigma_n': sigma_n_over_epochs.tolist(),
                 'Sigma_f': sigma_f_over_epochs.tolist(),
                 'l1': l1_over_epochs.tolist(),
                 'l2': l2_over_epochs.tolist()
                 })
             
-            df_losses.to_csv(f"{MODEL_REAL_RESULTS_DIR}/{region_name}_{model_name}_losses_over_epochs.csv", index = False, float_format = "%.5f") # reduce to 5 decimals for readability
+            df_losses.to_csv(f"{MODEL_SIM_RESULTS_DIR}/{sim_name}_{model_name}_losses_over_epochs.csv", index = False, float_format = "%.5f") # reduce to 5 decimals for readability
 
             # (4) Save divergence field (computed above for all runs)
-            torch.save(dfGP_test_div_field, f"{MODEL_REAL_RESULTS_DIR}/{region_name}_{model_name}_test_prediction_divergence_field.pt")
+            torch.save(dfGP2_test_div_field, f"{MODEL_SIM_RESULTS_DIR}/{sim_name}_{model_name}_test_prediction_divergence_field.pt")
 
         x_train_grad = x_train.to(device).clone().requires_grad_(True)
 
         mean_pred_train, covar_pred_train, _ = GP_predict(
                      x_train,
-                     y_train,
+                     y_train, # NOTE: use original y_train, not y_train_noisy
                      x_train_grad,
-                     [train_noise_diag, best_sigma_f, best_l], # list of (initial) hypers
-                     mean_func = None, # no mean aka "zero-mean function"
+                     [best_sigma_n, best_sigma_f, best_l], # list of (initial) hypers
+                     mean_func = mean_vector, # no mean aka "zero-mean function"
                      divergence_free_bool = True) # ensures we use a df kernel
         
-        dfGP_train_div_field = compute_divergence_field(mean_pred_train, x_train_grad)
+        dfGP2_train_div_field = compute_divergence_field(mean_pred_train, x_train_grad)
 
         # Divergence: Convert field to metric: mean absolute divergence
         # NOTE: It is important to use the absolute value of the divergence field, since positive and negative deviations are violations and shouldn't cancel each other out 
-        dfGP_train_div = dfGP_train_div_field.abs().mean().item()
-        dfGP_test_div = dfGP_test_div_field.abs().mean().item()
+        dfGP2_train_div = dfGP2_train_div_field.abs().mean().item()
+        dfGP2_test_div = dfGP2_test_div_field.abs().mean().item()
 
         # Compute metrics (convert tensors to float) for every run's tuned model
-        dfGP_train_RMSE = compute_RMSE(y_train, mean_pred_train).item()
-        dfGP_train_MAE = compute_MAE(y_train, mean_pred_train).item()
-        dfGP_train_sparse_NLL = compute_NLL_sparse(y_train, mean_pred_train, (covar_pred_train + torch.diag(train_noise_diag**2))).item()
-        dfGP_train_full_NLL, dfGP_train_jitter = compute_NLL_full(y_train, mean_pred_train, (covar_pred_train + torch.diag(train_noise_diag**2)))
+        dfGP2_train_RMSE = compute_RMSE(y_train, mean_pred_train).item()
+        dfGP2_train_MAE = compute_MAE(y_train, mean_pred_train).item()
+        dfGP2_train_sparse_NLL = compute_NLL_sparse(y_train, mean_pred_train, covar_pred_train).item()
+        dfGP2_train_full_NLL, dfGP2_train_jitter = compute_NLL_full(y_train, mean_pred_train, covar_pred_train)
 
-        dfGP_test_RMSE = compute_RMSE(y_test, mean_pred_test).item()
-        dfGP_test_MAE = compute_MAE(y_test, mean_pred_test).item()
-        dfGP_test_sparse_NLL = compute_NLL_sparse(y_test, mean_pred_test, (covar_pred_test + torch.diag(test_noise_diag**2))).item()
-        dfGP_test_full_NLL, dfGP_test_jitter = compute_NLL_full(y_test, mean_pred_test, (covar_pred_test + torch.diag(test_noise_diag**2)))
+        dfGP2_test_RMSE = compute_RMSE(y_test, mean_pred_test).item()
+        dfGP2_test_MAE = compute_MAE(y_test, mean_pred_test).item()
+        dfGP2_test_sparse_NLL = compute_NLL_sparse(y_test, mean_pred_test, covar_pred_test).item()
+        dfGP2_test_full_NLL, dfGP2_test_jitter = compute_NLL_full(y_test, mean_pred_test, covar_pred_test)
 
-        region_results.append([
+        print(dfGP2_train_jitter)
+        print(dfGP2_test_jitter)
+
+        simulation_results.append([
             run + 1,
-            dfGP_train_RMSE, dfGP_train_MAE, dfGP_train_sparse_NLL, dfGP_train_full_NLL.item(), dfGP_train_jitter.item(),  dfGP_train_div,
-            dfGP_test_RMSE, dfGP_test_MAE, dfGP_test_sparse_NLL, dfGP_test_full_NLL.item(), dfGP_test_jitter.item(), dfGP_test_div
+            dfGP2_train_RMSE, dfGP2_train_MAE, dfGP2_train_sparse_NLL, dfGP2_train_full_NLL.item(), dfGP2_train_jitter.item(), dfGP2_train_div,
+            dfGP2_test_RMSE, dfGP2_test_MAE, dfGP2_test_sparse_NLL, dfGP2_test_full_NLL.item(), dfGP2_test_jitter.item(), dfGP2_test_div
         ])
 
         # clean up
@@ -407,7 +433,7 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
 
     # Convert results to a Pandas DataFrame
     results_per_run = pd.DataFrame(
-        region_results, 
+        simulation_results, 
         columns = ["Run", 
                    "Train RMSE", "Train MAE", "Train sparse NLL", "Train full NLL", "Train jitter", "Train MAD",
                    "Test RMSE", "Test MAE", "Test sparse NLL", "Test full NLL", "Test jitter", "Test MAD"])
@@ -415,17 +441,17 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
     # Compute mean and standard deviation for each metric
     mean_std_df = results_per_run.iloc[:, 1:].agg(["mean", "std"]) # Exclude "Run" column
 
-    # Add region_name and model_name as columns in the DataFrame _metrics_summary to be able to copy df
-    mean_std_df["region name"] = region_name
+    # Add sim_name and model_name as columns in the DataFrame _metrics_summary to be able to copy df
+    mean_std_df["simulation name"] = sim_name
     mean_std_df["model name"] = model_name
 
     # Save "_metrics_per_run.csv" to CSV
-    path_to_metrics_per_run = os.path.join(MODEL_REAL_RESULTS_DIR, f"{region_name}_{model_name}_metrics_per_run.csv")
+    path_to_metrics_per_run = os.path.join(MODEL_SIM_RESULTS_DIR, f"{sim_name}_{model_name}_metrics_per_run.csv")
     results_per_run.to_csv(path_to_metrics_per_run, index = False, float_format = "%.5f") # reduce to 5 decimals
     print(f"\nResults per run saved to {path_to_metrics_per_run}")
 
     # Save "_metrics_summary.csv" to CSV
-    path_to_metrics_summary = os.path.join(MODEL_REAL_RESULTS_DIR, f"{region_name}_{model_name}_metrics_summary.csv")
+    path_to_metrics_summary = os.path.join(MODEL_SIM_RESULTS_DIR, f"{sim_name}_{model_name}_metrics_summary.csv")
     mean_std_df.to_csv(path_to_metrics_summary, float_format = "%.5f") # reduce to 5 decimals
     print(f"\nMean & Std saved to {path_to_metrics_summary}")
 
@@ -455,7 +481,7 @@ else:
 print(f"Elapsed wall time: {elapsed_time:.4f} seconds")
 
 # Define full path for the file
-wall_time_and_gpu_path = os.path.join(MODEL_REAL_RESULTS_DIR, model_name + "_run_" "wall_time.txt")
+wall_time_and_gpu_path = os.path.join(MODEL_SIM_RESULTS_DIR, model_name + "_run_" "wall_time.txt")
 
 # Save to the correct folder with both seconds and minutes
 with open(wall_time_and_gpu_path, "w") as f:

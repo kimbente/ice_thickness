@@ -130,7 +130,7 @@ def compute_NLL_full(y_true, y_mean_pred, y_covar_pred, jitter = 0.0):
     y_true_flat = torch.concat([y_true[:, 0], y_true[:, 1]], dim = 0).unsqueeze(-1)  # Shape: (2 * N, 1)
     y_mean_pred_flat = torch.concat([y_mean_pred[:, 0], y_mean_pred[:, 1]], dim = 0).unsqueeze(-1)  # Shape: (2 * N, 1)
 
-    # Compute the difference between the true and predicted values (y - μ)
+    # Compute the difference between the true and predicted values (y - μ) (error)
     # NOTE: order is (true - pred) to match the Mahalanobis distance formula
     diff = y_true_flat - y_mean_pred_flat   # Shape: (2 * N, 1)
 

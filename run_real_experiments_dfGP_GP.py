@@ -1,5 +1,5 @@
 # REAL DATA EXPERIMENTS
-# RUN WITH python run_real_experiments_dfGP.py
+# RUN WITH python run_real_experiments_dfGP2.py
 #               _                 _   _      
 #              | |               | | (_)     
 #    __ _ _ __ | |_ __ _ _ __ ___| |_ _  ___ 
@@ -7,7 +7,7 @@
 #  | (_| | | | | || (_| | | | (__| |_| | (__ 
 #   \__,_|_| |_|\__\__,_|_|  \___|\__|_|\___|
 # 
-model_name = "dfGP"
+model_name = "dfGP2"
 
 # import configs to we can access the hypers with getattr
 import configs
@@ -21,7 +21,7 @@ PATIENCE = PATIENCE
 
 # TODO: Delete overwrite, run full
 NUM_RUNS = 1
-lamba_inv_lengthscale_penalty = 100
+lamba_inv_lengthscale_penalty = 0
 
 # assign model-specific variable
 MODEL_LEARNING_RATE = getattr(configs, f"{model_name}_REAL_LEARNING_RATE")
@@ -30,15 +30,25 @@ import os
 os.makedirs(MODEL_REAL_RESULTS_DIR, exist_ok = True)
 
 # imports for probabilistic models
-if model_name in ["GP", "dfGP", "dfNGP"]:
+if model_name in ["GP", "dfGP", "dfNGP", "dfGP2"]:
     from GP_models import GP_predict
     from metrics import compute_NLL_sparse, compute_NLL_full
     from configs import L_RANGE, GP_PATIENCE
     # overwrite with GP_PATIENCE
     PATIENCE = GP_PATIENCE
-    
-    if model_name in ["dfGP", "dfNGP"]:
+    if model_name in ["dfGP"]:
         from configs import SIGMA_F_RANGE
+    if model_name == "dfGP2":
+        from configs import SIGMA_F_RESIDUAL_MODEL_RANGE
+    if model_name == "GP":
+        from configs import B_DIAGONAL_RANGE, B_OFFDIAGONAL_RANGE
+
+# for all models with NN components train on batches
+if model_name in ["dfNGP", "dfNN", "PINN"]:
+    from configs import BATCH_SIZE
+
+if model_name in ["dfNGP", "dfNN"]:
+    from NN_models import dfNN
 
 # universals 
 from metrics import compute_RMSE, compute_MAE, compute_divergence_field
@@ -67,13 +77,14 @@ import time
 start_time = time.time()  # Start timing after imports
 
 ### START TRACKING EXPERIMENT EMISSIONS ###
-tracker = EmissionsTracker(project_name = "dfGP_real_experiments", output_dir = MODEL_REAL_RESULTS_DIR)
+tracker = EmissionsTracker(project_name = "dfGP2_real_experiments", output_dir = MODEL_REAL_RESULTS_DIR)
 tracker.start()
 
 #############################
 ### LOOP 1 - over REGIONS ###
 #############################
 
+# alphabetic order
 for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]:
 
     print(f"\nTraining for {region_name.upper()}...")
@@ -138,7 +149,7 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
     noise_var_uv_times_h_test = (torch.concat((test[:, 3], test[:, 4]), dim = 0) * torch.cat([sigma_h, sigma_h]))**2
     # combine both noise variances into the std for each dimension
     test_noise_diag = torch.sqrt(noise_var_h_times_uv_test + noise_var_uv_times_h_test).to(device)
-
+    
     # Print train details
     print(f"=== {region_name.upper()} ===")
     print(f"Training inputs shape: {x_train.shape}")
@@ -157,27 +168,42 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
     ### LOOP 2 - over training run ###
     ##################################
 
-    # NOTE: GPs don't train on batches, use full data
+    # NOTE: GPs don't train on batches, use full data, even for dfGP2
 
     for run in range(NUM_RUNS):
 
         print(f"\n--- Training Run {run + 1}/{NUM_RUNS} ---")
 
-        ### Initialise GP hyperparameters ###
-        # 3 learnable HPs
+        # NOTE: The dfNN mean function uses autograd and thus required x_train to be set to .requires_grad
+        x_train = x_train.to(device).requires_grad_(True)
+        # same for x_test for eval round
+        x_test = x_test.to(device).requires_grad_(True)
+
+        ### Initialise dfGP2 hyperparameters ###
+        # 3 learnable HPs, same as dfGP
         # NOTE: at every run this initialisation changes, introducing some randomness
         # HACK: we need to use nn.Parameter for trainable hypers to avoid leaf variable error
 
         # initialising (trainable) output scalar from a uniform distribution over a predefined range
-        sigma_f = nn.Parameter(torch.empty(1, device = device).uniform_( * SIGMA_F_RANGE))
+        sigma_f = nn.Parameter(torch.tensor([0.3], device = device)) # initialising from a fixed value for reproducibility
 
         # initialising (trainable) lengthscales from a uniform distribution over a predefined range
         # each dimension has its own lengthscale
-        l = nn.Parameter(torch.empty(2, device = device).uniform_( * L_RANGE))
+        # l = nn.Parameter(torch.empty(2, device = device).uniform_( * L_RANGE))
+        l = nn.Parameter(torch.tensor([0.4, 0.4], device = device))
+
+        # mean model
+        sigma_f_mean = nn.Parameter(torch.tensor([2.0], device = device))
+        l_mean = nn.Parameter(torch.tensor([0.9, 0.9], device = device))
+
+        # NOTE: We don't need a criterion either
 
         # AdamW as optimizer for some regularisation/weight decay
-        optimizer = optim.AdamW([sigma_f, l], lr = MODEL_LEARNING_RATE, weight_decay = WEIGHT_DECAY)
-        # NOTE: No need to initialise GP model like we initialise a NN model in torch
+        # HACK: create two param groups: one for the dfNN and one for the hypers
+        optimizer = optim.AdamW([
+            {"params": [sigma_f_mean, l_mean], "weight_decay": 0.0, "lr": 0.5 * MODEL_LEARNING_RATE},
+            {"params": [sigma_f, l], "weight_decay": 0.0, "lr": MODEL_LEARNING_RATE},
+            ])
         
         # _________________
         # BEFORE EPOCH LOOP
@@ -194,6 +220,10 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
             l1_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
             l2_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
 
+            sigma_f_mean_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
+            l1_mean_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
+            l2_mean_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
+
         # Early stopping variables
         best_loss = float('inf')
         # counter starts at 0
@@ -208,12 +238,14 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
 
             # For Run 1 we save a bunch of metrics and update, while for the rest we only update
             if run == 0:
+
+                # Model
                 mean_pred_train, _, lml_train = GP_predict(
                         x_train,
                         y_train,
                         x_train, # predict training data
                         [train_noise_diag, sigma_f, l], # list of (initial) hypers
-                        mean_func = None, # no mean aka "zero-mean function"
+                        mean_func = [train_noise_diag, sigma_f_mean, l_mean], # dfNN as mean function
                         divergence_free_bool = True) # ensures we use a df kernel
 
                 # Compute test loss for loss convergence plot
@@ -223,14 +255,14 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
                         x_test.to(device), # have predictions for training data again
                         # HACK: This is rather an eval, so we use detached hypers to avoid the computational tree
                         [train_noise_diag, sigma_f.detach().clone(), l.detach().clone()], # list of (initial) hypers
-                        mean_func = None, # no mean aka "zero-mean function"
+                        mean_func = [train_noise_diag, sigma_f_mean, l_mean], # dfNN as mean function
                         divergence_free_bool = True) # ensures we use a df kernel
                 
                 # UPDATE HYPERS (after test loss is computed to use same model)
                 optimizer.zero_grad() # don't accumulate gradients
                 # negative for NLML. loss is always on train
                 # HACK: Inverse lengthscale penalty for better extrapolation
-                loss = - lml_train + (lamba_inv_lengthscale_penalty * torch.square(1 / l.detach()).sum())
+                loss = - lml_train
                 loss.backward()
                 optimizer.step()
                 
@@ -249,6 +281,10 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
                 l1_over_epochs[epoch] = l[0] # export effective not raw lengthscale
                 l2_over_epochs[epoch] = l[1]
 
+                sigma_f_mean_over_epochs[epoch] = sigma_f_mean[0]
+                l1_over_epochs[epoch] = l[0] # export effective not raw lengthscale
+                l2_over_epochs[epoch] = l[1]
+
                 print(f"{region_name} {model_name} Run {run + 1}/{NUM_RUNS}, Epoch {epoch + 1}/{MAX_NUM_EPOCHS}, Training Loss (NLML): {loss:.4f}, (RMSE): {train_RMSE:.4f}")
 
                 # delete after printing and saving
@@ -259,8 +295,9 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
                 if epoch % 20 == 0:
                     gc.collect() and torch.cuda.empty_cache()
             
-            # For all runs after the first we run a minimal version using only lml_train
+             # For all runs after the first we run a minimal version using only lml_train
             else:
+
 
                 # NOTE: We can use x_train[0:2] since the predictions doesn;t matter and we only care about lml_train
                 _, _, lml_train = GP_predict(
@@ -268,14 +305,15 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
                         y_train,
                         x_train[0:2], # predictions don't matter and we output lml_train already
                         [train_noise_diag, sigma_f, l], # list of (initial) hypers
-                        mean_func = None, # no mean aka "zero-mean function"
+                        mean_func = [train_noise_diag, sigma_f_mean, l_mean], # dfNN as mean function
                         divergence_free_bool = True) # ensures we use a df kernel
                 
                 # UPDATE HYPERS (after test loss is computed to use same model)
                 optimizer.zero_grad() # don't accumulate gradients
                 # negative for NLML
                 # HACK: Inverse lengthscale penalty for better extrapolation
-                loss = - lml_train + (lamba_inv_lengthscale_penalty * torch.square(1 / l.detach()).sum())
+                loss = - lml_train 
+
                 loss.backward()
                 optimizer.step()
 
@@ -316,6 +354,9 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
         best_sigma_f = sigma_f.detach().clone()
         best_l = l.detach().clone()
 
+        best_sigma_f_mean = sigma_f_mean.detach().clone()
+        best_l_mean = l_mean.detach().clone()
+
         # Need gradients for autograd divergence: We clone and detach
         x_test_grad = x_test.to(device).clone().requires_grad_(True)
 
@@ -324,11 +365,11 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
             y_train,
             x_test_grad,
             [train_noise_diag, best_sigma_f, best_l], # list of (initial) hypers
-            mean_func = None, # no mean aka "zero-mean function"
+            mean_func = [train_noise_diag, best_sigma_f_mean, best_l_mean], # dfNN as mean function
             divergence_free_bool = True) # ensures we use a df kernel
         
         # Compute divergence field
-        dfGP_test_div_field = compute_divergence_field(mean_pred_test, x_test_grad)
+        dfGP2_test_div_field = compute_divergence_field(mean_pred_test, x_test_grad)
 
         # Only save mean_pred, covar_pred and divergence fields for the first run
         if run == 0:
@@ -341,7 +382,9 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
             # Stack tensors into a single tensor
             best_hypers_tensor = torch.cat([
                 best_sigma_f,
-                best_l
+                best_l,
+                best_sigma_f_mean, 
+                best_l_mean,
             ])
 
             torch.save(best_hypers_tensor, f"{MODEL_REAL_RESULTS_DIR}/{region_name}_{model_name}_best_hypers.pt")
@@ -354,13 +397,16 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
                 'Test Loss RMSE': test_losses_RMSE_over_epochs.tolist(),
                 'Sigma_f': sigma_f_over_epochs.tolist(),
                 'l1': l1_over_epochs.tolist(),
-                'l2': l2_over_epochs.tolist()
+                'l2': l2_over_epochs.tolist(),
+                'Sigma_f_mean': sigma_f_mean_over_epochs.tolist(),
+                'l1_mean': l1_mean_over_epochs.tolist(),
+                'l2_mean': l2_mean_over_epochs.tolist(),
                 })
             
             df_losses.to_csv(f"{MODEL_REAL_RESULTS_DIR}/{region_name}_{model_name}_losses_over_epochs.csv", index = False, float_format = "%.5f") # reduce to 5 decimals for readability
 
             # (4) Save divergence field (computed above for all runs)
-            torch.save(dfGP_test_div_field, f"{MODEL_REAL_RESULTS_DIR}/{region_name}_{model_name}_test_prediction_divergence_field.pt")
+            torch.save(dfGP2_test_div_field, f"{MODEL_REAL_RESULTS_DIR}/{region_name}_{model_name}_test_prediction_divergence_field.pt")
 
         x_train_grad = x_train.to(device).clone().requires_grad_(True)
 
@@ -369,31 +415,32 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
                      y_train,
                      x_train_grad,
                      [train_noise_diag, best_sigma_f, best_l], # list of (initial) hypers
-                     mean_func = None, # no mean aka "zero-mean function"
+                     mean_func = [train_noise_diag, best_sigma_f_mean, best_l_mean], # dfNN as mean function
                      divergence_free_bool = True) # ensures we use a df kernel
         
-        dfGP_train_div_field = compute_divergence_field(mean_pred_train, x_train_grad)
+        dfGP2_train_div_field = compute_divergence_field(mean_pred_train, x_train_grad)
 
         # Divergence: Convert field to metric: mean absolute divergence
         # NOTE: It is important to use the absolute value of the divergence field, since positive and negative deviations are violations and shouldn't cancel each other out 
-        dfGP_train_div = dfGP_train_div_field.abs().mean().item()
-        dfGP_test_div = dfGP_test_div_field.abs().mean().item()
+        dfGP2_train_div = dfGP2_train_div_field.abs().mean().item()
+        dfGP2_test_div = dfGP2_test_div_field.abs().mean().item()
 
         # Compute metrics (convert tensors to float) for every run's tuned model
-        dfGP_train_RMSE = compute_RMSE(y_train, mean_pred_train).item()
-        dfGP_train_MAE = compute_MAE(y_train, mean_pred_train).item()
-        dfGP_train_sparse_NLL = compute_NLL_sparse(y_train, mean_pred_train, (covar_pred_train + torch.diag(train_noise_diag**2))).item()
-        dfGP_train_full_NLL, dfGP_train_jitter = compute_NLL_full(y_train, mean_pred_train, (covar_pred_train + torch.diag(train_noise_diag**2)))
+        # NOTE: In the real world we assume noisy targets
+        dfGP2_train_RMSE = compute_RMSE(y_train, mean_pred_train).item()
+        dfGP2_train_MAE = compute_MAE(y_train, mean_pred_train).item()
+        dfGP2_train_NLL = compute_NLL_sparse(y_train, mean_pred_train, (covar_pred_train + torch.diag(train_noise_diag**2))).item()
+        dfGP2_train_full_NLL, dfGP2_train_jitter = compute_NLL_full(y_train, mean_pred_train, (covar_pred_train + torch.diag(train_noise_diag**2)))
 
-        dfGP_test_RMSE = compute_RMSE(y_test, mean_pred_test).item()
-        dfGP_test_MAE = compute_MAE(y_test, mean_pred_test).item()
-        dfGP_test_sparse_NLL = compute_NLL_sparse(y_test, mean_pred_test, (covar_pred_test + torch.diag(test_noise_diag**2))).item()
-        dfGP_test_full_NLL, dfGP_test_jitter = compute_NLL_full(y_test, mean_pred_test, (covar_pred_test + torch.diag(test_noise_diag**2)))
+        dfGP2_test_RMSE = compute_RMSE(y_test, mean_pred_test).item()
+        dfGP2_test_MAE = compute_MAE(y_test, mean_pred_test).item()
+        dfGP2_test_NLL = compute_NLL_sparse(y_test, mean_pred_test, (covar_pred_test + torch.diag(test_noise_diag**2))).item()
+        dfGP2_test_full_NLL, dfGP2_test_jitter = compute_NLL_full(y_test, mean_pred_test, (covar_pred_test + torch.diag(test_noise_diag**2)))
 
         region_results.append([
             run + 1,
-            dfGP_train_RMSE, dfGP_train_MAE, dfGP_train_sparse_NLL, dfGP_train_full_NLL.item(), dfGP_train_jitter.item(),  dfGP_train_div,
-            dfGP_test_RMSE, dfGP_test_MAE, dfGP_test_sparse_NLL, dfGP_test_full_NLL.item(), dfGP_test_jitter.item(), dfGP_test_div
+            dfGP2_train_RMSE, dfGP2_train_MAE, dfGP2_train_NLL, dfGP2_train_full_NLL.item(), dfGP2_train_jitter.item(), dfGP2_train_div,
+            dfGP2_test_RMSE, dfGP2_test_MAE, dfGP2_test_NLL, dfGP2_test_full_NLL.item(), dfGP2_test_jitter.item(), dfGP2_test_div
         ])
 
         # clean up

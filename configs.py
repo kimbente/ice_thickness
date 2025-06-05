@@ -9,6 +9,8 @@ dfNN_SIM_RESULTS_DIR = "results_sim/dfNN"
 GP_SIM_RESULTS_DIR = "results_sim/GP"
 PINN_SIM_RESULTS_DIR = "results_sim/PINN"
 
+dfGP2_SIM_RESULTS_DIR = "results_sim/dfGP2"
+
 # learning rates (alphabetic order)
 # NOTE: df is always smallcap.
 # NOTE: We use a GP and a NN lr
@@ -17,6 +19,8 @@ dfNGP_SIM_LEARNING_RATE = 0.01 # lr x 0.1 for NN mean function params
 dfNN_SIM_LEARNING_RATE = 0.005
 GP_SIM_LEARNING_RATE = 0.01
 PINN_SIM_LEARNING_RATE = 0.005
+
+dfGP2_SIM_LEARNING_RATE = 0.01
 
 # sim specific hyperparameters
 # test grid resolution
