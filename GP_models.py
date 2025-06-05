@@ -83,12 +83,28 @@ def GP_predict(
 
     ### MEAN FUNCTION ###
     # the default is a zero mean function
-    if mean_func == None:
+    if mean_func is None:
         mean_y_train = torch.zeros_like(x_train)
         mean_y_test = torch.zeros_like(x_test) # torch.Size([n_test, 2]
-    else:
+    # before this just was an else statement
+    elif isinstance(mean_func, torch.nn.Module):
         mean_y_train = mean_func(x_train)
         mean_y_test = mean_func(x_test) # torch.Size([n_test, 2]
+    else:
+        # If a list is passes in these are hps
+        mean_y_train, _, _ = GP_predict(
+                        x_train,
+                        y_train,
+                        x_train, # predict training data
+                        mean_func, # list of (initial) hypers
+                        divergence_free_bool = True)
+                
+        mean_y_test, _, _ = GP_predict(
+                        x_train,
+                        y_train,
+                        x_test, # predict test data
+                        mean_func, # list of (initial) hypers
+                        divergence_free_bool = True)
 
     # Outputs kernel of shape torch.Size([2 * n_train, 2 * n_train])
     K_train_train = kernel_func(
@@ -130,7 +146,7 @@ def GP_predict(
 
     ### Step 2: Cholesky decomposition with jitter
     jitter = 0.0  # Start with no jitter
-    max_tries = 6
+    max_tries = 7
     attempt = 0
 
     I = torch.eye(K_train_train_noisy_interleaved.size(0), device = K_train_train_noisy_interleaved.device)
@@ -145,7 +161,8 @@ def GP_predict(
             # if attempt == 0:
                 # print("Cholesky failed without jitter. Adding jitter...")
             attempt += 1
-            jitter = 1e-6 * (10 ** attempt)  # Exponential backoff
+            # 10^0 = 1
+            jitter = 1e-8 * (10 ** attempt)  # Exponential backoff
     else:
         raise RuntimeError(f"Cholesky decomposition failed after {max_tries} attempts. Final jitter: {jitter}")
 
@@ -377,7 +394,7 @@ def GP_predict_block(
     else:
         raise RuntimeError(f"Cholesky decomposition failed after {max_tries} attempts. Final jitter: {jitter}")
 
-    # Make y flat by concatenating u and v (both columns) AFTER each other
+    # Make y flat by concatenating u and v (both columns) AFTER each other - block style
     # torch.Size([2 x n_train, 1])
     # y_train_flat = torch.cat([y_train[:, 0], y_train[:, 1]]).unsqueeze(-1)
     y_train_minus_mean = y_train - mean_y_train
@@ -409,19 +426,23 @@ def GP_predict_block(
     #################################################
     # How well does the model fit the training data we have access to?
 
+    # TERM 1: Model-data fit
     # 0.5 * y^T * alpha
     # squeeze to remove redundant dimension
     # y_train are noisy data observations
     lml_term1 = - 0.5 * torch.matmul(y_train_minus_mean_flat.T, alpha).squeeze()
 
+    # TERM 2: Regularises volumne of uncertainty: favours smaller uncertainty 
     # Is uses only training data
-    # sum(log(L_ii)))
+    # sum(log(L_ii))) is the same as 0.5 logdet(K_train_train_noisy) (*0.5 and *2 cancel out)
     lml_term2 = - torch.sum(torch.log(torch.diagonal(L)))
 
-    # Constant term - technically not optimised 
-    # n/2 * log(2 * pi)
-    lml_term3 = - (y_train.shape[0]/2) * torch.log(torch.tensor(2 * torch.pi))
+    # TERM 3: Constant term - technically not optimised 
+    # n/2 * log(2 * pi) - with log(2 * pi) = 1.8
+    # NOTE: n here is D * N (D = 2 for 2D data, N = number of data points)
+    lml_term3 = - (y_train_minus_mean_flat.shape[0]/2) * torch.log(torch.tensor(2 * torch.pi))
 
+    # sum all three negative terms
     lml = lml_term1 + lml_term2 + lml_term3
 
     return predictive_mean, predictive_covariance, lml

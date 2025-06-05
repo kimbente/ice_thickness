@@ -417,17 +417,17 @@ for sim_name, sim_func in simulations.items():
         dfNGP_train_RMSE = compute_RMSE(y_train, mean_pred_train).item()
         dfNGP_train_MAE = compute_MAE(y_train, mean_pred_train).item()
         dfNGP_train_NLL = compute_NLL_sparse(y_train, mean_pred_train, covar_pred_train).item()
-        dfNGP_train_full_NLL = compute_NLL_full(y_train, mean_pred_train, covar_pred_train).item()
+        dfNGP_train_full_NLL, dfNGP_train_jitter = compute_NLL_full(y_train, mean_pred_train, covar_pred_train)
 
         dfNGP_test_RMSE = compute_RMSE(y_test, mean_pred_test).item()
         dfNGP_test_MAE = compute_MAE(y_test, mean_pred_test).item()
         dfNGP_test_NLL = compute_NLL_sparse(y_test, mean_pred_test, covar_pred_test).item()
-        dfNGP_test_full_NLL = compute_NLL_full(y_test, mean_pred_test, covar_pred_test).item()
+        dfNGP_test_full_NLL, dfNGP_test_jitter = compute_NLL_full(y_test, mean_pred_test, covar_pred_test)
 
         simulation_results.append([
             run + 1,
-            dfNGP_train_RMSE, dfNGP_train_MAE, dfNGP_train_NLL, dfNGP_train_full_NLL, dfNGP_train_div,
-            dfNGP_test_RMSE, dfNGP_test_MAE, dfNGP_test_NLL, dfNGP_test_full_NLL, dfNGP_test_div
+            dfNGP_train_RMSE, dfNGP_train_MAE, dfNGP_train_NLL, dfNGP_train_full_NLL.item(), dfNGP_train_jitter.item(), dfNGP_train_div,
+            dfNGP_test_RMSE, dfNGP_test_MAE, dfNGP_test_NLL, dfNGP_test_full_NLL.item(), dfNGP_test_jitter.item(), dfNGP_test_div
         ])
 
         # clean up
@@ -444,8 +444,8 @@ for sim_name, sim_func in simulations.items():
     results_per_run = pd.DataFrame(
         simulation_results, 
         columns = ["Run", 
-                   "Train RMSE", "Train MAE", "Train NLL", "Train full NLL", "Train MAD",
-                   "Test RMSE", "Test MAE", "Test NLL", "Test full NLL", "Test MAD"])
+                   "Train RMSE", "Train MAE", "Train sparse NLL", "Train full NLL", "Train jitter", "Train MAD",
+                   "Test RMSE", "Test MAE", "Test sparse NLL", "Test full NLL", "Test jitter", "Test MAD"])
 
     # Compute mean and standard deviation for each metric
     mean_std_df = results_per_run.iloc[:, 1:].agg(["mean", "std"]) # Exclude "Run" column

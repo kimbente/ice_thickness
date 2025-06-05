@@ -432,7 +432,7 @@ for sim_name, sim_func in simulations.items():
         
         GP_train_div_field = compute_divergence_field(mean_pred_train, x_train_grad)
 
-# Divergence: Convert field to metric: mean absolute divergence
+        # Divergence: Convert field to metric: mean absolute divergence
         # NOTE: It is important to use the absolute value of the divergence field, since positive and negative deviations are violations and shouldn't cancel each other out 
         GP_train_div = GP_train_div_field.abs().mean().item()
         GP_test_div = GP_test_div_field.abs().mean().item()
@@ -441,17 +441,17 @@ for sim_name, sim_func in simulations.items():
         GP_train_RMSE = compute_RMSE(y_train, mean_pred_train).item()
         GP_train_MAE = compute_MAE(y_train, mean_pred_train).item()
         GP_train_sparse_NLL = compute_NLL_sparse(y_train, mean_pred_train, covar_pred_train).item()
-        GP_train_full_NLL = compute_NLL_full(y_train, mean_pred_train, covar_pred_train).item()
+        GP_train_full_NLL, GP_train_jitter = compute_NLL_full(y_train, mean_pred_train, covar_pred_train)
 
         GP_test_RMSE = compute_RMSE(y_test, mean_pred_test).item()
         GP_test_MAE = compute_MAE(y_test, mean_pred_test).item()
         GP_test_sparse_NLL = compute_NLL_sparse(y_test, mean_pred_test, covar_pred_test).item()
-        GP_test_full_NLL = compute_NLL_full(y_test, mean_pred_test, covar_pred_test).item()
+        GP_test_full_NLL, GP_test_jitter = compute_NLL_full(y_test, mean_pred_test, covar_pred_test)
 
         simulation_results.append([
             run + 1,
-            GP_train_RMSE, GP_train_MAE, GP_train_sparse_NLL, GP_train_full_NLL, GP_train_div,
-            GP_test_RMSE, GP_test_MAE, GP_test_sparse_NLL, GP_test_full_NLL, GP_test_div
+            GP_train_RMSE, GP_train_MAE, GP_train_sparse_NLL, GP_train_full_NLL.item(), GP_train_jitter.item(), GP_train_div,
+            GP_test_RMSE, GP_test_MAE, GP_test_sparse_NLL, GP_test_full_NLL.item(), GP_test_jitter.item(), GP_test_div
         ])
 
         # clean up
@@ -467,8 +467,8 @@ for sim_name, sim_func in simulations.items():
     results_per_run = pd.DataFrame(
         simulation_results, 
         columns = ["Run", 
-                   "Train RMSE", "Train MAE", "Train sparse NLL", "Train full NLL", "Train MAD",
-                   "Test RMSE", "Test MAE", "Test sparse NLL", "Test full NLL", "Test MAD"])
+                   "Train RMSE", "Train MAE", "Train sparse NLL", "Train full NLL", "Train jitter", "Train MAD",
+                   "Test RMSE", "Test MAE", "Test sparse NLL", "Test full NLL", "Test jitter", "Test MAD"])
 
     # Compute mean and standard deviation for each metric
     mean_std_df = results_per_run.iloc[:, 1:].agg(["mean", "std"]) # Exclude "Run" column

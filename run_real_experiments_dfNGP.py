@@ -123,21 +123,32 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
     y_test = test[:, [3, 4]].to(device)
 
     ### NOISE MODEL ###
-    # noise variance (h * sigma_u)^2 and (h * sigma_v)^2 (tensor contains std's)
-    var_h_x_uv_noise = torch.concat((train[:, 5], train[:, 6]), dim = 0)**2
-    # age dependent noise sigma_h on ice thickness measurements: ~10 - 20 m std (1000 scaling)
+    # TRAIN
+    # noise variance (h * sigma_u)^2 and (h * sigma_v)^2 (tensor contains [h sig_u, h sig_v] stds)
+    noise_var_h_times_uv_train = torch.concat((train[:, 5], train[:, 6]), dim = 0)**2
+    # assume age dependent noise sigma_h on ice thickness measurements: ~10 - 20 m std (1000 scaling)
     sigma_h = 0.01 * torch.log(train[:, 7] + 3)
-    # noise variance (u * sigma_h)^2 and (v * sigma_h)^2
-    var_uv_x_h_noise = (torch.concat((train[:, 3], train[:, 4]), dim = 0) * torch.cat([sigma_h, sigma_h]))**2
+    # calculate noise variance (u * sigma_h)^2 and (v * sigma_h)^2
+    noise_var_uv_times_h_train = (torch.concat((train[:, 3], train[:, 4]), dim = 0) * torch.cat([sigma_h, sigma_h]))**2
     # combine both noise variances into the std for each dimension
-    train_noise_diag = torch.sqrt(var_h_x_uv_noise + var_uv_x_h_noise).to(device)
+    train_noise_diag = torch.sqrt(noise_var_h_times_uv_train + noise_var_uv_times_h_train).to(device)
 
     # Compute midpoint
     midpoint = train_noise_diag.shape[0] // 2
 
-    # Print noise levels, formatted to 4 decimal places
+    # Print noise levels for train, formatted to 4 decimal places
     print(f"Mean noise std per x dimension: {train_noise_diag[:midpoint].mean(dim = 0).item():.4f}")
     print(f"Mean noise std per y dimension: {train_noise_diag[midpoint:].mean(dim = 0).item():.4f}")
+
+    # TEST
+    # noise variance (h * sigma_u)^2 and (h * sigma_v)^2 (tensor contains [h sig_u, h sig_v] stds)
+    noise_var_h_times_uv_test = torch.concat((test[:, 5], test[:, 6]), dim = 0)**2
+    # assume age dependent noise sigma_h on ice thickness measurements: ~10 - 20 m std (1000 scaling)
+    sigma_h = 0.01 * torch.log(test[:, 7] + 3)
+    # calculate noise variance (u * sigma_h)^2 and (v * sigma_h)^2
+    noise_var_uv_times_h_test = (torch.concat((test[:, 3], test[:, 4]), dim = 0) * torch.cat([sigma_h, sigma_h]))**2
+    # combine both noise variances into the std for each dimension
+    test_noise_diag = torch.sqrt(noise_var_h_times_uv_test + noise_var_uv_times_h_test).to(device)
     
     # Print train details
     print(f"=== {region_name.upper()} ===")
@@ -398,20 +409,21 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
         dfNGP_test_div = dfNGP_test_div_field.abs().mean().item()
 
         # Compute metrics (convert tensors to float) for every run's tuned model
+        # NOTE: In the real world we assume noisy targets
         dfNGP_train_RMSE = compute_RMSE(y_train, mean_pred_train).item()
         dfNGP_train_MAE = compute_MAE(y_train, mean_pred_train).item()
-        dfNGP_train_NLL = compute_NLL_sparse(y_train, mean_pred_train, covar_pred_train).item()
-        dfNGP_train_full_NLL = compute_NLL_full(y_train, mean_pred_train, covar_pred_train).item()
+        dfNGP_train_NLL = compute_NLL_sparse(y_train, mean_pred_train, (covar_pred_train + torch.diag(train_noise_diag**2))).item()
+        dfNGP_train_full_NLL, dfNGP_train_jitter = compute_NLL_full(y_train, mean_pred_train, (covar_pred_train + torch.diag(train_noise_diag**2)))
 
         dfNGP_test_RMSE = compute_RMSE(y_test, mean_pred_test).item()
         dfNGP_test_MAE = compute_MAE(y_test, mean_pred_test).item()
-        dfNGP_test_NLL = compute_NLL_sparse(y_test, mean_pred_test, covar_pred_test).item()
-        dfNGP_test_full_NLL = compute_NLL_full(y_test, mean_pred_test, covar_pred_test).item()
+        dfNGP_test_NLL = compute_NLL_sparse(y_test, mean_pred_test, (covar_pred_test + torch.diag(test_noise_diag**2))).item()
+        dfNGP_test_full_NLL, dfNGP_test_jitter = compute_NLL_full(y_test, mean_pred_test, (covar_pred_test + torch.diag(test_noise_diag**2)))
 
         region_results.append([
             run + 1,
-            dfNGP_train_RMSE, dfNGP_train_MAE, dfNGP_train_NLL, dfNGP_train_full_NLL, dfNGP_train_div,
-            dfNGP_test_RMSE, dfNGP_test_MAE, dfNGP_test_NLL, dfNGP_test_full_NLL, dfNGP_test_div
+            dfNGP_train_RMSE, dfNGP_train_MAE, dfNGP_train_NLL, dfNGP_train_full_NLL.item(), dfNGP_train_jitter.item(), dfNGP_train_div,
+            dfNGP_test_RMSE, dfNGP_test_MAE, dfNGP_test_NLL, dfNGP_test_full_NLL.item(), dfNGP_test_jitter.item(), dfNGP_test_div
         ])
 
         # clean up
@@ -427,8 +439,8 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
     results_per_run = pd.DataFrame(
         region_results, 
         columns = ["Run", 
-                   "Train RMSE", "Train MAE", "Train NLL", "Train full NLL", "Train MAD",
-                   "Test RMSE", "Test MAE", "Test NLL", "Test full NLL", "Test MAD"])
+                   "Train RMSE", "Train MAE", "Train sparse NLL", "Train full NLL", "Train jitter", "Train MAD",
+                   "Test RMSE", "Test MAE", "Test sparse NLL", "Test full NLL", "Test jitter", "Test MAD"])
 
     # Compute mean and standard deviation for each metric
     mean_std_df = results_per_run.iloc[:, 1:].agg(["mean", "std"]) # Exclude "Run" column

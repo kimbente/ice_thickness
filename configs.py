@@ -34,6 +34,8 @@ dfNN_REAL_RESULTS_DIR = "results_real/dfNN"
 GP_REAL_RESULTS_DIR = "results_real/GP"
 PINN_REAL_RESULTS_DIR = "results_real/PINN"
 
+dfGP2_REAL_RESULTS_DIR = "results_real/dfGP2"
+
 # learning rates (alphabetic order)
 # NOTE: GP lrs are 1/10th of sim lrs, because real data is more complex. NN lrs are the same.
 dfGP_REAL_LEARNING_RATE = 0.001 # smaller for real data
@@ -42,11 +44,13 @@ dfNN_REAL_LEARNING_RATE = 0.005
 GP_REAL_LEARNING_RATE = 0.001 # needs to be smaller
 PINN_REAL_LEARNING_RATE = 0.005
 
+dfGP2_REAL_LEARNING_RATE = 0.001
+
 ################################
 ### TRAINING HYPERPARAMETERS ###
 ################################
 
-NUM_RUNS = 10
+NUM_RUNS = 5 # 10
 MAX_NUM_EPOCHS = 2000
 
 PATIENCE = 100  # Stop after {PATIENCE} epochs with no improvement

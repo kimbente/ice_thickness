@@ -404,17 +404,20 @@ for sim_name, sim_func in simulations.items():
         dfGP_train_RMSE = compute_RMSE(y_train, mean_pred_train).item()
         dfGP_train_MAE = compute_MAE(y_train, mean_pred_train).item()
         dfGP_train_sparse_NLL = compute_NLL_sparse(y_train, mean_pred_train, covar_pred_train).item()
-        dfGP_train_full_NLL = compute_NLL_full(y_train, mean_pred_train, covar_pred_train).item()
+        dfGP_train_full_NLL, dfGP_train_jitter = compute_NLL_full(y_train, mean_pred_train, covar_pred_train)
 
         dfGP_test_RMSE = compute_RMSE(y_test, mean_pred_test).item()
         dfGP_test_MAE = compute_MAE(y_test, mean_pred_test).item()
         dfGP_test_sparse_NLL = compute_NLL_sparse(y_test, mean_pred_test, covar_pred_test).item()
-        dfGP_test_full_NLL = compute_NLL_full(y_test, mean_pred_test, covar_pred_test).item()
+        dfGP_test_full_NLL, dfGP_test_jitter = compute_NLL_full(y_test, mean_pred_test, covar_pred_test)
+
+        print(dfGP_train_jitter)
+        print(dfGP_test_jitter)
 
         simulation_results.append([
             run + 1,
-            dfGP_train_RMSE, dfGP_train_MAE, dfGP_train_sparse_NLL, dfGP_train_full_NLL, dfGP_train_div,
-            dfGP_test_RMSE, dfGP_test_MAE, dfGP_test_sparse_NLL, dfGP_test_full_NLL, dfGP_test_div
+            dfGP_train_RMSE, dfGP_train_MAE, dfGP_train_sparse_NLL, dfGP_train_full_NLL.item(), dfGP_train_jitter.item(), dfGP_train_div,
+            dfGP_test_RMSE, dfGP_test_MAE, dfGP_test_sparse_NLL, dfGP_test_full_NLL.item(), dfGP_test_jitter.item(), dfGP_test_div
         ])
 
         # clean up
@@ -430,8 +433,8 @@ for sim_name, sim_func in simulations.items():
     results_per_run = pd.DataFrame(
         simulation_results, 
         columns = ["Run", 
-                   "Train RMSE", "Train MAE", "Train sparse NLL", "Train full NLL", "Train MAD",
-                   "Test RMSE", "Test MAE", "Test sparse NLL", "Test full NLL", "Test MAD"])
+                   "Train RMSE", "Train MAE", "Train sparse NLL", "Train full NLL", "Train jitter", "Train MAD",
+                   "Test RMSE", "Test MAE", "Test sparse NLL", "Test full NLL", "Test jitter", "Test MAD"])
 
     # Compute mean and standard deviation for each metric
     mean_std_df = results_per_run.iloc[:, 1:].agg(["mean", "std"]) # Exclude "Run" column

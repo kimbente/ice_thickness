@@ -20,6 +20,7 @@ def compute_MAE(y_true, y_pred):
 
 def compute_NLL_sparse(y_true, y_mean_pred, y_covar_pred):
     """ Computes a sparse version of the Negative Log-Likelihood (NLL) for a 2D Gaussian distribution. This sparse version neglects cross-covariance terms and is more efficient for large datasets.
+    NOTE: We do not need jitter for ths implementation because we do not compute the full covariance matrix, but only the diagonal and cross-covariance terms. If other covariances are small, sparse and full NLL will be similar.
     
     NLL: The NLL quantifies how well the predicted Gaussian distribution fits the observed data.
     Sparse format: each of the N points has its own 2×2 covariance matrix. (This is more than just the diagonal of the covariance matrix, but not the full covar.)
@@ -71,6 +72,7 @@ def compute_NLL_sparse(y_true, y_mean_pred, y_covar_pred):
     sigma_inverse = torch.inverse(covar_N22) # shape: torch.Size([N, 2, 2])
 
     # Compute (Σ⁻¹ @ diff) → shape: (N, 2, 1)
+    # Inverse covariance: trust! high trust, small differnce: good. high trust, large difference: bad.
     maha_component = torch.matmul(sigma_inverse, diff)
 
     # Compute (diff^T @ Σ⁻¹ @ diff) for each point → shape: (N, 1, 1)
@@ -107,7 +109,7 @@ def compute_NLL_sparse(y_true, y_mean_pred, y_covar_pred):
 ### NLL Full version ###
 ########################
 
-def compute_NLL_full(y_true, y_mean_pred, y_covar_pred, jitter = 0.5 * 1e-2):
+def compute_NLL_full(y_true, y_mean_pred, y_covar_pred, jitter = 0.0):
     """Computes Negative Log-Likelihood (NLL) using the full covariance matrix. (Fully joined NLL)
 
     Args:
@@ -133,23 +135,38 @@ def compute_NLL_full(y_true, y_mean_pred, y_covar_pred, jitter = 0.5 * 1e-2):
     diff = y_true_flat - y_mean_pred_flat   # Shape: (2 * N, 1)
 
     # STEP 2: Stabilize covariance matrix with fixed jitter to ensure torch.linalg.cholesky() works
-    # NOTE: as this is our key metric it is better to add the same jitter to all elements. Thus rather than a loop, we add a fixed small value to the diagonal
-    y_covar_pred_stable = y_covar_pred + torch.eye(y_covar_pred.shape[0], device = y_covar_pred.device) * jitter
+    # ALTERNATIVE: as this is our key metric it is better to add the same jitter to all elements. Thus rather than a loop, we add a fixed small value to the diagonal
     
-    # Solve Σ⁻¹ using Cholesky decomposition to get lower-triangular matrix L for LL^T = Σ
-    chol = torch.linalg.cholesky(y_covar_pred_stable) # Shape: (2 * N, 2 * N)
+    ### Step 2: Cholesky decomposition with jitter
+    jitter = 0.0  # Start with no jitter
+    max_tries = 8
+    attempt = 0
+
+    I = torch.eye(y_covar_pred.size(0), device = y_covar_pred.device)
+
+    while attempt < max_tries:
+        try:
+            # Solve Σ⁻¹ using Cholesky decomposition to get lower-triangular matrix L for LL^T = Σ
+            # Try with zero jitter first
+            L = torch.linalg.cholesky(y_covar_pred + jitter * I) # Shape: (2 * N, 2 * N)
+            if jitter > 0:
+                print(f"Cholesky succeeded with jitter = {jitter}")
+            break  # Success!
+        except RuntimeError:
+            # if attempt == 0:
+                # print("Cholesky failed without jitter. Adding jitter...")
+            attempt += 1
+            # 10^0 = 1
+            jitter = 1e-8 * (10 ** attempt)  # Exponential backoff
+    else:
+        raise RuntimeError(f"Cholesky decomposition failed after {max_tries} attempts. Final jitter: {jitter}")    
 
     # Solve (y - μ)T Σ⁻¹ (y - μ) using Cholesky decomposition for better stability
-    mahalanobis_dist = (torch.cholesky_solve(diff, chol).T @ diff).squeeze() # Shape: (1,)
+    mahalanobis_dist = (torch.cholesky_solve(diff, L).T @ diff).squeeze() # Shape: (1,)
 
     # STEP 3: Compute log-determinant robustly
-    # HACK: avoids underflow/overflow
-    sign, log_det_Sigma = torch.linalg.slogdet(y_covar_pred_stable) # sign = 1 or -1, log_det_Sigma = log determinant (scalar)
-    
-    # If the determinant is non-positive, return a large NLL to indicate instability
-    if sign <= 0:
-        print("Warning: Non-positive determinant encountered. Returning large NLL.")
-        return torch.tensor(float("inf"), device = y_true.device)
+    # sum(log(L_ii)))
+    log_det_Sigma = 2 * torch.sum(torch.log(torch.diagonal(L)))
     
     # STEP 4: Compute normalisation term
     d = N * 2  # Dimensionality (since we have two outputs per point)
@@ -158,7 +175,7 @@ def compute_NLL_full(y_true, y_mean_pred, y_covar_pred, jitter = 0.5 * 1e-2):
     # Step 5: Combine 3 terms into negative log-likelihood (NLL)
     log_likelihood = -0.5 * (mahalanobis_dist + log_det_Sigma + normalisation_term)
 
-    return - log_likelihood  # Negative log-likelihood
+    return - log_likelihood, torch.tensor(jitter)  # Negative log-likelihood
 
 ########################
 ### Divergence field ###
