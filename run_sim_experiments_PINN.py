@@ -33,6 +33,7 @@ import configs
 from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, WEIGHT_DECAY
 # also import x_test grid size and std noise for training data
 from configs import N_SIDE, STD_GAUSSIAN_NOISE
+from configs import TRACK_EMISSIONS_BOOL
 
 # Reiterating import for visibility
 MAX_NUM_EPOCHS = MAX_NUM_EPOCHS
@@ -63,7 +64,6 @@ import pandas as pd
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from codecarbon import EmissionsTracker
 
 # utilitarian
 from utils import set_seed, make_grid
@@ -82,8 +82,10 @@ import time
 start_time = time.time()  # Start timing after imports
 
 ### START TRACKING EXPERIMENT EMISSIONS ###
-tracker = EmissionsTracker(project_name = "PINN_simulation_experiments", output_dir = MODEL_SIM_RESULTS_DIR)
-tracker.start()
+if TRACK_EMISSIONS_BOOL:
+    from codecarbon import EmissionsTracker
+    tracker = EmissionsTracker(project_name = "PINN_simulation_experiments", output_dir = MODEL_SIM_RESULTS_DIR)
+    tracker.start()
 
 ### SIMULATION ###
 # Import all simulation functions
@@ -440,7 +442,8 @@ elapsed_time = end_time - start_time
 elapsed_time_minutes = elapsed_time / 60
 
 # also end emission tracking. Will be saved as emissions.csv
-tracker.stop()
+if TRACK_EMISSIONS_BOOL:
+    tracker.stop()
 
 if device == "cuda":
     # get name of GPU model

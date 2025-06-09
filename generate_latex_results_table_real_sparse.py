@@ -5,7 +5,7 @@ import pandas as pd
 RESULTS_DIR = "results_real"
 
 # Define the models and simulation names in the order we want
-models = ["dfNN", "dfGP", "dfNGP", "PINN", "GP"]
+models = ["dfNN", "dfGP", "dfGPcm", "dfNGP", "PINN", "GP"] # "dfGP2"
 regions = ["region_upper_byrd", "region_mid_byrd", "region_lower_byrd"]
 
 # Initialize the LaTeX lines list
@@ -13,7 +13,7 @@ latex_lines = []
 
 # Iterate over regions
 for i, region_name in enumerate(regions):
-    latex_lines.append(rf"\multicolumn{{5}}{{l}}{{\textbf{{{region_name[7:].replace('_', ' ').title()}}}}} \\")
+    latex_lines.append(rf"\multicolumn{{6}}{{l}}{{\textbf{{{region_name[7:].replace('_', ' ').title()}}}}} \\")
     latex_lines.append(r"\midrule")
 
     # Find the best (lowest) NLL and RMSE (ignoring n.a.)
@@ -82,6 +82,16 @@ for i, region_name in enumerate(regions):
         else:
             nll_str = r"\footnotesize{n.a.}"
 
+        # Full NLL handling
+        if "Test full NLL" in mean_row.index:
+            full_nll_mean_val = mean_row["Test full NLL"]
+            full_nll_std_val = std_row["Test full NLL"]
+            full_nll_mean = "{:.4f}".format(full_nll_mean_val)[:5]
+            full_nll_std = "{:.4f}".format(full_nll_std_val)[:5]
+            full_nll_str = f"{full_nll_mean} \\footnotesize{{± {full_nll_std}}}"
+        else:
+            full_nll_str = r"\footnotesize{n.a.}"
+
         # Highlight if this is the best RMSE
         rmse_str_raw = f"{rmse_mean} \\footnotesize{{± {rmse_std}}}"
         if model == best_model_rmse:
@@ -106,6 +116,7 @@ for i, region_name in enumerate(regions):
             f"{rmse_str} & "
             f"{mae_mean} \\footnotesize{{± {mae_std}}} & "
             f"{nll_str} & "
+            f"{full_nll_str} & "
             f"{mad_str} \\\\"
         )
         latex_lines.append(row)
@@ -119,8 +130,8 @@ for i, region_name in enumerate(regions):
         latex_lines.append(r"\toprule")
 
 # Save to file
-with open("generated_results_real_latex_table_sparse.txt", "w") as f:
+with open("generated_latex_results_table_real_sparse.txt", "w") as f:
     for line in latex_lines:
         f.write(line + "\n")
 
-print("LaTeX table generated: generated_results_real_latex_table_sparse.txt")
+print("LaTeX table generated: generated_latex_results_table_real_sparse.txt")

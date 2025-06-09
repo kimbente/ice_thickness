@@ -14,6 +14,7 @@ model_name = "dfNN"
 # import configs to we can access the hypers with getattr
 import configs
 from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, WEIGHT_DECAY
+from configs import TRACK_EMISSIONS_BOOL
 
 # Reiterating import for visibility
 MAX_NUM_EPOCHS = MAX_NUM_EPOCHS
@@ -22,7 +23,6 @@ WEIGHT_DECAY = WEIGHT_DECAY
 PATIENCE = PATIENCE
 
 # TODO: Delete overwrite, run full
-NUM_RUNS = 1
 
 # assign model-specific variable
 MODEL_LEARNING_RATE = getattr(configs, f"{model_name}_REAL_LEARNING_RATE")
@@ -46,7 +46,6 @@ import pandas as pd
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from codecarbon import EmissionsTracker
 
 # utilitarian
 from utils import set_seed
@@ -65,8 +64,10 @@ import time
 start_time = time.time()  # Start timing after imports
 
 ### START TRACKING EXPERIMENT EMISSIONS ###
-tracker = EmissionsTracker(project_name = "dfNN_real_experiments", output_dir = MODEL_REAL_RESULTS_DIR)
-tracker.start()
+if TRACK_EMISSIONS_BOOL:
+    from codecarbon import EmissionsTracker
+    tracker = EmissionsTracker(project_name = "dfNN_real_experiments", output_dir = MODEL_REAL_RESULTS_DIR)
+    tracker.start()
 
 #############################
 ### LOOP 1 - over REGIONS ###
@@ -316,9 +317,10 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
             
             df_losses.to_csv(f"{MODEL_REAL_RESULTS_DIR}/{region_name}_{model_name}_losses_over_epochs.csv", index = False, float_format = "%.5f")
 
-        # Free up memory at end of each run
-        del dfNN_model, y_train_dfNN_predicted, y_test_dfNN_predicted, dfNN_test_div_field, dfNN_train_MAD, dfNN_test_MAD, dfNN_test_MAE, dfNN_test_RMSE, dfNN_train_MAE, dfNN_train_RMSE, train_losses_RMSE_over_batches, train_losses_RMSE_over_epochs, test_losses_RMSE_over_epochs
+            del dfNN_test_div_field, train_losses_RMSE_over_epochs, test_losses_RMSE_over_epochs
 
+        # Free up memory at end of each run
+        del dfNN_model, y_train_dfNN_predicted, y_test_dfNN_predicted, dfNN_train_MAD, dfNN_test_MAD, dfNN_test_MAE, dfNN_test_RMSE, dfNN_train_MAE, dfNN_train_RMSE, train_losses_RMSE_over_batches
         # Call garbage collector to free up memory
         gc.collect()
         torch.cuda.empty_cache()
@@ -366,7 +368,8 @@ elapsed_time = end_time - start_time
 elapsed_time_minutes = elapsed_time / 60
 
 # also end emission tracking. Will be saved as emissions.csv
-tracker.stop()
+if TRACK_EMISSIONS_BOOL:
+    tracker.stop()
 
 if device == "cuda":
     # get name of GPU model

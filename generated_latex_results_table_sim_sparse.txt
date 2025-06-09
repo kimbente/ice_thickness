@@ -1,0 +1,54 @@
+\multicolumn{6}{l}{\textbf{I. Curve}} \\
+\midrule
+dfNN & 0.104 \footnotesize{± 0.048} & 0.071 \footnotesize{± 0.034} & \footnotesize{n.a.} & \footnotesize{n.a.} & 0.0 \footnotesize{± 0.0} \\
+dfGP & 0.123 \footnotesize{± nan} & 0.051 \footnotesize{± nan} & -1183 \footnotesize{± nan} & -2139 \footnotesize{± nan} & 0.0 \footnotesize{± nan} \\
+dfGPcm & 0.071 \footnotesize{± nan} & 0.036 \footnotesize{± nan} & -1681 \footnotesize{± nan} & -2937 \footnotesize{± nan} & 0.0 \footnotesize{± nan} \\
+dfNGP & \textcolor{OliveGreen}{0.063 \footnotesize{± nan}} & 0.031 \footnotesize{± nan} & \textcolor{OliveGreen}{-1785 \footnotesize{± nan}} & -4705 \footnotesize{± nan} & 0.0 \footnotesize{± nan} \\
+\midrule
+PINN & 0.152 \footnotesize{± 0.065} & 0.106 \footnotesize{± 0.042} & \footnotesize{n.a.} & \footnotesize{n.a.} & \textcolor{BrickRed}{\footnotesize{0.126 ± 0.051}} \\
+GP & 0.133 \footnotesize{± nan} & 0.073 \footnotesize{± nan} & -1197 \footnotesize{± nan} & -2469 \footnotesize{± nan} & \textcolor{BrickRed}{\footnotesize{0.843 ± nan}} \\
+\bottomrule
+\toprule
+\multicolumn{6}{l}{\textbf{II. Branching}} \\
+\midrule
+dfNN & 0.190 \footnotesize{± 0.057} & 0.055 \footnotesize{± 0.002} & \footnotesize{n.a.} & \footnotesize{n.a.} & 0.0 \footnotesize{± 0.0} \\
+dfGP & 0.162 \footnotesize{± nan} & 0.068 \footnotesize{± nan} & -807. \footnotesize{± nan} & 6917. \footnotesize{± nan} & 0.0 \footnotesize{± nan} \\
+dfGPcm & 0.126 \footnotesize{± nan} & 0.057 \footnotesize{± nan} & -1053 \footnotesize{± nan} & 4649. \footnotesize{± nan} & 0.0 \footnotesize{± nan} \\
+dfNGP & \textcolor{OliveGreen}{0.081 \footnotesize{± nan}} & 0.027 \footnotesize{± nan} & \textcolor{OliveGreen}{-1138 \footnotesize{± nan}} & 24657 \footnotesize{± nan} & 0.0 \footnotesize{± nan} \\
+\midrule
+PINN & 0.119 \footnotesize{± 0.004} & 0.049 \footnotesize{± 0.002} & \footnotesize{n.a.} & \footnotesize{n.a.} & \textcolor{BrickRed}{\footnotesize{0.070 ± 0.021}} \\
+GP & 0.163 \footnotesize{± nan} & 0.079 \footnotesize{± nan} & -810. \footnotesize{± nan} & 43036 \footnotesize{± nan} & \textcolor{BrickRed}{\footnotesize{1.139 ± nan}} \\
+\bottomrule
+\toprule
+\multicolumn{6}{l}{\textbf{III. Deflection}} \\
+\midrule
+dfNN & 0.127 \footnotesize{± 0.049} & 0.083 \footnotesize{± 0.031} & \footnotesize{n.a.} & \footnotesize{n.a.} & 0.0 \footnotesize{± 0.0} \\
+dfGP & 0.062 \footnotesize{± nan} & 0.029 \footnotesize{± nan} & -1916 \footnotesize{± nan} & -2548 \footnotesize{± nan} & 0.0 \footnotesize{± nan} \\
+dfGPcm & 0.074 \footnotesize{± nan} & 0.031 \footnotesize{± nan} & \textcolor{OliveGreen}{-2053 \footnotesize{± nan}} & -3141 \footnotesize{± nan} & 0.0 \footnotesize{± nan} \\
+dfNGP & \textcolor{OliveGreen}{0.046 \footnotesize{± nan}} & 0.019 \footnotesize{± nan} & -1747 \footnotesize{± nan} & -3564 \footnotesize{± nan} & 0.0 \footnotesize{± nan} \\
+\midrule
+PINN & 0.159 \footnotesize{± 0.045} & 0.111 \footnotesize{± 0.033} & \footnotesize{n.a.} & \footnotesize{n.a.} & \textcolor{BrickRed}{\footnotesize{0.137 ± 0.027}} \\
+GP & 0.150 \footnotesize{± nan} & 0.068 \footnotesize{± nan} & -1507 \footnotesize{± nan} & -2734 \footnotesize{± nan} & \textcolor{BrickRed}{\footnotesize{0.846 ± nan}} \\
+\bottomrule
+\toprule
+\multicolumn{6}{l}{\textbf{IV. Ridges}} \\
+\midrule
+dfNN & 0.116 \footnotesize{± 0.041} & 0.080 \footnotesize{± 0.028} & \footnotesize{n.a.} & \footnotesize{n.a.} & 0.0 \footnotesize{± 0.0} \\
+dfGP & 0.040 \footnotesize{± nan} & 0.021 \footnotesize{± nan} & -1717 \footnotesize{± nan} & -1845 \footnotesize{± nan} & 0.0 \footnotesize{± nan} \\
+dfGPcm & 0.043 \footnotesize{± nan} & 0.021 \footnotesize{± nan} & -1690 \footnotesize{± nan} & -1653 \footnotesize{± nan} & 0.0 \footnotesize{± nan} \\
+dfNGP & \textcolor{OliveGreen}{0.022 \footnotesize{± nan}} & 0.010 \footnotesize{± nan} & -712. \footnotesize{± nan} & 11084 \footnotesize{± nan} & 0.0 \footnotesize{± nan} \\
+\midrule
+PINN & 0.092 \footnotesize{± 0.032} & 0.066 \footnotesize{± 0.020} & \footnotesize{n.a.} & \footnotesize{n.a.} & \textcolor{BrickRed}{\footnotesize{0.084 ± 0.014}} \\
+GP & 0.122 \footnotesize{± nan} & 0.046 \footnotesize{± nan} & \textcolor{OliveGreen}{-1899 \footnotesize{± nan}} & -2719 \footnotesize{± nan} & \textcolor{BrickRed}{\footnotesize{0.489 ± nan}} \\
+\bottomrule
+\toprule
+\multicolumn{6}{l}{\textbf{V. Edge}} \\
+\midrule
+dfNN & 0.179 \footnotesize{± 0.010} & 0.110 \footnotesize{± 0.004} & \footnotesize{n.a.} & \footnotesize{n.a.} & 0.0 \footnotesize{± 0.0} \\
+dfGP & 0.184 \footnotesize{± nan} & 0.092 \footnotesize{± nan} & -984. \footnotesize{± nan} & 12248 \footnotesize{± nan} & 0.0 \footnotesize{± nan} \\
+dfGPcm & 0.146 \footnotesize{± nan} & 0.077 \footnotesize{± nan} & -1146 \footnotesize{± nan} & 66399 \footnotesize{± nan} & 0.0 \footnotesize{± nan} \\
+dfNGP & \textcolor{OliveGreen}{0.123 \footnotesize{± nan}} & 0.065 \footnotesize{± nan} & \textcolor{OliveGreen}{-1183 \footnotesize{± nan}} & 26354 \footnotesize{± nan} & 0.0 \footnotesize{± nan} \\
+\midrule
+PINN & 0.139 \footnotesize{± 0.013} & 0.091 \footnotesize{± 0.010} & \footnotesize{n.a.} & \footnotesize{n.a.} & \textcolor{BrickRed}{\footnotesize{0.143 ± 0.033}} \\
+GP & 0.199 \footnotesize{± nan} & 0.095 \footnotesize{± nan} & -968. \footnotesize{± nan} & 27385 \footnotesize{± nan} & \textcolor{BrickRed}{\footnotesize{1.379 ± nan}} \\
+\bottomrule

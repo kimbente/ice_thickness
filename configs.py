@@ -10,6 +10,7 @@ GP_SIM_RESULTS_DIR = "results_sim/GP"
 PINN_SIM_RESULTS_DIR = "results_sim/PINN"
 
 dfGP2_SIM_RESULTS_DIR = "results_sim/dfGP2"
+dfGPcm_SIM_RESULTS_DIR = "results_sim/dfGPcm"
 
 # learning rates (alphabetic order)
 # NOTE: df is always smallcap.
@@ -21,6 +22,7 @@ GP_SIM_LEARNING_RATE = 0.01
 PINN_SIM_LEARNING_RATE = 0.005
 
 dfGP2_SIM_LEARNING_RATE = 0.01
+dfGPcm_SIM_LEARNING_RATE = 0.01
 
 # sim specific hyperparameters
 # test grid resolution
@@ -39,6 +41,7 @@ GP_REAL_RESULTS_DIR = "results_real/GP"
 PINN_REAL_RESULTS_DIR = "results_real/PINN"
 
 dfGP2_REAL_RESULTS_DIR = "results_real/dfGP2"
+dfGPcm_REAL_RESULTS_DIR = "results_real/dfGPcm"
 
 # learning rates (alphabetic order)
 # NOTE: GP lrs are 1/10th of sim lrs, because real data is more complex. NN lrs are the same.
@@ -49,12 +52,15 @@ GP_REAL_LEARNING_RATE = 0.001 # needs to be smaller
 PINN_REAL_LEARNING_RATE = 0.005
 
 dfGP2_REAL_LEARNING_RATE = 0.001
+dfGPcm_REAL_LEARNING_RATE = 0.001
 
 ################################
 ### TRAINING HYPERPARAMETERS ###
 ################################
 
-NUM_RUNS = 5 # 10
+TRACK_EMISSIONS_BOOL = False
+
+NUM_RUNS = 1 # 10
 MAX_NUM_EPOCHS = 2000
 
 PATIENCE = 100  # Stop after {PATIENCE} epochs with no improvement

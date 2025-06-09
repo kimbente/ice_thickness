@@ -32,6 +32,7 @@ import configs
 from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, WEIGHT_DECAY
 # also import x_test grid size and std noise for training data
 from configs import N_SIDE, STD_GAUSSIAN_NOISE
+from configs import TRACK_EMISSIONS_BOOL
 
 # Reiterating import for visibility
 MAX_NUM_EPOCHS = MAX_NUM_EPOCHS
@@ -64,7 +65,7 @@ import pandas as pd
 import torch
 import torch.nn as nn # NOTE: we also use this module for GP params
 import torch.optim as optim
-from codecarbon import EmissionsTracker
+import gpytorch
 
 # utilitarian
 from utils import set_seed, make_grid
@@ -83,8 +84,10 @@ import time
 start_time = time.time()  # Start timing after imports
 
 ### START TRACKING EXPERIMENT EMISSIONS ###
-tracker = EmissionsTracker(project_name = "GP_simulation_experiments", output_dir = MODEL_SIM_RESULTS_DIR)
-tracker.start()
+if TRACK_EMISSIONS_BOOL:
+    from codecarbon import EmissionsTracker
+    tracker = EmissionsTracker(project_name = "GP_simulation_experiments", output_dir = MODEL_SIM_RESULTS_DIR)
+    tracker.start()
 
 ### SIMULATION ###
 # Import all simulation functions
@@ -443,16 +446,22 @@ for sim_name, sim_func in simulations.items():
         GP_train_MAE = compute_MAE(y_train, mean_pred_train).item()
         GP_train_sparse_NLL = compute_NLL_sparse(y_train, mean_pred_train, covar_pred_train).item()
         GP_train_full_NLL, GP_train_jitter = compute_NLL_full(y_train, mean_pred_train, covar_pred_train)
+        # quantile coverage error
+        pred_dist_train = gpytorch.distributions.MultivariateNormal(mean_pred_train.T.reshape(-1), covar_pred_train)
+        GP_train_QCE = gpytorch.metrics.quantile_coverage_error(pred_dist_train, y_train.T.reshape(-1), quantile = 95).item()
 
         GP_test_RMSE = compute_RMSE(y_test, mean_pred_test).item()
         GP_test_MAE = compute_MAE(y_test, mean_pred_test).item()
         GP_test_sparse_NLL = compute_NLL_sparse(y_test, mean_pred_test, covar_pred_test).item()
         GP_test_full_NLL, GP_test_jitter = compute_NLL_full(y_test, mean_pred_test, covar_pred_test)
+        # quantile coverage error
+        pred_dist_test = gpytorch.distributions.MultivariateNormal(mean_pred_test.T.reshape(-1), covar_pred_test)
+        GP_test_QCE = gpytorch.metrics.quantile_coverage_error(pred_dist_test, y_test.T.reshape(-1), quantile = 95).item()
 
         simulation_results.append([
             run + 1,
-            GP_train_RMSE, GP_train_MAE, GP_train_sparse_NLL, GP_train_full_NLL.item(), GP_train_jitter.item(), GP_train_div,
-            GP_test_RMSE, GP_test_MAE, GP_test_sparse_NLL, GP_test_full_NLL.item(), GP_test_jitter.item(), GP_test_div
+            GP_train_RMSE, GP_train_MAE, GP_train_sparse_NLL, GP_train_full_NLL.item(), GP_train_jitter.item(), GP_train_QCE, GP_train_div,
+            GP_test_RMSE, GP_test_MAE, GP_test_sparse_NLL, GP_test_full_NLL.item(), GP_test_jitter.item(), GP_test_QCE, GP_test_div
         ])
 
         # clean up
@@ -464,12 +473,12 @@ for sim_name, sim_func in simulations.items():
     ### END LOOP 2 over RUNS ###
     ############################
 
- # Convert results to a Pandas DataFrame
+    # Convert results to a Pandas DataFrame
     results_per_run = pd.DataFrame(
         simulation_results, 
         columns = ["Run", 
-                   "Train RMSE", "Train MAE", "Train sparse NLL", "Train full NLL", "Train jitter", "Train MAD",
-                   "Test RMSE", "Test MAE", "Test sparse NLL", "Test full NLL", "Test jitter", "Test MAD"])
+                   "Train RMSE", "Train MAE", "Train sparse NLL", "Train full NLL", "Train jitter", "Train QCE", "Train MAD",
+                   "Test RMSE", "Test MAE", "Test sparse NLL", "Test full NLL", "Test jitter", "Test QCE", "Test MAD"])
 
     # Compute mean and standard deviation for each metric
     mean_std_df = results_per_run.iloc[:, 1:].agg(["mean", "std"]) # Exclude "Run" column
@@ -503,7 +512,8 @@ elapsed_time = end_time - start_time
 elapsed_time_minutes = elapsed_time / 60
 
 # also end emission tracking. Will be saved as emissions.csv
-tracker.stop()
+if TRACK_EMISSIONS_BOOL:
+    tracker.stop()
 
 if device == "cuda":
     # get name of GPU model

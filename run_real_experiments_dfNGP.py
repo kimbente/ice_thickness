@@ -12,6 +12,7 @@ model_name = "dfNGP"
 # import configs to we can access the hypers with getattr
 import configs
 from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, WEIGHT_DECAY
+from configs import TRACK_EMISSIONS_BOOL
 
 # Reiterating import for visibility
 MAX_NUM_EPOCHS = MAX_NUM_EPOCHS
@@ -20,7 +21,7 @@ WEIGHT_DECAY = WEIGHT_DECAY
 PATIENCE = PATIENCE
 
 # TODO: Delete overwrite, run full
-NUM_RUNS = 1
+NUM_RUNS = 3
 lamba_inv_lengthscale_penalty = 0
 
 # assign model-specific variable
@@ -58,7 +59,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from codecarbon import EmissionsTracker
+import gpytorch
 
 # utilitarian
 from utils import set_seed
@@ -77,8 +78,10 @@ import time
 start_time = time.time()  # Start timing after imports
 
 ### START TRACKING EXPERIMENT EMISSIONS ###
-tracker = EmissionsTracker(project_name = "dfNGP_real_experiments", output_dir = MODEL_REAL_RESULTS_DIR)
-tracker.start()
+if TRACK_EMISSIONS_BOOL:
+    from codecarbon import EmissionsTracker
+    tracker = EmissionsTracker(project_name = "dfNGP_real_experiments", output_dir = MODEL_REAL_RESULTS_DIR)
+    tracker.start()
 
 #############################
 ### LOOP 1 - over REGIONS ###
@@ -474,7 +477,8 @@ elapsed_time = end_time - start_time
 elapsed_time_minutes = elapsed_time / 60
 
 # also end emission tracking. Will be saved as emissions.csv
-tracker.stop()
+if TRACK_EMISSIONS_BOOL:
+    tracker.stop()
 
 if device == "cuda":
     # get name of GPU model
