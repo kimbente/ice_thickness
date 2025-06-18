@@ -91,7 +91,6 @@ if TRACK_EMISSIONS_BOOL:
 # Import all simulation functions
 from simulate import (
     simulate_detailed_branching,
-    # simulate_detailed_convergence,
     simulate_detailed_curve,
     simulate_detailed_deflection,
     simulate_detailed_edge,
@@ -289,7 +288,8 @@ for sim_name, sim_func in simulations.items():
             avg_train_loss_PINN_for_epoch = train_losses_PINN_over_batches / len(dataloader)
 
             # Print for epoch
-            print(f"{sim_name} {model_name} Run {run + 1}/{NUM_RUNS}, Epoch {epoch + 1}/{MAX_NUM_EPOCHS}, Training PINN Loss (RMSE + div): {avg_train_loss_PINN_for_epoch:.4f}")
+            if epoch % 20 == 0:
+                print(f"{sim_name} {model_name} Run {run + 1}/{NUM_RUNS}, Epoch {epoch + 1}/{MAX_NUM_EPOCHS}, Training PINN Loss (RMSE + div): {avg_train_loss_PINN_for_epoch:.4f}")
 
             # Early stopping check
             if avg_train_loss_PINN_for_epoch < best_loss:
@@ -382,9 +382,9 @@ for sim_name, sim_func in simulations.items():
             # (3) Save "losses_over_epochs" for run 1
             df_losses = pd.DataFrame({
                 'Epoch': list(range(train_losses_RMSE_over_epochs.shape[0])), # pythonic indexing
-                'Train Loss RMSE': train_losses_RMSE_over_epochs.tolist(), 
+                'Train RMSE': train_losses_RMSE_over_epochs.tolist(), 
                 'Train Loss PINN': train_losses_PINN_over_epochs.tolist(),
-                'Test Loss RMSE': test_losses_RMSE_over_epochs.tolist(),
+                'Test RMSE': test_losses_RMSE_over_epochs.tolist(),
                 'Test Loss PINN': test_losses_PINN_over_epochs.tolist()
                 })
             

@@ -19,8 +19,8 @@ for idx, sim_name in enumerate(simulations):
     latex_lines.append(r"\midrule")
 
     # Find the best (lowest) NLL and RMSE (ignoring n.a.)
-    best_nll_mean = None
-    best_model_nll = None
+    best_nlpd_mean = None
+    best_model_nlpd = None
     best_rmse_mean = None
     best_model_rmse = None
 
@@ -33,11 +33,11 @@ for idx, sim_name in enumerate(simulations):
         mean_row = df[df.iloc[:, 0] == "mean"].iloc[0]
 
         # Best NLL
-        if "Test sparse NLL" in mean_row.index and model not in ["dfNN", "PINN"]:
-            nll_mean = mean_row["Test sparse NLL"]
-            if (best_nll_mean is None) or (nll_mean < best_nll_mean):
-                best_nll_mean = nll_mean
-                best_model_nll = model
+        if "Test NLPD" in mean_row.index and model not in ["dfNN", "PINN"]:
+            nlpd_mean = mean_row["Test NLPD"]
+            if (best_nlpd_mean is None) or (nlpd_mean < best_nlpd_mean):
+                best_nlpd_mean = nlpd_mean
+                best_model_nlpd = model
 
         # Best RMSE
         rmse_mean = mean_row["Test RMSE"]
@@ -69,30 +69,30 @@ for idx, sim_name in enumerate(simulations):
         mad_std = "{:.4f}".format(std_row["Test MAD"])[:5]
 
         # NLL handling
-        if "Test sparse NLL" in mean_row.index:
-            nll_mean_val = mean_row["Test sparse NLL"]
-            nll_std_val = std_row["Test sparse NLL"]
-            nll_mean = "{:.4f}".format(nll_mean_val)[:5]
-            nll_std = "{:.4f}".format(nll_std_val)[:5]
-            nll_str_raw = f"{nll_mean} \\footnotesize{{± {nll_std}}}"
+        if "Test NLPD" in mean_row.index:
+            nlpd_mean_val = mean_row["Test NLPD"]
+            nlpd_std_val = std_row["Test NLPD"]
+            nlpd_mean = "{:.4f}".format(nlpd_mean_val)[:5]
+            nlpd_std = "{:.4f}".format(nlpd_std_val)[:5]
+            nlpd_str_raw = f"{nlpd_mean} \\footnotesize{{± {nlpd_std}}}"
 
             # Highlight if this is the best NLL
-            if model == best_model_nll:
-                nll_str = r"\textcolor{OliveGreen}{" + nll_str_raw + "}"
+            if model == best_model_nlpd:
+                nlpd_str = r"\textcolor{OliveGreen}{" + nlpd_str_raw + "}"
             else:
-                nll_str = nll_str_raw
+                nlpd_str = nlpd_str_raw
         else:
-            nll_str = r"\footnotesize{n.a.}"
+            nlpd_str = r"\footnotesize{n.a.}"
 
         # Full NLL handling
-        if "Test full NLL" in mean_row.index:
-            full_nll_mean_val = mean_row["Test full NLL"]
-            full_nll_std_val = std_row["Test full NLL"]
-            full_nll_mean = "{:.4f}".format(full_nll_mean_val)[:5]
-            full_nll_std = "{:.4f}".format(full_nll_std_val)[:5]
-            full_nll_str = f"{full_nll_mean} \\footnotesize{{± {full_nll_std}}}"
+        if "Test QCE" in mean_row.index:
+            qce_mean_val = mean_row["Test QCE"]
+            qce_std_val = std_row["Test QCE"]
+            qce_mean = "{:.4f}".format(qce_mean_val)[:5]
+            qce_std = "{:.4f}".format(qce_std_val)[:5]
+            qce_str = f"{qce_mean} \\footnotesize{{± {qce_std}}}"
         else:
-            full_nll_str = r"\footnotesize{n.a.}"
+            qce_str = r"\footnotesize{n.a.}"
 
         # Highlight if this is the best RMSE
         rmse_str_raw = f"{rmse_mean} \\footnotesize{{± {rmse_std}}}"
@@ -117,13 +117,13 @@ for idx, sim_name in enumerate(simulations):
             f"{model} & "
             f"{rmse_str} & "
             f"{mae_mean} \\footnotesize{{± {mae_std}}} & "
-            f"{nll_str} & "
-            f"{full_nll_str} & "  # new column
+            f"{nlpd_str} & "
+            f"{qce_str} & "  # new column
             f"{mad_str} \\\\"
         )
         latex_lines.append(row)
 
-        # Insert midrule after dfNGP
+        # Insert midrule after dfNGP (last divergence-free model)
         if model == "dfNGP":
             latex_lines.append(r"\midrule")
 

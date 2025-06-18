@@ -214,7 +214,8 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
             avg_train_loss_RMSE_for_epoch = train_losses_RMSE_over_batches / len(dataloader)
 
             # Print for epoch
-            print(f"{region_name} {model_name} Run {run + 1}/{NUM_RUNS}, Epoch {epoch + 1}/{MAX_NUM_EPOCHS}, Training Loss (RMSE): {avg_train_loss_RMSE_for_epoch:.4f}")
+            if epoch % 20 == 0:
+                print(f"{region_name} {model_name} Run {run + 1}/{NUM_RUNS}, Epoch {epoch + 1}/{MAX_NUM_EPOCHS}, Training Loss (RMSE): {avg_train_loss_RMSE_for_epoch:.4f}")
 
             # Early stopping check
             if avg_train_loss_RMSE_for_epoch < best_loss:

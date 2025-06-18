@@ -8,6 +8,7 @@
 #   \__,_|_| |_|\__\__,_|_|  \___|\__|_|\___|
 # 
 model_name = "dfGP"
+from GPyTorch_models import dfGP
 
 # import configs to we can access the hypers with getattr
 import configs
@@ -17,12 +18,9 @@ from configs import TRACK_EMISSIONS_BOOL
 # Reiterating import for visibility
 MAX_NUM_EPOCHS = MAX_NUM_EPOCHS
 NUM_RUNS = NUM_RUNS
+NUM_RUNS = 1
 WEIGHT_DECAY = WEIGHT_DECAY
 PATIENCE = PATIENCE
-
-# TODO: Delete overwrite, run full
-NUM_RUNS = 3
-lamba_inv_lengthscale_penalty = 100
 
 # assign model-specific variable
 MODEL_LEARNING_RATE = getattr(configs, f"{model_name}_REAL_LEARNING_RATE")
@@ -30,32 +28,17 @@ MODEL_REAL_RESULTS_DIR = getattr(configs, f"{model_name}_REAL_RESULTS_DIR")
 import os
 os.makedirs(MODEL_REAL_RESULTS_DIR, exist_ok = True)
 
-# imports for probabilistic models
-if model_name in ["GP", "dfGP", "dfNGP"]:
-    from GP_models import GP_predict
-    from metrics import compute_NLL_sparse, compute_NLL_full
-    from configs import L_RANGE, GP_PATIENCE
-    # overwrite with GP_PATIENCE
-    PATIENCE = GP_PATIENCE
-    
-    if model_name in ["dfGP", "dfNGP"]:
-        from configs import SIGMA_F_RANGE
-
-# universals 
-from metrics import compute_RMSE, compute_MAE, compute_divergence_field
-
 # basics
 import pandas as pd
 import torch
-import torch.nn as nn
-import torch.optim as optim
 import gpytorch
 
-# utilitarian
-from utils import set_seed
-# reproducibility
-set_seed(42)
+# universals 
+from metrics import compute_divergence_field
+from utils import set_seed, make_grid
 import gc
+import warnings
+set_seed(42)
 
 # setting device to GPU if available, else CPU
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -166,22 +149,23 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
 
         print(f"\n--- Training Run {run + 1}/{NUM_RUNS} ---")
 
-        ### Initialise GP hyperparameters ###
-        # 3 learnable HPs
-        # NOTE: at every run this initialisation changes, introducing some randomness
-        # HACK: we need to use nn.Parameter for trainable hypers to avoid leaf variable error
+        # Initialise the likelihood for the GP model (estimates noise)
+        likelihood = gpytorch.likelihoods.GaussianLikelihood().to(device)
 
-        # initialising (trainable) output scalar from a uniform distribution over a predefined range
-        sigma_f = nn.Parameter(torch.empty(1, device = device).uniform_( * SIGMA_F_RANGE))
-
-        # initialising (trainable) lengthscales from a uniform distribution over a predefined range
-        # each dimension has its own lengthscale
-        l = nn.Parameter(torch.empty(2, device = device).uniform_( * L_RANGE))
-
-        # AdamW as optimizer for some regularisation/weight decay
-        optimizer = optim.AdamW([sigma_f, l], lr = MODEL_LEARNING_RATE, weight_decay = WEIGHT_DECAY)
-        # NOTE: No need to initialise GP model like we initialise a NN model in torch
+        # Intialise fresh GP model with flat x_train and y_train_noisy (block-flat)
+        model = dfGP(
+            x_train.T.reshape(-1),
+            y_train.T.reshape(-1), 
+            likelihood
+            ).to(device)
         
+        optimizer = torch.optim.AdamW(model.parameters(), lr = MODEL_LEARNING_RATE, weight_decay = WEIGHT_DECAY)
+        
+        # Use ExactMarginalLogLikelihood
+        mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
+
+        model.train()
+        likelihood.train()
         # _________________
         # BEFORE EPOCH LOOP
         
@@ -193,6 +177,7 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
             # monitor performance transfer to test (only RMSE easy to calc without covar)
             test_losses_RMSE_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
 
+            # NOTE: No sigma_n
             sigma_f_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
             l1_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
             l2_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
@@ -209,54 +194,50 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
 
         for epoch in range(MAX_NUM_EPOCHS):
 
+            # Set to train
+            model.train()
+            likelihood.train()
+
+            # Do a step
+            optimizer.zero_grad()
+            # model outputs a multivariate normal distribution
+            train_pred_dist = model(x_train.T.reshape(-1).to(device))
+            loss = - mll(train_pred_dist, y_train.T.reshape(-1).to(device))  # negative marginal log likelihood
+            loss.backward()
+            optimizer.step()
+
             # For Run 1 we save a bunch of metrics and update, while for the rest we only update
             if run == 0:
-                mean_pred_train, _, lml_train = GP_predict(
-                        x_train,
-                        y_train,
-                        x_train, # predict training data
-                        [train_noise_diag, sigma_f, l], # list of (initial) hypers
-                        mean_func = None, # no mean aka "zero-mean function"
-                        divergence_free_bool = True) # ensures we use a df kernel
 
-                # Compute test loss for loss convergence plot
-                mean_pred_test, _, _ = GP_predict(
-                        x_train,
-                        y_train,
-                        x_test.to(device), # have predictions for training data again
-                        # HACK: This is rather an eval, so we use detached hypers to avoid the computational tree
-                        [train_noise_diag, sigma_f.detach().clone(), l.detach().clone()], # list of (initial) hypers
-                        mean_func = None, # no mean aka "zero-mean function"
-                        divergence_free_bool = True) # ensures we use a df kernel
-                
-                # UPDATE HYPERS (after test loss is computed to use same model)
-                optimizer.zero_grad() # don't accumulate gradients
-                # negative for NLML. loss is always on train
-                # HACK: Inverse lengthscale penalty for better extrapolation
-                loss = - lml_train + (lamba_inv_lengthscale_penalty * torch.square(1 / l.detach()).sum())
-                loss.backward()
-                optimizer.step()
-                
-                # NOTE: it is important to detach here 
-                train_RMSE = compute_RMSE(y_train.detach(), mean_pred_train.detach())
-                test_RMSE = compute_RMSE(y_test.detach(), mean_pred_test.detach())
+                model.eval()
+                likelihood.eval()
+
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore", gpytorch.utils.warnings.GPInputWarning)
+                    train_pred_dist = model(x_train.T.reshape(-1).to(device))
+                test_pred_dist = model(x_test.T.reshape(-1).to(device))
+
+                # Compute RMSE for training and test predictions (given true data, not noisy)
+                train_RMSE = torch.sqrt(gpytorch.metrics.mean_squared_error(train_pred_dist, y_train.T.reshape(-1).to(device)))
+                test_RMSE = torch.sqrt(gpytorch.metrics.mean_squared_error(test_pred_dist, y_test.T.reshape(-1).to(device)))
 
                 # Save losses for convergence plot
-                train_losses_NLML_over_epochs[epoch] = - lml_train
-                train_losses_RMSE_over_epochs[epoch] = train_RMSE
-                # NOTE: lml is always just given training data. There is no TEST NLML
-                test_losses_RMSE_over_epochs[epoch] = test_RMSE
+                train_losses_NLML_over_epochs[epoch] = loss.item()
+                train_losses_RMSE_over_epochs[epoch] = train_RMSE.item()
+                test_losses_RMSE_over_epochs[epoch] = test_RMSE.item()
 
-                # Save evolution of hyprs for convergence plot
-                sigma_f_over_epochs[epoch] = sigma_f[0]
-                l1_over_epochs[epoch] = l[0] # export effective not raw lengthscale
-                l2_over_epochs[epoch] = l[1]
+                # Save evolution of hypers for convergence plot
+                sigma_f_over_epochs[epoch] = model.covar_module.outputscale.item()
+                l1_over_epochs[epoch] = model.covar_module.lengthscale[0].item()
+                l2_over_epochs[epoch] = model.covar_module.lengthscale[1].item()
 
-                print(f"{region_name} {model_name} Run {run + 1}/{NUM_RUNS}, Epoch {epoch + 1}/{MAX_NUM_EPOCHS}, Training Loss (NLML): {loss:.4f}, (RMSE): {train_RMSE:.4f}")
+                # Print a bit more information for the first run
+                if epoch % 20 == 0:
+                    print(f"{region_name} {model_name} Run {run + 1}/{NUM_RUNS}, Epoch {epoch + 1}/{MAX_NUM_EPOCHS}, Training Loss (NLML): {loss:.4f}, (RMSE): {train_RMSE:.4f}")
 
                 # delete after printing and saving
                 # NOTE: keep loss for early stopping check
-                del mean_pred_train, mean_pred_test, lml_train, train_RMSE, test_RMSE
+                del train_pred_dist, test_pred_dist, train_RMSE, test_RMSE
                 
                 # Free up memory every 20 epochs
                 if epoch % 20 == 0:
@@ -265,33 +246,10 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
             # For all runs after the first we run a minimal version using only lml_train
             else:
 
-                # NOTE: We can use x_train[0:2] since the predictions doesn;t matter and we only care about lml_train
-                _, _, lml_train = GP_predict(
-                        x_train,
-                        y_train,
-                        x_train[0:2], # predictions don't matter and we output lml_train already
-                        [train_noise_diag, sigma_f, l], # list of (initial) hypers
-                        mean_func = None, # no mean aka "zero-mean function"
-                        divergence_free_bool = True) # ensures we use a df kernel
+            if epoch % 20 == 0:
+                    # After run 1 we only print lml, nothing else
+                    print(f"{region_name} {model_name} Run {run + 1}/{NUM_RUNS}, Epoch {epoch + 1}/{MAX_NUM_EPOCHS}, Training Loss (NLML): {loss:.4f}")
                 
-                # UPDATE HYPERS (after test loss is computed to use same model)
-                optimizer.zero_grad() # don't accumulate gradients
-                # negative for NLML
-                # HACK: Inverse lengthscale penalty for better extrapolation
-                loss = - lml_train + (lamba_inv_lengthscale_penalty * torch.square(1 / l.detach()).sum())
-                loss.backward()
-                optimizer.step()
-
-                # After run 1 we only print lml, nothing else
-                print(f"{region_name} {model_name} Run {run + 1}/{NUM_RUNS}, Epoch {epoch + 1}/{MAX_NUM_EPOCHS}, Training Loss (NLML): {loss:.4f}")
-
-                # NOTE: keep loss for early stopping check, del lml_train
-                del lml_train
-                
-                # Free up memory every 20 epochs
-                if epoch % 20 == 0:
-                    gc.collect() and torch.cuda.empty_cache()
-
             # EVERY EPOCH: Early stopping check
             if loss < best_loss:
                 best_loss = loss
