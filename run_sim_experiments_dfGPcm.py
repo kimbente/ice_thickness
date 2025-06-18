@@ -26,7 +26,7 @@
 # This artwork is a visual reminder that this script is for the sim experiments.
 
 model_name = "dfGPcm"
-from GPyTorch_models import dfGPcm
+from gpytorch_models_old import dfGPcm
 
 # import configs to we can access the hypers with getattr
 import configs

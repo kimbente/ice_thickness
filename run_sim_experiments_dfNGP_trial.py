@@ -26,7 +26,7 @@
 # This artwork is a visual reminder that this script is for the sim experiments.
 
 model_name = "dfNGP"
-from GPyTorch_models import dfNGP
+from gpytorch_models_old import dfNGP
 
 # import configs to we can access the hypers with getattr
 import configs

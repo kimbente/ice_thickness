@@ -8,7 +8,7 @@
 #   \__,_|_| |_|\__\__,_|_|  \___|\__|_|\___|
 # 
 model_name = "GP"
-from GPyTorch_models import GP
+from gpytorch_models_old import GP
 
 # import configs to we can access the hypers with getattr
 import configs
