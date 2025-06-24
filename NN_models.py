@@ -5,35 +5,7 @@ import torch.nn as nn
 ### dfNN == NCL == HNN ###
 ##########################
 
-class dfNN_matrix(nn.Module):
-    def __init__(self, input_dim = 2, hidden_dim = 32):
-        super().__init__()
-        self.input_dim = input_dim
-        self.output_dim = input_dim * input_dim  # flattened 2x2 matrix
-
-        self.net = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
-            nn.SiLU(),
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.SiLU(),
-            nn.Linear(hidden_dim, self.output_dim),
-        )
-
-    def forward(self, x):
-        x.requires_grad_(True)
-
-        M = self.net(x).view(-1, 2, 2)
-        # Make antisymmetric matrix
-        A = M - M.transpose(1, 2)
-
-        u = A[:, 0, 1]  # since A = [[0, u], [-u, 0]]
-
-        du_dx = torch.autograd.grad(u.sum(), x, create_graph = True)[0]  # [B, 2]
-
-        symplectic = du_dx.flip(-1) * torch.tensor([1.0, -1.0], device = x.device)
-
-        return symplectic 
-    
+# NOTE: This is the model we use.
 class dfNN(nn.Module):
     def __init__(self, input_dim = 2, hidden_dim = 32):
         super().__init__()
@@ -71,6 +43,38 @@ class dfNN(nn.Module):
 
         # return symp, H # NOTE: return H as well if we want to see what is going on
         return symp
+    
+### Alternative dfNN that outputs a 2x2 antisymmetric matrix ###
+
+class dfNN_matrix(nn.Module):
+    def __init__(self, input_dim = 2, hidden_dim = 32):
+        super().__init__()
+        self.input_dim = input_dim
+        self.output_dim = input_dim * input_dim  # flattened 2x2 matrix
+
+        self.net = nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
+            nn.SiLU(),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.SiLU(),
+            nn.Linear(hidden_dim, self.output_dim),
+        )
+
+    def forward(self, x):
+        x.requires_grad_(True)
+
+        M = self.net(x).view(-1, 2, 2)
+        # Make antisymmetric matrix
+        A = M - M.transpose(1, 2)
+
+        u = A[:, 0, 1]  # since A = [[0, u], [-u, 0]]
+
+        du_dx = torch.autograd.grad(u.sum(), x, create_graph = True)[0]  # [B, 2]
+
+        symplectic = du_dx.flip(-1) * torch.tensor([1.0, -1.0], device = x.device)
+
+        return symplectic 
+
 
 ####################
 ### MLP for PINN ###

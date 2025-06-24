@@ -36,5 +36,10 @@ Created data structure in your `path_to_bedmap_data_folder`
 
 ``conda env export --prefix /home/kim/ice_thickness/.conda > environment.yml``
 
+## Run experiments with 
 
+python /home/kim/ice_thickness/run_sim_experiments_dfGP.py > /dev/null 2>&1 &
+python /home/kim/ice_thickness/run_sim_experiments_dfGPcm.py > /dev/null 2>&1 &
+python /home/kim/ice_thickness/run_sim_experiments_dfNGP.py > /dev/null 2>&1 &
+python /home/kim/ice_thickness/run_sim_experiments_GP.py > /dev/null 2>&1 &
 

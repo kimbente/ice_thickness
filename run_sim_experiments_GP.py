@@ -1,5 +1,5 @@
 # SIMULATED DATA EXPERIMENTS
-# # RUN WITH python run_sim_experiments_GP.py
+# RUN WITH python run_sim_experiments_GP.py
 # 
 #       ooooooooooooooooooooooooooooooooooooo
 #      8                                .d88
@@ -26,7 +26,7 @@
 # This artwork is a visual reminder that this script is for the sim experiments.
 
 model_name = "GP"
-from gpytorch_models_old import GP
+from gpytorch_models import GP
 
 # import configs to we can access the hypers with getattr
 import configs
@@ -53,7 +53,7 @@ import torch
 import gpytorch
 
 # universals 
-from metrics import compute_divergence_field
+from metrics import compute_divergence_field, quantile_coverage_error_2d
 from utils import set_seed, make_grid
 import gc
 import warnings
@@ -72,7 +72,7 @@ start_time = time.time()  # Start timing after imports
 ### START TRACKING EXPERIMENT EMISSIONS ###
 if TRACK_EMISSIONS_BOOL:
     from codecarbon import EmissionsTracker
-    tracker = EmissionsTracker(project_name = "dfGP_simulation_experiments", output_dir = MODEL_SIM_RESULTS_DIR)
+    tracker = EmissionsTracker(project_name = "GP_simulation_experiments", output_dir = MODEL_SIM_RESULTS_DIR)
     tracker.start()
 
 ### SIMULATION ###
@@ -166,18 +166,24 @@ for sim_name, sim_func in simulations.items():
         y_train_noisy = y_train + (torch.randn(y_train.shape, device = device) * sim_noise)
 
         # Initialise the likelihood for the GP model (estimates noise)
-        likelihood = gpytorch.likelihoods.GaussianLikelihood().to(device)
+        # NOTE: we use a multitask likelihood for the GP model but with a global noise term
+        likelihood = gpytorch.likelihoods.MultitaskGaussianLikelihood(
+            num_tasks = 2,
+            has_global_noise = True, 
+            has_task_noise = False, # HACK: This still needs to be manually turned off
+            ).to(device)
 
         # Intialise fresh GP model with flat x_train and y_train_noisy (block-flat)
         model = GP(
-            x_train.T.reshape(-1),
-            y_train_noisy.T.reshape(-1), 
+            x_train,
+            y_train_noisy, 
             likelihood
             ).to(device)
         
+        # NOTE: model parameters contains likelihood parameters as well
         optimizer = torch.optim.AdamW(model.parameters(), lr = MODEL_LEARNING_RATE, weight_decay = WEIGHT_DECAY)
         
-        # Use ExactMarginalLogLikelihood
+        # Use ExactMarginalLogLikelihood as the reward i.e. inverse loss function
         mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
 
         model.train()
@@ -195,9 +201,10 @@ for sim_name, sim_func in simulations.items():
             test_losses_RMSE_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
 
             sigma_n_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
-            sigma_B_diag1_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
-            sigma_B_diag2_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
-            sigma_B_offdiag_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
+            sigma_Buu_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
+            sigma_Bvv_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
+            sigma_Buv_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
+            sigma_Bvu_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
             l1_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
             l2_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
 
@@ -221,9 +228,9 @@ for sim_name, sim_func in simulations.items():
             # Do a step
             optimizer.zero_grad()
             # model outputs a multivariate normal distribution
-            train_pred_dist = model(x_train.T.reshape(-1).to(device))
-            # Train on noisy or true targets?
-            loss = - mll(train_pred_dist, y_train_noisy.T.reshape(-1).to(device))  # negative marginal log likelihood
+            train_pred_dist = model(x_train.to(device))
+            # Train on noisy or targets
+            loss = - mll(train_pred_dist, y_train_noisy.to(device))  # negative marginal log likelihood
             loss.backward()
             optimizer.step()
 
@@ -235,12 +242,12 @@ for sim_name, sim_func in simulations.items():
 
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore", gpytorch.utils.warnings.GPInputWarning)
-                    train_pred_dist = model(x_train.T.reshape(-1).to(device))
-                test_pred_dist = model(x_test.T.reshape(-1).to(device))
+                    train_pred_dist = model(x_train.to(device))
+                test_pred_dist = model(x_test.to(device))
 
                 # Compute RMSE for training and test predictions (given true data, not noisy)
-                train_RMSE = torch.sqrt(gpytorch.metrics.mean_squared_error(train_pred_dist, y_train.T.reshape(-1).to(device)))
-                test_RMSE = torch.sqrt(gpytorch.metrics.mean_squared_error(test_pred_dist, y_test.T.reshape(-1).to(device)))
+                train_RMSE = torch.sqrt(gpytorch.metrics.mean_squared_error(train_pred_dist, y_train.to(device)).mean())
+                test_RMSE = torch.sqrt(gpytorch.metrics.mean_squared_error(test_pred_dist, y_test.to(device)).mean())
 
                 # Save losses for convergence plot
                 train_losses_NLML_over_epochs[epoch] = loss.item()
@@ -248,16 +255,18 @@ for sim_name, sim_func in simulations.items():
                 test_losses_RMSE_over_epochs[epoch] = test_RMSE.item()
 
                 # Save evolution of hypers for convergence plot
+                # NOTE: This is different to dfGPs
                 sigma_n_over_epochs[epoch] = model.likelihood.noise.item()
-                sigma_B_diag1_over_epochs[epoch] = model.covar_module.B_diagonal[0].item()
-                sigma_B_diag2_over_epochs[epoch] = model.covar_module.B_diagonal[1].item()
-                sigma_B_offdiag_over_epochs[epoch] = model.covar_module.B_offdiagonal.item()
-                l1_over_epochs[epoch] = model.covar_module.lengthscale[0].item()
-                l2_over_epochs[epoch] = model.covar_module.lengthscale[1].item()
+                sigma_Buu_over_epochs[epoch] = model.covar_module.task_covar_module.var[0].item()
+                sigma_Bvv_over_epochs[epoch] = model.covar_module.task_covar_module.var[1].item()
+                sigma_Buv_over_epochs[epoch] = model.covar_module.task_covar_module.covar_factor[0, 0].item()
+                sigma_Bvu_over_epochs[epoch] = model.covar_module.task_covar_module.covar_factor[1, 0].item()
+                l1_over_epochs[epoch] = model.covar_module.data_covar_module.lengthscale[0, 0].item()
+                l2_over_epochs[epoch] = model.covar_module.data_covar_module.lengthscale[0, 1].item()
 
                 # Print a bit more information for the first run
                 if epoch % 20 == 0:
-                    print(f"{sim_name} {model_name} Run {run + 1}/{NUM_RUNS}, Epoch {epoch + 1}/{MAX_NUM_EPOCHS}, Training Loss (NLML): {loss:.4f}, (RMSE): {train_RMSE:.4f}")
+                    print(f"{sim_name} {model_name} Run {run + 1}/{NUM_RUNS}, Epoch {epoch + 1}/{MAX_NUM_EPOCHS}, Training Loss (NLML): {loss:.4f}, Training RMSE: {train_RMSE:.4f}")
 
                 # delete after printing and saving
                 # NOTE: keep loss for early stopping check
@@ -303,23 +312,23 @@ for sim_name, sim_func in simulations.items():
         x_train_grad = x_train.to(device).clone().requires_grad_(True)
 
         # Underlying (latent) distribution and predictive distribution
-        dist_test = model(x_test_grad.T.reshape(-1))
+        dist_test = model(x_test_grad)
         pred_dist_test = likelihood(dist_test)
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", gpytorch.utils.warnings.GPInputWarning)
-            dist_train = model(x_train_grad.T.reshape(-1))
+            dist_train = model(x_train_grad)
             pred_dist_train = likelihood(dist_train)
         
         # Compute divergence field (from latent distribution)
-        test_div_field = compute_divergence_field(dist_test.mean.reshape(2, -1).T, x_test_grad)
-        train_div_field = compute_divergence_field(dist_train.mean.reshape(2, -1).T, x_train_grad)
+        test_div_field = compute_divergence_field(dist_test.mean, x_test_grad)
+        train_div_field = compute_divergence_field(dist_train.mean, x_train_grad)
 
         # Only save mean_pred, covar_pred and divergence fields for the first run
         if run == 0:
 
             # (1) Save predictions from first run so we can visualise them later
-            torch.save(pred_dist_test.mean.reshape(2, -1).T, f"{MODEL_SIM_RESULTS_DIR}/{sim_name}_{model_name}_test_mean_predictions.pt")
+            torch.save(pred_dist_test.mean, f"{MODEL_SIM_RESULTS_DIR}/{sim_name}_{model_name}_test_mean_predictions.pt")
             torch.save(pred_dist_test.covariance_matrix, f"{MODEL_SIM_RESULTS_DIR}/{sim_name}_{model_name}_test_covar_predictions.pt")
 
             # (2) Save divergence field
@@ -331,9 +340,11 @@ for sim_name, sim_func in simulations.items():
                 'Train NLML': train_losses_NLML_over_epochs.tolist(),
                 'Train RMSE': train_losses_RMSE_over_epochs.tolist(),
                 'Test RMSE': test_losses_RMSE_over_epochs.tolist(),
-                'Sigma_B_diag1': sigma_B_diag1_over_epochs.tolist(),
-                'Sigma_B_diag2': sigma_B_diag2_over_epochs.tolist(),
-                'Sigma_B_offdiag': sigma_B_offdiag_over_epochs.tolist(),
+                'sigma_n': sigma_n_over_epochs.tolist(),
+                'sigma_Buu': sigma_Buu_over_epochs.tolist(),
+                'sigma_Bvv': sigma_Bvv_over_epochs.tolist(),
+                'sigma_Buv': sigma_Buv_over_epochs.tolist(),
+                'sigma_Bvu': sigma_Bvu_over_epochs.tolist(),
                 'l1': l1_over_epochs.tolist(),
                 'l2': l2_over_epochs.tolist()
                 })
@@ -341,33 +352,34 @@ for sim_name, sim_func in simulations.items():
             df_losses.to_csv(f"{MODEL_SIM_RESULTS_DIR}/{sim_name}_{model_name}_losses_over_epochs.csv", index = False, float_format = "%.5f") # reduce to 5 decimals for readability
 
         # Compute TRAIN metrics (convert tensors to float) for every run's tuned model
+        # NOTE: gpytorch outputs metrics per task
         train_RMSE = torch.sqrt(gpytorch.metrics.mean_squared_error(
-            pred_dist_train, y_train.T.reshape(-1).to(device))).item()
+            pred_dist_train, y_train.to(device)).mean()).item()
         train_MAE = gpytorch.metrics.mean_absolute_error(
-            pred_dist_train, y_train.T.reshape(-1).to(device)).item()
-        train_NLPD = gpytorch.metrics.negative_log_predictive_density(
-            pred_dist_train, y_train.T.reshape(-1).to(device)).item()
-        train_QCE = gpytorch.metrics.quantile_coverage_error(
-            pred_dist_train, y_train.T.reshape(-1), quantile = 95).item()
-        ## NOTE: It is important to use the absolute value of the divergence field, since positive and negative deviations are violations and shouldn't cancel each other out 
-        train_div = train_div_field.abs().mean().item()
+            pred_dist_train, y_train.to(device)).mean().item()
+        train_NLL = gpytorch.metrics.negative_log_predictive_density(
+            pred_dist_train, y_train.to(device)).item()
+        train_QCE = quantile_coverage_error_2d(
+            pred_dist_train, y_train.to(device), quantile = 95.0).item()
+        ## NOTE: It is important to use the absolute value of the divergence field, since both positive and negative deviations are violations and shouldn't cancel each other out 
+        train_MAD = train_div_field.abs().mean().item()
 
         # Compute TEST metrics (convert tensors to float) for every run's tuned model
         test_RMSE = torch.sqrt(gpytorch.metrics.mean_squared_error(
-            pred_dist_test, y_test.T.reshape(-1).to(device))).item()
+            pred_dist_test, y_test.to(device)).mean()).item()
         test_MAE = gpytorch.metrics.mean_absolute_error(
-            pred_dist_test, y_test.T.reshape(-1).to(device)).item()
-        test_NLPD = gpytorch.metrics.negative_log_predictive_density(
-            pred_dist_test, y_test.T.reshape(-1).to(device)).item()
-        test_QCE = gpytorch.metrics.quantile_coverage_error(
-            pred_dist_test, y_test.T.reshape(-1), quantile = 95).item()
-        ## NOTE: It is important to use the absolute value of the divergence field, since positive and negative deviations are violations and shouldn't cancel each other out 
-        test_div = test_div_field.abs().mean().item()
+            pred_dist_test, y_test.to(device)).mean().item()
+        test_NLL = gpytorch.metrics.negative_log_predictive_density(
+            pred_dist_test, y_test.to(device)).item()
+        test_QCE = quantile_coverage_error_2d(
+            pred_dist_test, y_test.to(device), quantile = 95.0).item()
+        ## NOTE: It is important to use the absolute value of the divergence field, since both positive and negative deviations are violations and shouldn't cancel each other out 
+        test_MAD = test_div_field.abs().mean().item()
 
         simulation_results.append([
             run + 1,
-            train_RMSE, train_MAE, train_NLPD, train_QCE, train_div,
-            test_RMSE, test_MAE, test_NLPD, test_QCE, test_div
+            train_RMSE, train_MAE, train_NLL, train_QCE, train_MAD,
+            test_RMSE, test_MAE, test_NLL, test_QCE, test_MAD
         ])
 
         # clean up
@@ -383,8 +395,8 @@ for sim_name, sim_func in simulations.items():
     results_per_run = pd.DataFrame(
         simulation_results, 
         columns = ["Run", 
-                   "Train RMSE", "Train MAE", "Train NLPD", "Train QCE", "Train MAD",
-                   "Test RMSE", "Test MAE", "Test NLPD", "Test QCE", "Test MAD"])
+                   "Train RMSE", "Train MAE", "Train NLL", "Train QCE", "Train MAD",
+                   "Test RMSE", "Test MAE", "Test NLL", "Test QCE", "Test MAD"])
 
     # Compute mean and standard deviation for each metric
     mean_std_df = results_per_run.iloc[:, 1:].agg(["mean", "std"]) # Exclude "Run" column

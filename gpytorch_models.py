@@ -1,7 +1,10 @@
 import torch
 import gpytorch
 
-from configs import SIGMA_F_RANGE, SIGMA_F_FIXED_RESIDUAL_MODEL_RANGE, SIGMA_F_RESIDUAL_MODEL_RANGE, SIGMA_N_RANGE, L_RANGE
+# For the kernel
+from linear_operator.operators import to_linear_operator 
+
+from configs import L_RANGE, SIGMA_F_RANGE, SIGMA_F_RESIDUAL_MODEL_RANGE, SIGMA_N_RANGE
 
 # setting device to GPU if available, else CPU
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -36,12 +39,15 @@ class dfRBFKernel(gpytorch.kernels.Kernel):
 
     def forward(self, row_tensor, column_tensor, diag = False, **params):
         """
+        Computes the covariance matrix for a 2D vector field using the dfRBF kernel. Returns the covariance matrix in an interleaved format suitable for multitask Gaussian processes in GPyTorch.
+
         Args:
             row_tensor: torch.Size([N, 2]) first input will correspond to rows in returned K
             column_tensor: torch.Size([M, 2]) second input will correspond to columns in returned K
-            diag: bool, if True, return only the diagonal of the covariance matrix. Needed for Quantile Coverage Error (QCE) calculation.
+            diag: bool, if True, return only the diagonal of the covariance matrix. Needed for Quantile Coverage Error (QCE) calculation. Defaults to False.
+
         Returns:
-            K: torch.Size([2N, 2M]) block format covariance matrix
+            K: torch.Size([2N, 2M]) interleaved format covariance matrix
         """
         # Extract the chosen device
         device = row_tensor.device
@@ -52,35 +58,45 @@ class dfRBFKernel(gpytorch.kernels.Kernel):
         # STEP 1: Pairwise differences of shape [N, M, 2]
         # Expand row_tensor [N, 2] -> [N, 1, 2] and column_tensor [M, 2] -> [1, M, 2]
         diff = (row_tensor[:, None, :] - column_tensor[None, :, :]).to(device)
-        # Extract the components (columns) for convenience, matching paper notation
+
+        # Extract the relative components (columns of diff) for convenience, matching paper notation
         r1 = diff[:, :, 0]
         r2 = diff[:, :, 1]
-
-        # STEP 2: Block matrix
-        # Compute the 4 (2x2) block components
-        upper_left = l2.square() - r2.square()
-        lower_right = l1.square() - r1.square()
-        upper_right = r1 * r2
-        lower_left = upper_right # symmetric
-
-        # Assemble the 2x2 block matrix
-        top = torch.cat((upper_left, upper_right), dim = 1) # Shape: [N, 2M]
-        bottom = torch.cat((lower_left, lower_right), dim = 1) # Shape: [N, 2M]
-        blocks = torch.cat((top, bottom), dim = 0) # Shape: [2N, 2M]
-
-        # STEP 3: RBF/SE envelope (elementwise)
-        exponent_term = torch.exp(-0.5 * ((r1 / l1) ** 2 + (r2 / l2) ** 2))  # Shape: [N, M]
         
-        # .tile(2, 2) forms (N, M) -> (2N, 2M) for the 2D vector field
-        K = (1 / (l1**2 * l2**2)) * blocks * exponent_term.tile(2, 2)
+        # STEP 2: Block matrix
+        # Block components (shape N × M each)
+        K_uu = (1 - (r2**2 / l2**2)) / l2**2
+        K_uv = (r1 * r2) / (l1**2 * l2**2)
+        K_vu = K_uv  
+        K_vv = (1 - (r1**2 / l1**2)) / l1**2
+
+        # STEP 3: RBF/SE envelope (elementwise) (shape N × M)
+        exp_term = torch.exp(-0.5 * ((r1 / l1) ** 2 + (r2 / l2) ** 2))
+
+        # STEP 4: Combine and stack
+        # Final scaled components (each shape N × M)
+        K_uu = K_uu * exp_term
+        K_uv = K_uv * exp_term
+        K_vu = K_vu * exp_term
+        K_vv = K_vv * exp_term
+
+        # Now interleave rows and columns
+        # Stack into shape (N, M, 2, 2)
+        K_blocks = torch.stack([
+            torch.stack([K_uu, K_uv], dim = -1),
+            torch.stack([K_vu, K_vv], dim = -1)
+        ], dim = -2)  # shape (N, M, 2, 2)
+
+        # HACK: GPytorch needs the interleaved matrix for the Multitask distribution
+        # Reshape into (2N, 2M) interleaved matrix
+        K_interleaved = K_blocks.permute(0, 2, 1, 3).reshape(2 * row_tensor.shape[0], 2 * column_tensor.shape[0])
 
         # Add this for Quantile Coverage Error (QCE) calculation
         if diag:
-            # Return only the diagonal as a 1D tensor
-            return K.diag()
+            return K_interleaved.diag()
 
-        # NOTE: This is the base kernel and not scaled yet
-        return K
+        # NOTE: Lazify was replaced with to_linear_operator
+        return to_linear_operator(K_interleaved)
 
 ##################
 ### dfNN MEAN ####
@@ -121,49 +137,6 @@ class dfNN(gpytorch.means.Mean):
         # # NOTE: return H as well if we want to see what is going on
         return mean_symp
 
-#########################
-### MULTITASK WRAPPER ###
-#########################
-
-from typing import Optional
-
-from gpytorch.lazy import lazify
-from gpytorch.kernels import Kernel
-
-# HACK: Need custom wrapper to have it run
-class MultitaskKernelWrapper(Kernel):
-    r"""
-    Custom multitask kernel wrapper for GPyTorch where the full sized kernel is defined by data_covar_module.
-
-    :param ~gpytorch.kernels.Kernel data_covar_module: Kernel to use as the data kernel.
-    :param int num_tasks: Number of tasks
-    :param int rank: (default 1) Rank of index kernel to use for task covariance matrix.
-    """
-
-    def __init__(
-        self,
-        data_covar_module: Kernel,
-        num_tasks: int,
-        **kwargs,
-    ):
-        """"""
-        super(MultitaskKernelWrapper, self).__init__(**kwargs)
-        self.data_covar_module = data_covar_module
-        self.num_tasks = num_tasks
-
-    def forward(self, x1, x2, diag = False, last_dim_is_batch = False, **params):
-        if last_dim_is_batch:
-            raise RuntimeError("MultitaskKernel does not accept the last_dim_is_batch argument.")
-        covar_x = lazify(self.data_covar_module.forward(x1, x2, **params))
-        return covar_x.diag() if diag else covar_x
-
-    def num_outputs_per_input(self, x1, x2):
-        """
-        Given `n` data points `x1` and `m` datapoints `x2`, this multitask
-        kernel returns an `(n*num_tasks) x (m*num_tasks)` covariance matrix.
-        """
-        return self.num_tasks
-
 ##############  
 ### MODELS ###
 ##############
@@ -179,218 +152,179 @@ class dfGP(gpytorch.models.ExactGP):
     def __init__(self, train_x, train_y, likelihood):
         super().__init__(train_x, train_y, likelihood)
 
+        ### MEAN MODULE ###
         self.mean_module = gpytorch.means.MultitaskMean(
             gpytorch.means.ZeroMean(), num_tasks = 2
             )
 
-        self.base_kernel = MultitaskKernelWrapper(
-            dfRBFKernel(), 
-            num_tasks = 2,
-            )
-
-        self.covar_module = gpytorch.kernels.ScaleKernel(self.base_kernel)
+        ### COVARIANCE MODULE ###
+        self.base_kernel = dfRBFKernel().to(device)
+        # Wrap the base kernel in a scaling wrapper
+        self.covar_module = gpytorch.kernels.ScaleKernel(
+            self.base_kernel)
         
+        ### HYPERPARAMETERS INITIALIZATION ###
         # initialize hyperparameters by sampling from a uniform distribution over predefined ranges
-        self.base_kernel.data_covar_module.lengthscale = torch.empty(2, device = device).uniform_( * L_RANGE)
+        self.base_kernel.lengthscale = torch.empty(2, device = device).uniform_( * L_RANGE)
         self.covar_module.outputscale = torch.empty(1, device = device).uniform_( * SIGMA_F_RANGE)
-        self.likelihood.task_noises = torch.empty(2, device = device).uniform_( * SIGMA_N_RANGE)
+        self.likelihood.noise = torch.empty(1, device = device).uniform_( * SIGMA_N_RANGE)
 
-        # add constraint to likelihood 1e-4 is the default
-        # self.likelihood.raw_task_noises_constraint = gpytorch.constraints.GreaterThan(1e-5)
+        ### CONSTRAINTS ###
+        # add constraint to likelihood 1e-5 is the default
+        self.base_kernel.raw_lengthscale_constraint = gpytorch.constraints.GreaterThan(1e-5)
+        self.covar_module.raw_outputscale_constraint = gpytorch.constraints.GreaterThan(1e-5)
+        self.likelihood.raw_noise_constraint = gpytorch.constraints.GreaterThan(1e-5)
 
     def forward(self, x):
         mean_x = self.mean_module(x)
-        covar_x = self.covar_module(x)
+        # NOTE: Specify x1 and x2 for the dfRBFKernel
+        covar_x = self.covar_module.forward(x, x)
         # NOTE: Assure it is multitask
-        return gpytorch.distributions.MultitaskMultivariateNormal(mean_x, covar_x)
+        # NOTE: The interleaved format is the default, but we specify it explicitly
+        return gpytorch.distributions.MultitaskMultivariateNormal(mean_x, covar_x, interleaved = True)
 
 ##############
 ### dfGPcm ###
 ##############
 
+from configs import L_RANGE, SIGMA_F_RESIDUAL_MODEL_RANGE, SIGMA_N_RANGE
+# NOTE: Initialise with a different SIGMA_F_RANGE for the residual model
+
 class dfGPcm(gpytorch.models.ExactGP):
-    # dfGP model with zero mean
-    def __init__(self, train_x, train_y, likelihood):
+    # dfGP model with contant mean
+    def __init__(self, train_x, train_y, likelihood, mean_vector):
         super().__init__(train_x, train_y, likelihood)
 
+        ### MEAN MODULE ###
         self.mean_module = gpytorch.means.MultitaskMean(
-            gpytorch.means.ConstantMean(),
-            num_tasks = 2
-            )
-        # NOTE: Initialise/view with
-        # model.mean_module.base_means[0].initialize(constant = 1.0) OR
-        # model.mean_module.base_means[0].constant.item()
-
-        self.base_kernel = MultitaskKernelWrapper(
-            dfRBFKernel(), 
-            num_tasks = 2,
+            gpytorch.means.ConstantMean(), num_tasks = 2
             )
 
-        self.covar_module = gpytorch.kernels.ScaleKernel(self.base_kernel)
+        ### COVARIANCE MODULE ###
+        self.base_kernel = dfRBFKernel().to(device)
+        # Wrap the base kernel in a scaling wrapper
+        self.covar_module = gpytorch.kernels.ScaleKernel(
+            self.base_kernel)
         
+        ### MEAN INITIALIZATION ###
+        self.mean_module.base_means[0].initialize(constant = mean_vector[0])
+        self.mean_module.base_means[1].initialize(constant = mean_vector[1])
+        
+        ### HYPERPARAMETERS INITIALIZATION ###
         # initialize hyperparameters by sampling from a uniform distribution over predefined ranges
-        self.base_kernel.data_covar_module.lengthscale = torch.empty(2, device = device).uniform_( * L_RANGE)
-        self.covar_module.outputscale = torch.empty(1, device = device).uniform_( * SIGMA_F_RANGE)
-        self.likelihood.task_noises = torch.empty(2, device = device).uniform_( * SIGMA_N_RANGE)
+        self.base_kernel.lengthscale = torch.empty(2, device = device).uniform_( * L_RANGE)
+        # NOTE: This is different from dfGP, because we model the residuals, which are smaller in magnitude
+        # so we use a smaller range for the outputscale
+        self.covar_module.outputscale = torch.empty(1, device = device).uniform_( * SIGMA_F_RESIDUAL_MODEL_RANGE)
+        self.likelihood.noise = torch.empty(1, device = device).uniform_( * SIGMA_N_RANGE)
 
-        # add constraint to likelihood 1e-4 is the default
-        # self.likelihood.raw_task_noises_constraint = gpytorch.constraints.GreaterThan(1e-5)
+        ### CONSTRAINTS ###
+        # add constraint to likelihood 1e-5 is the default
+        self.base_kernel.raw_lengthscale_constraint = gpytorch.constraints.GreaterThan(1e-5)
+        self.covar_module.raw_outputscale_constraint = gpytorch.constraints.GreaterThan(1e-5)
+        self.likelihood.raw_noise_constraint = gpytorch.constraints.GreaterThan(1e-5)
 
     def forward(self, x):
         mean_x = self.mean_module(x)
-        covar_x = self.covar_module(x)
+        # NOTE: Specify x1 and x2 for the dfRBFKernel
+        covar_x = self.covar_module.forward(x, x)
         # NOTE: Assure it is multitask
-        return gpytorch.distributions.MultitaskMultivariateNormal(mean_x, covar_x)
+        # NOTE: The interleaved format is the default, but we specify it explicitly
+        return gpytorch.distributions.MultitaskMultivariateNormal(mean_x, covar_x, interleaved = True)
 
 #############   
 ### dfNGP ###
 #############
+
+from configs import L_RANGE, SIGMA_F_RESIDUAL_MODEL_RANGE, SIGMA_N_RANGE
 
 class dfNGP(gpytorch.models.ExactGP):
     # dfGP model with constant mean
     def __init__(self, train_x, train_y, likelihood):
         super(dfNGP, self).__init__(train_x, train_y, likelihood)
 
-        # Custom mean module
-        self.mean_module = dfNN(input_dim = 2) # default hidden_dim = 32
-        # Custom kernel module
-        self.base_kernel = MultitaskKernelWrapper(
-            dfRBFKernel(), 
-            num_tasks = 2,
-            )
-        self.covar_module = gpytorch.kernels.ScaleKernel(self.base_kernel)
+        ### CUSTOM MEAN MODULE ###
+        self.mean_module = dfNN(
+            input_dim = 2) # default hidden_dim = 32
+        
+        ### COVARIANCE MODULE ###
+        self.base_kernel = dfRBFKernel().to(device)
+        # Wrap the base kernel in a scaling wrapper
+        self.covar_module = gpytorch.kernels.ScaleKernel(
+            self.base_kernel)
 
-        # initialise
-        self.covar_module.outputscale = torch.empty(1, device = device).uniform_( * SIGMA_F_RANGE)
+        ### HYPERPARAMETERS INITIALIZATION ###
+        # initialize hyperparameters by sampling from a uniform distribution over predefined ranges
+        self.base_kernel.lengthscale = torch.empty(2, device = device).uniform_( * L_RANGE)
+        # NOTE: This is different from dfGP, because we model the residuals, which are smaller in magnitude
+        # so we use a smaller range for the outputscale
+        self.covar_module.outputscale = torch.empty(1, device = device).uniform_( * SIGMA_F_RESIDUAL_MODEL_RANGE)
+        self.likelihood.noise = torch.empty(1, device = device).uniform_( * SIGMA_N_RANGE)
+
+        ### CONSTRAINTS ###
+        # add constraint to likelihood 1e-5 is the default
+        self.base_kernel.raw_lengthscale_constraint = gpytorch.constraints.GreaterThan(1e-5)
+        self.covar_module.raw_outputscale_constraint = gpytorch.constraints.GreaterThan(1e-5)
+        self.likelihood.raw_noise_constraint = gpytorch.constraints.GreaterThan(1e-5)
 
     def forward(self, x):
         mean_x = self.mean_module(x)
-        covar_x = self.covar_module(x)
-        
-        return gpytorch.distributions.MultitaskMultivariateNormal(mean_x, covar_x)
+        # NOTE: Specify x1 and x2 for the dfRBFKernel
+        covar_x = self.covar_module.forward(x, x)
+        # NOTE: Assure it is multitask
+        # NOTE: The interleaved format is the default, but we specify it explicitly
+        return gpytorch.distributions.MultitaskMultivariateNormal(mean_x, covar_x, interleaved = True)
 
 ##########   
 ### GP ###
 ##########
 
-import gpytorch
-from gpytorch.kernels import Kernel
-import torch
-
-class BlockStructureSEKernel(Kernel):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        # lengthscale: vector of 2
-        self.register_parameter("raw_lengthscale", torch.nn.Parameter(torch.tensor([1.0, 1.0])))
-        self.register_constraint("raw_lengthscale", gpytorch.constraints.Positive())
-
-        # B diagonal entries
-        self.register_parameter("raw_B_diagonal", torch.nn.Parameter(torch.tensor([1.0, 1.0])))
-        self.register_constraint("raw_B_diagonal", gpytorch.constraints.Positive())
-
-        # B off-diagonal (no constraint by default, can be negative!)
-        self.register_parameter("raw_B_offdiagonal", torch.nn.Parameter(torch.tensor(1.0)))
-
-    # --- Properties for read-access (transforming raw parameters) ---
-    @property
-    def lengthscale(self):
-        return self.raw_lengthscale_constraint.transform(self.raw_lengthscale)
-
-    @property
-    def B_diagonal(self):
-        return self.raw_B_diagonal_constraint.transform(self.raw_B_diagonal)
-
-    @property
-    def B_offdiagonal(self):
-        return self.raw_B_offdiagonal  # no constraint
-
-    # --- Setters to allow assigning transformed values ---
-    @lengthscale.setter
-    def lengthscale(self, value):
-        self.initialize(raw_lengthscale = self.raw_lengthscale_constraint.inverse_transform(value))
-
-    @B_diagonal.setter
-    def B_diagonal(self, value):
-        self.initialize(raw_B_diagonal = self.raw_B_diagonal_constraint.inverse_transform(value))
-
-    @B_offdiagonal.setter
-    def B_offdiagonal(self, value):
-        self.initialize(raw_B_offdiagonal = value)  # no transform needed
-
-    def forward(self, x1, x2, diag = False, **params):
-        """
-        Args:
-            x1: torch.Size([2N, 1]) flattened, second explicit dim is automatic
-            x2: torch.Size([2M, 1])
-        Returns:
-            K: torch.Size([2N, 2M])
-        """
-        # Transform long/flat format into 2D
-        mid_x1 = x1.shape[0] // 2
-        mid_x2 = x2.shape[0] // 2 
-
-        # torch.Size([N, 2])
-        x1 = torch.cat((x1[:mid_x1], x1[mid_x1:]), dim = 1).to(x1.device)
-        # torch.Size([M, 2])
-        x2 = torch.cat((x2[:mid_x2], x2[mid_x2:]), dim = 1).to(x2.device)
-
-        l = self.lengthscale.squeeze().to(x1.device)  # Shape (2,)
-
-        # Broadcast pairwise differences: shape [N, M, 2]
-        diff = (x1[:, None, :] - x2[None, :, :]).to(x1.device)
-
-        # RBF/SE envelope (elementwise)
-        # NOTE: K_SE is unscaled to avoid redundant optimisation
-        K_SE = torch.exp(-0.5 * (diff.square() / l.square()).sum(dim = -1))
-
-        # Apply softplus or other positive constraint to diagonals
-        b_diag = self.raw_B_diagonal_constraint.transform(self.raw_B_diagonal)
-        # cross correlation may be negative
-        b_offdiag = self.raw_B_offdiagonal
-
-        # construct 2 x 2 B
-        B = torch.tensor([
-            [b_diag[0], b_offdiag],
-            [b_offdiag, b_diag[1]]], device = x1.device, dtype = x1.dtype)
-        
-        # NOTE: Should technically be symmetric by definition but was numerically slightly off
-        # ensuring that B is symmetric (i.e. the off diagnal elements must be the same for symmetry)
-        B = (B + B.T) / 2
-
-        # B is 2 x 2 and defines the correlation & cross correlation between u and v
-        # Kronecker produces block diagonal
-        K = torch.kron(B, K_SE)
-
-        # Add this for Quantile Coverage Error (QCE) calculation
-        if diag:
-        # Return only the diagonal as a 1D tensor
-            return K.diag()
-
-        return K
-    
-from configs import SIGMA_N_RANGE, L_RANGE, B_DIAGONAL_RANGE, B_OFFDIAGONAL_RANGE
+from configs import SIGMA_N_RANGE, L_RANGE, SIGMA_F_RANGE, COVAR_OFFDIAGONAL_RANGE
 
 class GP(gpytorch.models.ExactGP):
-    # dfGP model with constant mean
+    # GP model with zero mean
     def __init__(self, train_x, train_y, likelihood):
-        # Inherit from ExactGP with 3 inputs + self = 4 inputs
         super().__init__(train_x, train_y, likelihood)
 
-        self.mean_module = gpytorch.means.ZeroMean()
-        self.covar_module = BlockStructureSEKernel()
-        
-        # initialize hyperparameters by sampling from a uniform distribution over predefined ranges
-        self.likelihood.noise = torch.empty(1, device = device).uniform_( * SIGMA_N_RANGE)
-        self.covar_module.lengthscale = torch.empty(2, device = device).uniform_( * L_RANGE)
-        self.covar_module.B_diagonal = torch.empty(2, device = device).uniform_( * B_DIAGONAL_RANGE)
-        self.covar_module.B_offdiagonal = torch.empty(1, device = device).uniform_( * B_OFFDIAGONAL_RANGE)
+        ### MEAN MODULE ###
+        self.mean_module = gpytorch.means.MultitaskMean(
+            gpytorch.means.ZeroMean(), num_tasks = 2
+            )
 
-        self.likelihood.noise_covar.register_constraint(
-            "raw_noise", gpytorch.constraints.GreaterThan(1e-4)
-        )
+        ### COVARIANCE MODULE ###
+        # NOTE: We do not need a scaling wrapper here because the Multitask kernel already handles the scaling
+        self.covar_module = gpytorch.kernels.MultitaskKernel(
+            gpytorch.kernels.RBFKernel(ard_num_dims = 2), 
+            num_tasks = 2,
+            rank = 1,
+            )
+        
+        ### HYPERPARAMETERS INITIALIZATION ###
+        self.likelihood.noise = torch.empty(1, device = device).uniform_( * SIGMA_N_RANGE)
+        # NOTE: respect the dimensionalities used in gpytorch
+        self.covar_module.data_covar_module.lengthscale = torch.empty([1, 2], device = device).uniform_( * L_RANGE)
+        # Covariance between tasks (off-diagonal elements), can be negative
+        # self.covar_module.task_covar_module.covar_factor = torch.empty([2, 1], device = device).uniform_( * COVAR_OFFDIAGONAL_RANGE)
+        self.covar_module.task_covar_module.covar_factor.data.uniform_( * COVAR_OFFDIAGONAL_RANGE)
+        # Independent variance for each task
+        self.covar_module.task_covar_module.var = torch.empty(2, device = device).uniform_( * SIGMA_F_RANGE)
+
+        ### CONSTRAINTS ###
+        # Print:
+        # likelihood.raw_noise torch.Size([1])
+        # covar_module.task_covar_module.covar_factor torch.Size([2, 1])
+        # covar_module.task_covar_module.raw_var torch.Size([2])
+        # covar_module.data_covar_module.raw_lengthscale torch.Size([1, 2])
+
+        # add constraint to likelihood 1e-4 is the default
+        self.likelihood.raw_noise_constraint = gpytorch.constraints.GreaterThan(1e-5)
+        self.covar_module.data_covar_module.raw_lengthscale_constraint = gpytorch.constraints.GreaterThan(1e-5)
+        # NOTE: covar factor can be negative or positive
+        self.covar_module.task_covar_module.raw_var_constraint = gpytorch.constraints.GreaterThan(1e-5)
 
     def forward(self, x):
         mean_x = self.mean_module(x)
+        # Use default forward method of MultitaskKernel
         covar_x = self.covar_module(x)
-        return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
+        # NOTE: Assure it is multitask
+        return gpytorch.distributions.MultitaskMultivariateNormal(mean_x, covar_x)

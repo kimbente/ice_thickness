@@ -41,6 +41,7 @@ if model_name == "dfNN":
 # Reiterating import for visibility
 MAX_NUM_EPOCHS = MAX_NUM_EPOCHS
 NUM_RUNS = NUM_RUNS
+# NOTE: The dfNN generally learns better with higher weight decay
 WEIGHT_DECAY = dfNN_SIM_WEIGHT_DECAY
 PATIENCE = PATIENCE
 
