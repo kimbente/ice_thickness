@@ -19,6 +19,7 @@ from configs import TRACK_EMISSIONS_BOOL
 # Reiterating import for visibility
 MAX_NUM_EPOCHS = MAX_NUM_EPOCHS
 NUM_RUNS = NUM_RUNS
+NUM_RUNS = 1
 WEIGHT_DECAY = WEIGHT_DECAY
 PATIENCE = PATIENCE
 
@@ -211,6 +212,7 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
             dfNN_model.eval()
 
             # Compute average loss for the epoch (e.g. 7 batches / epoch)
+            # NOTE: With batch training this RMSE might be slightly different from the full Test RMSE
             avg_train_loss_RMSE_for_epoch = train_losses_RMSE_over_batches / len(dataloader)
 
             # Print for epoch

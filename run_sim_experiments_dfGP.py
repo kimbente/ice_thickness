@@ -26,7 +26,7 @@
 # This artwork is a visual reminder that this script is for the sim experiments.
 
 model_name = "dfGP"
-from gpytorch_models import dfGP
+from gpytorch_models_11d import dfGP
 
 # import configs to we can access the hypers with getattr
 import configs
@@ -200,10 +200,10 @@ for sim_name, sim_func in simulations.items():
             # monitor performance transfer to test (only RMSE easy to calc without covar)
             test_losses_RMSE_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
 
-            sigma_n_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
-            sigma_f_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
             l1_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
             l2_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
+            outputscale_var_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
+            noise_var_over_epochs = torch.zeros(MAX_NUM_EPOCHS)
 
         # Early stopping variables
         best_loss = float('inf')
@@ -252,10 +252,10 @@ for sim_name, sim_func in simulations.items():
                 test_losses_RMSE_over_epochs[epoch] = test_RMSE.item()
 
                 # Save evolution of hypers for convergence plot
-                sigma_n_over_epochs[epoch] = model.likelihood.noise.item()
-                sigma_f_over_epochs[epoch] = model.covar_module.outputscale.item()
                 l1_over_epochs[epoch] = model.base_kernel.lengthscale[0].item()
                 l2_over_epochs[epoch] = model.base_kernel.lengthscale[1].item()
+                outputscale_var_over_epochs[epoch] = model.covar_module.outputscale.item()
+                noise_var_over_epochs[epoch] = model.likelihood.noise.item()
 
                 # Print a bit more information for the first run
                 if epoch % 20 == 0:
@@ -333,10 +333,11 @@ for sim_name, sim_func in simulations.items():
                 'Train NLML': train_losses_NLML_over_epochs.tolist(),
                 'Train RMSE': train_losses_RMSE_over_epochs.tolist(),
                 'Test RMSE': test_losses_RMSE_over_epochs.tolist(),
-                'sigma_n': sigma_n_over_epochs.tolist(),
-                'sigma_f': sigma_f_over_epochs.tolist(),
+                # hyperparameters
                 'l1': l1_over_epochs.tolist(),
-                'l2': l2_over_epochs.tolist()
+                'l2': l2_over_epochs.tolist(),
+                'outputscale_var': outputscale_var_over_epochs.tolist(),
+                'noise_var': noise_var_over_epochs.tolist(),
                 })
             
             df_losses.to_csv(f"{MODEL_SIM_RESULTS_DIR}/{sim_name}_{model_name}_losses_over_epochs.csv", index = False, float_format = "%.5f") # reduce to 5 decimals for readability
@@ -405,9 +406,9 @@ for sim_name, sim_func in simulations.items():
     mean_std_df.to_csv(path_to_metrics_summary, float_format = "%.5f") # reduce to 5 decimals
     print(f"\nMean & Std saved to {path_to_metrics_summary}")
 
-###############################
-### END LOOP 1 over REGIONS ###
-###############################
+###################################
+### END LOOP 1 over SIMULATIONS ###
+###################################
 
 #############################
 ### WALL time & GPU model ###

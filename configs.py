@@ -41,9 +41,9 @@ PINN_REAL_RESULTS_DIR = "results_real/PINN"
 dfGP_REAL_LEARNING_RATE = 0.001 # smaller for real data
 dfGPcm_REAL_LEARNING_RATE = 0.001
 dfNGP_REAL_LEARNING_RATE = 0.001 # lr x 0.1 for NN mean function params
-dfNN_REAL_LEARNING_RATE = 0.005 
+dfNN_REAL_LEARNING_RATE = 0.001 # 0.005 worked, but could try slower makes it smoother
 GP_REAL_LEARNING_RATE = 0.001 # needs to be smaller
-PINN_REAL_LEARNING_RATE = 0.005
+PINN_REAL_LEARNING_RATE = 0.0001 # 0.005 was too fast
 
 ################################
 ### TRAINING HYPERPARAMETERS ###
@@ -63,19 +63,59 @@ dfNN_SIM_WEIGHT_DECAY = 1e-2 # 0.01
 
 BATCH_SIZE = 32
 
-# FOR PINN ONLY
+# PINN HYPERPARAM (SIM & REAL)
 W_PINN_DIV_WEIGHT = 0.3
 
-# Define initialisation ranges FOR GP MODELs
-SIGMA_N_RANGE = (0.02, 0.07)
-# SIGMA_F_RANGE = (1.5, 2.0) 
-SIGMA_F_RANGE = (0.8, 1.5)
-SIGMA_F_RESIDUAL_MODEL_RANGE = (0.1, 0.6) # for dfNGP we model the residuals, so we need a different sigma_f range
+# FOR SIM
+# Noise parameter for training: independent Gaussian noise to perturb inputs
+# NOTE: This corresponds to a true noise variance of 0.0004
+STD_GAUSSIAN_NOISE = 0.02
+
+###################################
+### REAL (df)GP HYPERPARAMETERS ###
+###################################
+
+# Scale input bacl to ~km
+SCALE_INPUT_region_lower_byrd = 30
+SCALE_INPUT_region_mid_byrd = 70
+SCALE_INPUT_region_upper_byrd = 70
+
+# NOTE: This corresponds to a l^2 range of (4.0, 25.0) (domain is [0, 100])
+REAL_L_RANGE = (1.5, 4.0)
+
+# NOTE: This corresponds to a sigma_n range of (,)
+# REAL_NOISE_VAR_RANGE = (0.04, 0.07)
+REAL_NOISE_VAR_RANGE = (0.02, 0.05) 
+
+# REAL_OUTPUTSCALE_VAR_RANGE = (0.8, 1.8)
+REAL_OUTPUTSCALE_VAR_RANGE = (1.0, 2.0)
+
+##############################
+### (df)GP HYPERPARAMETERS ###
+##############################
+# order: lengthscale, outputscale variance, noise variance
+
+# HYPERPARAMETER 1: Range for lengthscale parameter (l) 
+# NOTE: This corresponds to a l^2 range of (0.09, 0.64) (domain is [0, 1])
 L_RANGE = (0.3, 0.8) 
 
-# For regular GP only
-COVAR_OFFDIAGONAL_RANGE = (-0.2, 0.5) 
+# HYPERPARAMETER 2: Range for outputscale variance parameter (sigma_f^2)
+# NOTE: This corresponds to a sigma_f range of (0.64, ~1.22)
+OUTPUTSCALE_VAR_RANGE = (0.8, 1.5)
+# formerly SIGMA_F_RANGE = (0.8, 1.5)
 
-# FOR SIM
-# Noise parameter for training: independent Gaussian noise
-STD_GAUSSIAN_NOISE = 0.02 # variance is 0.0004
+# NOTE: For residual models (i.e. models with non-zero mean function), we use a different range for the outputscale variance, acknowledging that the residuals are smaller than the original data.
+OUTPUTSCALE_VAR_RESIDUAL_MODEL_RANGE = (0.1, 0.6)
+# Formerly SIGMA_F_RESIDUAL_MODEL_RANGE = (0.1, 0.6)
+
+# For regular GP only, we scale for each task
+# NOTE: The multitask GP is parameterised via a covariance factor F, which is used to construct the covariance matrix B together with a TASK Variance D.
+# B = (FF^T + D), where D is a diagonal matrix and F is the covar_factor
+TASK_COVAR_FACTOR_RANGE = (-0.2, 0.5) 
+# Formerly COVAR_OFFDIAGONAL_RANGE = (-0.2, 0.5) 
+
+# Define initialisation ranges FOR GP MODELs
+# HYPERPARAMETER 3: Range for noise variance parameter (sigma_n^2)
+# NOTE: This corresponds to a sigma_n range of (0.01, 0.07)
+NOISE_VAR_RANGE = (0.0001, 0.0049)
+# formerly SIGMA_N_RANGE = (0.02, 0.07)

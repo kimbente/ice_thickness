@@ -1,0 +1,2061 @@
+Using device: cuda
+
+=== BRANCHING ===
+Training inputs shape: torch.Size([196, 2])
+Training observations shape: torch.Size([196, 2])
+Training inputs dtype: torch.float32
+Training inputs device: cuda:0
+Training observations device: cuda:0
+
+=== BRANCHING ===
+Test inputs shape: torch.Size([400, 2])
+Test observations shape: torch.Size([400, 2])
+Test inputs dtype: torch.float32
+Test inputs device: cuda:0
+Test observations device: cuda:0
+
+
+--- Training Run 1/8 ---
+
+Start Training
+branching dfGP Run 1/8, Epoch 1/2000, Training Loss (NLML): -1.1901, Training RMSE: 0.0514
+branching dfGP Run 1/8, Epoch 21/2000, Training Loss (NLML): -1.2082, Training RMSE: 0.0481
+branching dfGP Run 1/8, Epoch 41/2000, Training Loss (NLML): -1.2600, Training RMSE: 0.0402
+branching dfGP Run 1/8, Epoch 61/2000, Training Loss (NLML): -1.3946, Training RMSE: 0.0276
+branching dfGP Run 1/8, Epoch 81/2000, Training Loss (NLML): -1.4741, Training RMSE: 0.0247
+branching dfGP Run 1/8, Epoch 101/2000, Training Loss (NLML): -1.5081, Training RMSE: 0.0234
+branching dfGP Run 1/8, Epoch 121/2000, Training Loss (NLML): -1.5210, Training RMSE: 0.0225
+branching dfGP Run 1/8, Epoch 141/2000, Training Loss (NLML): -1.5453, Training RMSE: 0.0203
+branching dfGP Run 1/8, Epoch 161/2000, Training Loss (NLML): -1.6919, Training RMSE: 0.0149
+branching dfGP Run 1/8, Epoch 181/2000, Training Loss (NLML): -1.7321, Training RMSE: 0.0135
+branching dfGP Run 1/8, Epoch 201/2000, Training Loss (NLML): -1.7577, Training RMSE: 0.0127
+branching dfGP Run 1/8, Epoch 221/2000, Training Loss (NLML): -1.7838, Training RMSE: 0.0116
+branching dfGP Run 1/8, Epoch 241/2000, Training Loss (NLML): -1.8153, Training RMSE: 0.0105
+branching dfGP Run 1/8, Epoch 261/2000, Training Loss (NLML): -1.8330, Training RMSE: 0.0105
+branching dfGP Run 1/8, Epoch 281/2000, Training Loss (NLML): -1.8471, Training RMSE: 0.0103
+branching dfGP Run 1/8, Epoch 301/2000, Training Loss (NLML): -1.8584, Training RMSE: 0.0103
+branching dfGP Run 1/8, Epoch 321/2000, Training Loss (NLML): -1.8690, Training RMSE: 0.0103
+branching dfGP Run 1/8, Epoch 341/2000, Training Loss (NLML): -1.8777, Training RMSE: 0.0103
+branching dfGP Run 1/8, Epoch 361/2000, Training Loss (NLML): -1.8845, Training RMSE: 0.0103
+branching dfGP Run 1/8, Epoch 381/2000, Training Loss (NLML): -1.8898, Training RMSE: 0.0102
+branching dfGP Run 1/8, Epoch 401/2000, Training Loss (NLML): -1.8931, Training RMSE: 0.0102
+branching dfGP Run 1/8, Epoch 421/2000, Training Loss (NLML): -1.8956, Training RMSE: 0.0102
+branching dfGP Run 1/8, Epoch 441/2000, Training Loss (NLML): -1.8970, Training RMSE: 0.0102
+branching dfGP Run 1/8, Epoch 461/2000, Training Loss (NLML): -1.8979, Training RMSE: 0.0102
+branching dfGP Run 1/8, Epoch 481/2000, Training Loss (NLML): -1.8982, Training RMSE: 0.0102
+branching dfGP Run 1/8, Epoch 501/2000, Training Loss (NLML): -1.8983, Training RMSE: 0.0102
+branching dfGP Run 1/8, Epoch 521/2000, Training Loss (NLML): -1.8985, Training RMSE: 0.0102
+branching dfGP Run 1/8, Epoch 541/2000, Training Loss (NLML): -1.8984, Training RMSE: 0.0102
+branching dfGP Run 1/8, Epoch 561/2000, Training Loss (NLML): -1.8984, Training RMSE: 0.0102
+branching dfGP Run 1/8, Epoch 581/2000, Training Loss (NLML): -1.8985, Training RMSE: 0.0102
+branching dfGP Run 1/8, Epoch 601/2000, Training Loss (NLML): -1.8984, Training RMSE: 0.0102
+branching dfGP Run 1/8, Epoch 621/2000, Training Loss (NLML): -1.8986, Training RMSE: 0.0102
+branching dfGP Run 1/8, Epoch 641/2000, Training Loss (NLML): -1.8985, Training RMSE: 0.0102
+branching dfGP Run 1/8, Epoch 661/2000, Training Loss (NLML): -1.8984, Training RMSE: 0.0102
+branching dfGP Run 1/8, Epoch 681/2000, Training Loss (NLML): -1.8984, Training RMSE: 0.0102
+branching dfGP Run 1/8, Epoch 701/2000, Training Loss (NLML): -1.8985, Training RMSE: 0.0102
+Early stopping triggered after 705 epochs.
+
+--- Training Run 2/8 ---
+
+Start Training
+branching dfGP Run 2/8, Epoch 1/2000, Training Loss (NLML): -1.3204
+branching dfGP Run 2/8, Epoch 21/2000, Training Loss (NLML): -1.4156
+branching dfGP Run 2/8, Epoch 41/2000, Training Loss (NLML): -1.4846
+branching dfGP Run 2/8, Epoch 61/2000, Training Loss (NLML): -1.5332
+branching dfGP Run 2/8, Epoch 81/2000, Training Loss (NLML): -1.6114
+branching dfGP Run 2/8, Epoch 101/2000, Training Loss (NLML): -1.7098
+branching dfGP Run 2/8, Epoch 121/2000, Training Loss (NLML): -1.7520
+branching dfGP Run 2/8, Epoch 141/2000, Training Loss (NLML): -1.7782
+branching dfGP Run 2/8, Epoch 161/2000, Training Loss (NLML): -1.7962
+branching dfGP Run 2/8, Epoch 181/2000, Training Loss (NLML): -1.8084
+branching dfGP Run 2/8, Epoch 201/2000, Training Loss (NLML): -1.8208
+branching dfGP Run 2/8, Epoch 221/2000, Training Loss (NLML): -1.8349
+branching dfGP Run 2/8, Epoch 241/2000, Training Loss (NLML): -1.8473
+branching dfGP Run 2/8, Epoch 261/2000, Training Loss (NLML): -1.8573
+branching dfGP Run 2/8, Epoch 281/2000, Training Loss (NLML): -1.8658
+branching dfGP Run 2/8, Epoch 301/2000, Training Loss (NLML): -1.8725
+branching dfGP Run 2/8, Epoch 321/2000, Training Loss (NLML): -1.8775
+branching dfGP Run 2/8, Epoch 341/2000, Training Loss (NLML): -1.8812
+branching dfGP Run 2/8, Epoch 361/2000, Training Loss (NLML): -1.8837
+branching dfGP Run 2/8, Epoch 381/2000, Training Loss (NLML): -1.8855
+branching dfGP Run 2/8, Epoch 401/2000, Training Loss (NLML): -1.8860
+branching dfGP Run 2/8, Epoch 421/2000, Training Loss (NLML): -1.8866
+branching dfGP Run 2/8, Epoch 441/2000, Training Loss (NLML): -1.8866
+branching dfGP Run 2/8, Epoch 461/2000, Training Loss (NLML): -1.8868
+branching dfGP Run 2/8, Epoch 481/2000, Training Loss (NLML): -1.8868
+branching dfGP Run 2/8, Epoch 501/2000, Training Loss (NLML): -1.8868
+branching dfGP Run 2/8, Epoch 521/2000, Training Loss (NLML): -1.8869
+branching dfGP Run 2/8, Epoch 541/2000, Training Loss (NLML): -1.8868
+branching dfGP Run 2/8, Epoch 561/2000, Training Loss (NLML): -1.8868
+branching dfGP Run 2/8, Epoch 581/2000, Training Loss (NLML): -1.8866
+branching dfGP Run 2/8, Epoch 601/2000, Training Loss (NLML): -1.8868
+branching dfGP Run 2/8, Epoch 621/2000, Training Loss (NLML): -1.8868
+Early stopping triggered after 624 epochs.
+
+--- Training Run 3/8 ---
+
+Start Training
+branching dfGP Run 3/8, Epoch 1/2000, Training Loss (NLML): -1.4109
+branching dfGP Run 3/8, Epoch 21/2000, Training Loss (NLML): -1.4870
+branching dfGP Run 3/8, Epoch 41/2000, Training Loss (NLML): -1.5215
+branching dfGP Run 3/8, Epoch 61/2000, Training Loss (NLML): -1.5601
+branching dfGP Run 3/8, Epoch 81/2000, Training Loss (NLML): -1.6920
+branching dfGP Run 3/8, Epoch 101/2000, Training Loss (NLML): -1.7241
+branching dfGP Run 3/8, Epoch 121/2000, Training Loss (NLML): -1.7444
+branching dfGP Run 3/8, Epoch 141/2000, Training Loss (NLML): -1.7717
+branching dfGP Run 3/8, Epoch 161/2000, Training Loss (NLML): -1.7988
+branching dfGP Run 3/8, Epoch 181/2000, Training Loss (NLML): -1.8129
+branching dfGP Run 3/8, Epoch 201/2000, Training Loss (NLML): -1.8240
+branching dfGP Run 3/8, Epoch 221/2000, Training Loss (NLML): -1.8339
+branching dfGP Run 3/8, Epoch 241/2000, Training Loss (NLML): -1.8435
+branching dfGP Run 3/8, Epoch 261/2000, Training Loss (NLML): -1.8509
+branching dfGP Run 3/8, Epoch 281/2000, Training Loss (NLML): -1.8570
+branching dfGP Run 3/8, Epoch 301/2000, Training Loss (NLML): -1.8621
+branching dfGP Run 3/8, Epoch 321/2000, Training Loss (NLML): -1.8663
+branching dfGP Run 3/8, Epoch 341/2000, Training Loss (NLML): -1.8692
+branching dfGP Run 3/8, Epoch 361/2000, Training Loss (NLML): -1.8713
+branching dfGP Run 3/8, Epoch 381/2000, Training Loss (NLML): -1.8730
+branching dfGP Run 3/8, Epoch 401/2000, Training Loss (NLML): -1.8737
+branching dfGP Run 3/8, Epoch 421/2000, Training Loss (NLML): -1.8741
+branching dfGP Run 3/8, Epoch 441/2000, Training Loss (NLML): -1.8745
+branching dfGP Run 3/8, Epoch 461/2000, Training Loss (NLML): -1.8746
+branching dfGP Run 3/8, Epoch 481/2000, Training Loss (NLML): -1.8744
+branching dfGP Run 3/8, Epoch 501/2000, Training Loss (NLML): -1.8746
+branching dfGP Run 3/8, Epoch 521/2000, Training Loss (NLML): -1.8746
+branching dfGP Run 3/8, Epoch 541/2000, Training Loss (NLML): -1.8746
+branching dfGP Run 3/8, Epoch 561/2000, Training Loss (NLML): -1.8746
+branching dfGP Run 3/8, Epoch 581/2000, Training Loss (NLML): -1.8747
+branching dfGP Run 3/8, Epoch 601/2000, Training Loss (NLML): -1.8747
+branching dfGP Run 3/8, Epoch 621/2000, Training Loss (NLML): -1.8746
+Early stopping triggered after 632 epochs.
+
+--- Training Run 4/8 ---
+
+Start Training
+branching dfGP Run 4/8, Epoch 1/2000, Training Loss (NLML): -1.3067
+branching dfGP Run 4/8, Epoch 21/2000, Training Loss (NLML): -1.3680
+branching dfGP Run 4/8, Epoch 41/2000, Training Loss (NLML): -1.4175
+branching dfGP Run 4/8, Epoch 61/2000, Training Loss (NLML): -1.5104
+branching dfGP Run 4/8, Epoch 81/2000, Training Loss (NLML): -1.5707
+branching dfGP Run 4/8, Epoch 101/2000, Training Loss (NLML): -1.6119
+branching dfGP Run 4/8, Epoch 121/2000, Training Loss (NLML): -1.6498
+branching dfGP Run 4/8, Epoch 141/2000, Training Loss (NLML): -1.6752
+branching dfGP Run 4/8, Epoch 161/2000, Training Loss (NLML): -1.6964
+branching dfGP Run 4/8, Epoch 181/2000, Training Loss (NLML): -1.7249
+branching dfGP Run 4/8, Epoch 201/2000, Training Loss (NLML): -1.7617
+branching dfGP Run 4/8, Epoch 221/2000, Training Loss (NLML): -1.8024
+branching dfGP Run 4/8, Epoch 241/2000, Training Loss (NLML): -1.8323
+branching dfGP Run 4/8, Epoch 261/2000, Training Loss (NLML): -1.8531
+branching dfGP Run 4/8, Epoch 281/2000, Training Loss (NLML): -1.8659
+branching dfGP Run 4/8, Epoch 301/2000, Training Loss (NLML): -1.8733
+branching dfGP Run 4/8, Epoch 321/2000, Training Loss (NLML): -1.8770
+branching dfGP Run 4/8, Epoch 341/2000, Training Loss (NLML): -1.8786
+branching dfGP Run 4/8, Epoch 361/2000, Training Loss (NLML): -1.8793
+branching dfGP Run 4/8, Epoch 381/2000, Training Loss (NLML): -1.8796
+branching dfGP Run 4/8, Epoch 401/2000, Training Loss (NLML): -1.8797
+branching dfGP Run 4/8, Epoch 421/2000, Training Loss (NLML): -1.8797
+branching dfGP Run 4/8, Epoch 441/2000, Training Loss (NLML): -1.8798
+branching dfGP Run 4/8, Epoch 461/2000, Training Loss (NLML): -1.8797
+branching dfGP Run 4/8, Epoch 481/2000, Training Loss (NLML): -1.8796
+branching dfGP Run 4/8, Epoch 501/2000, Training Loss (NLML): -1.8797
+branching dfGP Run 4/8, Epoch 521/2000, Training Loss (NLML): -1.8798
+branching dfGP Run 4/8, Epoch 541/2000, Training Loss (NLML): -1.8796
+branching dfGP Run 4/8, Epoch 561/2000, Training Loss (NLML): -1.8796
+branching dfGP Run 4/8, Epoch 581/2000, Training Loss (NLML): -1.8796
+branching dfGP Run 4/8, Epoch 601/2000, Training Loss (NLML): -1.8796
+Early stopping triggered after 607 epochs.
+
+--- Training Run 5/8 ---
+
+Start Training
+branching dfGP Run 5/8, Epoch 1/2000, Training Loss (NLML): -1.3584
+branching dfGP Run 5/8, Epoch 21/2000, Training Loss (NLML): -1.4445
+branching dfGP Run 5/8, Epoch 41/2000, Training Loss (NLML): -1.5475
+branching dfGP Run 5/8, Epoch 61/2000, Training Loss (NLML): -1.6013
+branching dfGP Run 5/8, Epoch 81/2000, Training Loss (NLML): -1.6546
+branching dfGP Run 5/8, Epoch 101/2000, Training Loss (NLML): -1.7024
+branching dfGP Run 5/8, Epoch 121/2000, Training Loss (NLML): -1.7559
+branching dfGP Run 5/8, Epoch 141/2000, Training Loss (NLML): -1.7936
+branching dfGP Run 5/8, Epoch 161/2000, Training Loss (NLML): -1.8229
+branching dfGP Run 5/8, Epoch 181/2000, Training Loss (NLML): -1.8426
+branching dfGP Run 5/8, Epoch 201/2000, Training Loss (NLML): -1.8580
+branching dfGP Run 5/8, Epoch 221/2000, Training Loss (NLML): -1.8712
+branching dfGP Run 5/8, Epoch 241/2000, Training Loss (NLML): -1.8822
+branching dfGP Run 5/8, Epoch 261/2000, Training Loss (NLML): -1.8925
+branching dfGP Run 5/8, Epoch 281/2000, Training Loss (NLML): -1.9011
+branching dfGP Run 5/8, Epoch 301/2000, Training Loss (NLML): -1.9088
+branching dfGP Run 5/8, Epoch 321/2000, Training Loss (NLML): -1.9149
+branching dfGP Run 5/8, Epoch 341/2000, Training Loss (NLML): -1.9199
+branching dfGP Run 5/8, Epoch 361/2000, Training Loss (NLML): -1.9238
+branching dfGP Run 5/8, Epoch 381/2000, Training Loss (NLML): -1.9265
+branching dfGP Run 5/8, Epoch 401/2000, Training Loss (NLML): -1.9283
+branching dfGP Run 5/8, Epoch 421/2000, Training Loss (NLML): -1.9292
+branching dfGP Run 5/8, Epoch 441/2000, Training Loss (NLML): -1.9299
+branching dfGP Run 5/8, Epoch 461/2000, Training Loss (NLML): -1.9303
+branching dfGP Run 5/8, Epoch 481/2000, Training Loss (NLML): -1.9304
+branching dfGP Run 5/8, Epoch 501/2000, Training Loss (NLML): -1.9304
+branching dfGP Run 5/8, Epoch 521/2000, Training Loss (NLML): -1.9305
+branching dfGP Run 5/8, Epoch 541/2000, Training Loss (NLML): -1.9307
+branching dfGP Run 5/8, Epoch 561/2000, Training Loss (NLML): -1.9306
+branching dfGP Run 5/8, Epoch 581/2000, Training Loss (NLML): -1.9306
+branching dfGP Run 5/8, Epoch 601/2000, Training Loss (NLML): -1.9307
+branching dfGP Run 5/8, Epoch 621/2000, Training Loss (NLML): -1.9305
+branching dfGP Run 5/8, Epoch 641/2000, Training Loss (NLML): -1.9306
+branching dfGP Run 5/8, Epoch 661/2000, Training Loss (NLML): -1.9307
+branching dfGP Run 5/8, Epoch 681/2000, Training Loss (NLML): -1.9305
+Early stopping triggered after 690 epochs.
+
+--- Training Run 6/8 ---
+
+Start Training
+branching dfGP Run 6/8, Epoch 1/2000, Training Loss (NLML): -1.1853
+branching dfGP Run 6/8, Epoch 21/2000, Training Loss (NLML): -1.3384
+branching dfGP Run 6/8, Epoch 41/2000, Training Loss (NLML): -1.3900
+branching dfGP Run 6/8, Epoch 61/2000, Training Loss (NLML): -1.4212
+branching dfGP Run 6/8, Epoch 81/2000, Training Loss (NLML): -1.4748
+branching dfGP Run 6/8, Epoch 101/2000, Training Loss (NLML): -1.5775
+branching dfGP Run 6/8, Epoch 121/2000, Training Loss (NLML): -1.6433
+branching dfGP Run 6/8, Epoch 141/2000, Training Loss (NLML): -1.7026
+branching dfGP Run 6/8, Epoch 161/2000, Training Loss (NLML): -1.7506
+branching dfGP Run 6/8, Epoch 181/2000, Training Loss (NLML): -1.7861
+branching dfGP Run 6/8, Epoch 201/2000, Training Loss (NLML): -1.8131
+branching dfGP Run 6/8, Epoch 221/2000, Training Loss (NLML): -1.8351
+branching dfGP Run 6/8, Epoch 241/2000, Training Loss (NLML): -1.8550
+branching dfGP Run 6/8, Epoch 261/2000, Training Loss (NLML): -1.8702
+branching dfGP Run 6/8, Epoch 281/2000, Training Loss (NLML): -1.8835
+branching dfGP Run 6/8, Epoch 301/2000, Training Loss (NLML): -1.8969
+branching dfGP Run 6/8, Epoch 321/2000, Training Loss (NLML): -1.9082
+branching dfGP Run 6/8, Epoch 341/2000, Training Loss (NLML): -1.9181
+branching dfGP Run 6/8, Epoch 361/2000, Training Loss (NLML): -1.9272
+branching dfGP Run 6/8, Epoch 381/2000, Training Loss (NLML): -1.9340
+branching dfGP Run 6/8, Epoch 401/2000, Training Loss (NLML): -1.9397
+branching dfGP Run 6/8, Epoch 421/2000, Training Loss (NLML): -1.9444
+branching dfGP Run 6/8, Epoch 441/2000, Training Loss (NLML): -1.9474
+branching dfGP Run 6/8, Epoch 461/2000, Training Loss (NLML): -1.9495
+branching dfGP Run 6/8, Epoch 481/2000, Training Loss (NLML): -1.9506
+branching dfGP Run 6/8, Epoch 501/2000, Training Loss (NLML): -1.9514
+branching dfGP Run 6/8, Epoch 521/2000, Training Loss (NLML): -1.9518
+branching dfGP Run 6/8, Epoch 541/2000, Training Loss (NLML): -1.9517
+branching dfGP Run 6/8, Epoch 561/2000, Training Loss (NLML): -1.9517
+branching dfGP Run 6/8, Epoch 581/2000, Training Loss (NLML): -1.9518
+branching dfGP Run 6/8, Epoch 601/2000, Training Loss (NLML): -1.9519
+branching dfGP Run 6/8, Epoch 621/2000, Training Loss (NLML): -1.9517
+branching dfGP Run 6/8, Epoch 641/2000, Training Loss (NLML): -1.9519
+branching dfGP Run 6/8, Epoch 661/2000, Training Loss (NLML): -1.9518
+branching dfGP Run 6/8, Epoch 681/2000, Training Loss (NLML): -1.9519
+branching dfGP Run 6/8, Epoch 701/2000, Training Loss (NLML): -1.9518
+branching dfGP Run 6/8, Epoch 721/2000, Training Loss (NLML): -1.9519
+branching dfGP Run 6/8, Epoch 741/2000, Training Loss (NLML): -1.9520
+branching dfGP Run 6/8, Epoch 761/2000, Training Loss (NLML): -1.9517
+branching dfGP Run 6/8, Epoch 781/2000, Training Loss (NLML): -1.9518
+branching dfGP Run 6/8, Epoch 801/2000, Training Loss (NLML): -1.9516
+branching dfGP Run 6/8, Epoch 821/2000, Training Loss (NLML): -1.9518
+Early stopping triggered after 833 epochs.
+
+--- Training Run 7/8 ---
+
+Start Training
+branching dfGP Run 7/8, Epoch 1/2000, Training Loss (NLML): -1.2266
+branching dfGP Run 7/8, Epoch 21/2000, Training Loss (NLML): -1.2692
+branching dfGP Run 7/8, Epoch 41/2000, Training Loss (NLML): -1.3696
+branching dfGP Run 7/8, Epoch 61/2000, Training Loss (NLML): -1.4581
+branching dfGP Run 7/8, Epoch 81/2000, Training Loss (NLML): -1.5074
+branching dfGP Run 7/8, Epoch 101/2000, Training Loss (NLML): -1.5335
+branching dfGP Run 7/8, Epoch 121/2000, Training Loss (NLML): -1.5509
+branching dfGP Run 7/8, Epoch 141/2000, Training Loss (NLML): -1.5886
+branching dfGP Run 7/8, Epoch 161/2000, Training Loss (NLML): -1.7168
+branching dfGP Run 7/8, Epoch 181/2000, Training Loss (NLML): -1.7588
+branching dfGP Run 7/8, Epoch 201/2000, Training Loss (NLML): -1.7887
+branching dfGP Run 7/8, Epoch 221/2000, Training Loss (NLML): -1.8125
+branching dfGP Run 7/8, Epoch 241/2000, Training Loss (NLML): -1.8339
+branching dfGP Run 7/8, Epoch 261/2000, Training Loss (NLML): -1.8502
+branching dfGP Run 7/8, Epoch 281/2000, Training Loss (NLML): -1.8626
+branching dfGP Run 7/8, Epoch 301/2000, Training Loss (NLML): -1.8722
+branching dfGP Run 7/8, Epoch 321/2000, Training Loss (NLML): -1.8791
+branching dfGP Run 7/8, Epoch 341/2000, Training Loss (NLML): -1.8839
+branching dfGP Run 7/8, Epoch 361/2000, Training Loss (NLML): -1.8867
+branching dfGP Run 7/8, Epoch 381/2000, Training Loss (NLML): -1.8883
+branching dfGP Run 7/8, Epoch 401/2000, Training Loss (NLML): -1.8892
+branching dfGP Run 7/8, Epoch 421/2000, Training Loss (NLML): -1.8894
+branching dfGP Run 7/8, Epoch 441/2000, Training Loss (NLML): -1.8896
+branching dfGP Run 7/8, Epoch 461/2000, Training Loss (NLML): -1.8897
+branching dfGP Run 7/8, Epoch 481/2000, Training Loss (NLML): -1.8897
+branching dfGP Run 7/8, Epoch 501/2000, Training Loss (NLML): -1.8897
+branching dfGP Run 7/8, Epoch 521/2000, Training Loss (NLML): -1.8896
+branching dfGP Run 7/8, Epoch 541/2000, Training Loss (NLML): -1.8897
+branching dfGP Run 7/8, Epoch 561/2000, Training Loss (NLML): -1.8897
+branching dfGP Run 7/8, Epoch 581/2000, Training Loss (NLML): -1.8897
+branching dfGP Run 7/8, Epoch 601/2000, Training Loss (NLML): -1.8897
+branching dfGP Run 7/8, Epoch 621/2000, Training Loss (NLML): -1.8896
+Early stopping triggered after 631 epochs.
+
+--- Training Run 8/8 ---
+
+Start Training
+branching dfGP Run 8/8, Epoch 1/2000, Training Loss (NLML): -1.3540
+branching dfGP Run 8/8, Epoch 21/2000, Training Loss (NLML): -1.4070
+branching dfGP Run 8/8, Epoch 41/2000, Training Loss (NLML): -1.5391
+branching dfGP Run 8/8, Epoch 61/2000, Training Loss (NLML): -1.5973
+branching dfGP Run 8/8, Epoch 81/2000, Training Loss (NLML): -1.6383
+branching dfGP Run 8/8, Epoch 101/2000, Training Loss (NLML): -1.6790
+branching dfGP Run 8/8, Epoch 121/2000, Training Loss (NLML): -1.7086
+branching dfGP Run 8/8, Epoch 141/2000, Training Loss (NLML): -1.7651
+branching dfGP Run 8/8, Epoch 161/2000, Training Loss (NLML): -1.8166
+branching dfGP Run 8/8, Epoch 181/2000, Training Loss (NLML): -1.8488
+branching dfGP Run 8/8, Epoch 201/2000, Training Loss (NLML): -1.8705
+branching dfGP Run 8/8, Epoch 221/2000, Training Loss (NLML): -1.8844
+branching dfGP Run 8/8, Epoch 241/2000, Training Loss (NLML): -1.8973
+branching dfGP Run 8/8, Epoch 261/2000, Training Loss (NLML): -1.9076
+branching dfGP Run 8/8, Epoch 281/2000, Training Loss (NLML): -1.9173
+branching dfGP Run 8/8, Epoch 301/2000, Training Loss (NLML): -1.9250
+branching dfGP Run 8/8, Epoch 321/2000, Training Loss (NLML): -1.9316
+branching dfGP Run 8/8, Epoch 341/2000, Training Loss (NLML): -1.9366
+branching dfGP Run 8/8, Epoch 361/2000, Training Loss (NLML): -1.9404
+branching dfGP Run 8/8, Epoch 381/2000, Training Loss (NLML): -1.9430
+branching dfGP Run 8/8, Epoch 401/2000, Training Loss (NLML): -1.9447
+branching dfGP Run 8/8, Epoch 421/2000, Training Loss (NLML): -1.9454
+branching dfGP Run 8/8, Epoch 441/2000, Training Loss (NLML): -1.9461
+branching dfGP Run 8/8, Epoch 461/2000, Training Loss (NLML): -1.9464
+branching dfGP Run 8/8, Epoch 481/2000, Training Loss (NLML): -1.9466
+branching dfGP Run 8/8, Epoch 501/2000, Training Loss (NLML): -1.9465
+branching dfGP Run 8/8, Epoch 521/2000, Training Loss (NLML): -1.9466
+branching dfGP Run 8/8, Epoch 541/2000, Training Loss (NLML): -1.9466
+branching dfGP Run 8/8, Epoch 561/2000, Training Loss (NLML): -1.9466
+branching dfGP Run 8/8, Epoch 581/2000, Training Loss (NLML): -1.9466
+branching dfGP Run 8/8, Epoch 601/2000, Training Loss (NLML): -1.9468
+branching dfGP Run 8/8, Epoch 621/2000, Training Loss (NLML): -1.9466
+branching dfGP Run 8/8, Epoch 641/2000, Training Loss (NLML): -1.9465
+Early stopping triggered after 653 epochs.
+
+Results per run saved to results_sim/dfGP/branching_dfGP_metrics_per_run.csv
+
+Mean & Std saved to results_sim/dfGP/branching_dfGP_metrics_summary.csv
+=== CURVE ===
+Training inputs shape: torch.Size([196, 2])
+Training observations shape: torch.Size([196, 2])
+Training inputs dtype: torch.float32
+Training inputs device: cuda:0
+Training observations device: cuda:0
+
+=== CURVE ===
+Test inputs shape: torch.Size([400, 2])
+Test observations shape: torch.Size([400, 2])
+Test inputs dtype: torch.float32
+Test inputs device: cuda:0
+Test observations device: cuda:0
+
+
+--- Training Run 1/8 ---
+
+Start Training
+curve dfGP Run 1/8, Epoch 1/2000, Training Loss (NLML): -0.1734, Training RMSE: 0.0704
+curve dfGP Run 1/8, Epoch 21/2000, Training Loss (NLML): -0.8519, Training RMSE: 0.0498
+curve dfGP Run 1/8, Epoch 41/2000, Training Loss (NLML): -1.0355, Training RMSE: 0.0401
+curve dfGP Run 1/8, Epoch 61/2000, Training Loss (NLML): -1.1147, Training RMSE: 0.0320
+curve dfGP Run 1/8, Epoch 81/2000, Training Loss (NLML): -1.1815, Training RMSE: 0.0259
+curve dfGP Run 1/8, Epoch 101/2000, Training Loss (NLML): -1.2348, Training RMSE: 0.0224
+curve dfGP Run 1/8, Epoch 121/2000, Training Loss (NLML): -1.2771, Training RMSE: 0.0205
+curve dfGP Run 1/8, Epoch 141/2000, Training Loss (NLML): -1.3085, Training RMSE: 0.0192
+curve dfGP Run 1/8, Epoch 161/2000, Training Loss (NLML): -1.3304, Training RMSE: 0.0182
+curve dfGP Run 1/8, Epoch 181/2000, Training Loss (NLML): -1.3448, Training RMSE: 0.0174
+curve dfGP Run 1/8, Epoch 201/2000, Training Loss (NLML): -1.3554, Training RMSE: 0.0168
+curve dfGP Run 1/8, Epoch 221/2000, Training Loss (NLML): -1.3633, Training RMSE: 0.0162
+curve dfGP Run 1/8, Epoch 241/2000, Training Loss (NLML): -1.3689, Training RMSE: 0.0158
+curve dfGP Run 1/8, Epoch 261/2000, Training Loss (NLML): -1.3734, Training RMSE: 0.0155
+curve dfGP Run 1/8, Epoch 281/2000, Training Loss (NLML): -1.3769, Training RMSE: 0.0154
+curve dfGP Run 1/8, Epoch 301/2000, Training Loss (NLML): -1.3814, Training RMSE: 0.0152
+curve dfGP Run 1/8, Epoch 321/2000, Training Loss (NLML): -1.3834, Training RMSE: 0.0152
+curve dfGP Run 1/8, Epoch 341/2000, Training Loss (NLML): -1.3886, Training RMSE: 0.0151
+curve dfGP Run 1/8, Epoch 361/2000, Training Loss (NLML): -1.3927, Training RMSE: 0.0150
+curve dfGP Run 1/8, Epoch 381/2000, Training Loss (NLML): -1.3969, Training RMSE: 0.0149
+curve dfGP Run 1/8, Epoch 401/2000, Training Loss (NLML): -1.4007, Training RMSE: 0.0149
+curve dfGP Run 1/8, Epoch 421/2000, Training Loss (NLML): -1.4047, Training RMSE: 0.0148
+curve dfGP Run 1/8, Epoch 441/2000, Training Loss (NLML): -1.4082, Training RMSE: 0.0148
+curve dfGP Run 1/8, Epoch 461/2000, Training Loss (NLML): -1.4115, Training RMSE: 0.0147
+curve dfGP Run 1/8, Epoch 481/2000, Training Loss (NLML): -1.4141, Training RMSE: 0.0146
+curve dfGP Run 1/8, Epoch 501/2000, Training Loss (NLML): -1.4170, Training RMSE: 0.0146
+curve dfGP Run 1/8, Epoch 521/2000, Training Loss (NLML): -1.4199, Training RMSE: 0.0146
+curve dfGP Run 1/8, Epoch 541/2000, Training Loss (NLML): -1.4211, Training RMSE: 0.0145
+curve dfGP Run 1/8, Epoch 561/2000, Training Loss (NLML): -1.4227, Training RMSE: 0.0145
+curve dfGP Run 1/8, Epoch 581/2000, Training Loss (NLML): -1.4238, Training RMSE: 0.0144
+curve dfGP Run 1/8, Epoch 601/2000, Training Loss (NLML): -1.4244, Training RMSE: 0.0144
+curve dfGP Run 1/8, Epoch 621/2000, Training Loss (NLML): -1.4248, Training RMSE: 0.0144
+curve dfGP Run 1/8, Epoch 641/2000, Training Loss (NLML): -1.4250, Training RMSE: 0.0143
+curve dfGP Run 1/8, Epoch 661/2000, Training Loss (NLML): -1.4252, Training RMSE: 0.0143
+curve dfGP Run 1/8, Epoch 681/2000, Training Loss (NLML): -1.4254, Training RMSE: 0.0143
+curve dfGP Run 1/8, Epoch 701/2000, Training Loss (NLML): -1.4256, Training RMSE: 0.0143
+curve dfGP Run 1/8, Epoch 721/2000, Training Loss (NLML): -1.4255, Training RMSE: 0.0143
+curve dfGP Run 1/8, Epoch 741/2000, Training Loss (NLML): -1.4255, Training RMSE: 0.0143
+curve dfGP Run 1/8, Epoch 761/2000, Training Loss (NLML): -1.4257, Training RMSE: 0.0143
+curve dfGP Run 1/8, Epoch 781/2000, Training Loss (NLML): -1.4256, Training RMSE: 0.0143
+curve dfGP Run 1/8, Epoch 801/2000, Training Loss (NLML): -1.4256, Training RMSE: 0.0143
+curve dfGP Run 1/8, Epoch 821/2000, Training Loss (NLML): -1.4255, Training RMSE: 0.0143
+Early stopping triggered after 838 epochs.
+
+--- Training Run 2/8 ---
+
+Start Training
+curve dfGP Run 2/8, Epoch 1/2000, Training Loss (NLML): 2.2461
+curve dfGP Run 2/8, Epoch 21/2000, Training Loss (NLML): 0.7213
+curve dfGP Run 2/8, Epoch 41/2000, Training Loss (NLML): -0.2769
+curve dfGP Run 2/8, Epoch 61/2000, Training Loss (NLML): -0.7967
+curve dfGP Run 2/8, Epoch 81/2000, Training Loss (NLML): -0.9748
+curve dfGP Run 2/8, Epoch 101/2000, Training Loss (NLML): -1.0674
+curve dfGP Run 2/8, Epoch 121/2000, Training Loss (NLML): -1.1400
+curve dfGP Run 2/8, Epoch 141/2000, Training Loss (NLML): -1.1921
+curve dfGP Run 2/8, Epoch 161/2000, Training Loss (NLML): -1.2278
+curve dfGP Run 2/8, Epoch 181/2000, Training Loss (NLML): -1.2545
+curve dfGP Run 2/8, Epoch 201/2000, Training Loss (NLML): -1.2745
+curve dfGP Run 2/8, Epoch 221/2000, Training Loss (NLML): -1.2878
+curve dfGP Run 2/8, Epoch 241/2000, Training Loss (NLML): -1.2994
+curve dfGP Run 2/8, Epoch 261/2000, Training Loss (NLML): -1.3076
+curve dfGP Run 2/8, Epoch 281/2000, Training Loss (NLML): -1.3152
+curve dfGP Run 2/8, Epoch 301/2000, Training Loss (NLML): -1.3217
+curve dfGP Run 2/8, Epoch 321/2000, Training Loss (NLML): -1.3271
+curve dfGP Run 2/8, Epoch 341/2000, Training Loss (NLML): -1.3312
+curve dfGP Run 2/8, Epoch 361/2000, Training Loss (NLML): -1.3368
+curve dfGP Run 2/8, Epoch 381/2000, Training Loss (NLML): -1.3405
+curve dfGP Run 2/8, Epoch 401/2000, Training Loss (NLML): -1.3433
+curve dfGP Run 2/8, Epoch 421/2000, Training Loss (NLML): -1.3480
+curve dfGP Run 2/8, Epoch 441/2000, Training Loss (NLML): -1.3505
+curve dfGP Run 2/8, Epoch 461/2000, Training Loss (NLML): -1.3534
+curve dfGP Run 2/8, Epoch 481/2000, Training Loss (NLML): -1.3575
+curve dfGP Run 2/8, Epoch 501/2000, Training Loss (NLML): -1.3603
+curve dfGP Run 2/8, Epoch 521/2000, Training Loss (NLML): -1.3625
+curve dfGP Run 2/8, Epoch 541/2000, Training Loss (NLML): -1.3657
+curve dfGP Run 2/8, Epoch 561/2000, Training Loss (NLML): -1.3683
+curve dfGP Run 2/8, Epoch 581/2000, Training Loss (NLML): -1.3713
+curve dfGP Run 2/8, Epoch 601/2000, Training Loss (NLML): -1.3744
+curve dfGP Run 2/8, Epoch 621/2000, Training Loss (NLML): -1.3775
+curve dfGP Run 2/8, Epoch 641/2000, Training Loss (NLML): -1.3804
+curve dfGP Run 2/8, Epoch 661/2000, Training Loss (NLML): -1.3834
+curve dfGP Run 2/8, Epoch 681/2000, Training Loss (NLML): -1.3870
+curve dfGP Run 2/8, Epoch 701/2000, Training Loss (NLML): -1.3888
+curve dfGP Run 2/8, Epoch 721/2000, Training Loss (NLML): -1.3924
+curve dfGP Run 2/8, Epoch 741/2000, Training Loss (NLML): -1.3954
+curve dfGP Run 2/8, Epoch 761/2000, Training Loss (NLML): -1.3984
+curve dfGP Run 2/8, Epoch 781/2000, Training Loss (NLML): -1.4008
+curve dfGP Run 2/8, Epoch 801/2000, Training Loss (NLML): -1.4034
+curve dfGP Run 2/8, Epoch 821/2000, Training Loss (NLML): -1.4059
+curve dfGP Run 2/8, Epoch 841/2000, Training Loss (NLML): -1.4081
+curve dfGP Run 2/8, Epoch 861/2000, Training Loss (NLML): -1.4101
+curve dfGP Run 2/8, Epoch 881/2000, Training Loss (NLML): -1.4119
+curve dfGP Run 2/8, Epoch 901/2000, Training Loss (NLML): -1.4135
+curve dfGP Run 2/8, Epoch 921/2000, Training Loss (NLML): -1.4144
+curve dfGP Run 2/8, Epoch 941/2000, Training Loss (NLML): -1.4157
+curve dfGP Run 2/8, Epoch 961/2000, Training Loss (NLML): -1.4164
+curve dfGP Run 2/8, Epoch 981/2000, Training Loss (NLML): -1.4173
+curve dfGP Run 2/8, Epoch 1001/2000, Training Loss (NLML): -1.4178
+curve dfGP Run 2/8, Epoch 1021/2000, Training Loss (NLML): -1.4184
+curve dfGP Run 2/8, Epoch 1041/2000, Training Loss (NLML): -1.4190
+curve dfGP Run 2/8, Epoch 1061/2000, Training Loss (NLML): -1.4192
+curve dfGP Run 2/8, Epoch 1081/2000, Training Loss (NLML): -1.4191
+curve dfGP Run 2/8, Epoch 1101/2000, Training Loss (NLML): -1.4189
+curve dfGP Run 2/8, Epoch 1121/2000, Training Loss (NLML): -1.4191
+curve dfGP Run 2/8, Epoch 1141/2000, Training Loss (NLML): -1.4192
+curve dfGP Run 2/8, Epoch 1161/2000, Training Loss (NLML): -1.4192
+curve dfGP Run 2/8, Epoch 1181/2000, Training Loss (NLML): -1.4192
+curve dfGP Run 2/8, Epoch 1201/2000, Training Loss (NLML): -1.4191
+curve dfGP Run 2/8, Epoch 1221/2000, Training Loss (NLML): -1.4191
+curve dfGP Run 2/8, Epoch 1241/2000, Training Loss (NLML): -1.4190
+curve dfGP Run 2/8, Epoch 1261/2000, Training Loss (NLML): -1.4191
+Early stopping triggered after 1265 epochs.
+
+--- Training Run 3/8 ---
+
+Start Training
+curve dfGP Run 3/8, Epoch 1/2000, Training Loss (NLML): -0.9927
+curve dfGP Run 3/8, Epoch 21/2000, Training Loss (NLML): -1.1541
+curve dfGP Run 3/8, Epoch 41/2000, Training Loss (NLML): -1.2932
+curve dfGP Run 3/8, Epoch 61/2000, Training Loss (NLML): -1.3641
+curve dfGP Run 3/8, Epoch 81/2000, Training Loss (NLML): -1.3927
+curve dfGP Run 3/8, Epoch 101/2000, Training Loss (NLML): -1.4052
+curve dfGP Run 3/8, Epoch 121/2000, Training Loss (NLML): -1.4129
+curve dfGP Run 3/8, Epoch 141/2000, Training Loss (NLML): -1.4194
+curve dfGP Run 3/8, Epoch 161/2000, Training Loss (NLML): -1.4256
+curve dfGP Run 3/8, Epoch 181/2000, Training Loss (NLML): -1.4300
+curve dfGP Run 3/8, Epoch 201/2000, Training Loss (NLML): -1.4339
+curve dfGP Run 3/8, Epoch 221/2000, Training Loss (NLML): -1.4366
+curve dfGP Run 3/8, Epoch 241/2000, Training Loss (NLML): -1.4381
+curve dfGP Run 3/8, Epoch 261/2000, Training Loss (NLML): -1.4397
+curve dfGP Run 3/8, Epoch 281/2000, Training Loss (NLML): -1.4399
+curve dfGP Run 3/8, Epoch 301/2000, Training Loss (NLML): -1.4403
+curve dfGP Run 3/8, Epoch 321/2000, Training Loss (NLML): -1.4403
+curve dfGP Run 3/8, Epoch 341/2000, Training Loss (NLML): -1.4402
+curve dfGP Run 3/8, Epoch 361/2000, Training Loss (NLML): -1.4403
+curve dfGP Run 3/8, Epoch 381/2000, Training Loss (NLML): -1.4403
+curve dfGP Run 3/8, Epoch 401/2000, Training Loss (NLML): -1.4404
+curve dfGP Run 3/8, Epoch 421/2000, Training Loss (NLML): -1.4403
+curve dfGP Run 3/8, Epoch 441/2000, Training Loss (NLML): -1.4404
+curve dfGP Run 3/8, Epoch 461/2000, Training Loss (NLML): -1.4403
+curve dfGP Run 3/8, Epoch 481/2000, Training Loss (NLML): -1.4404
+curve dfGP Run 3/8, Epoch 501/2000, Training Loss (NLML): -1.4404
+curve dfGP Run 3/8, Epoch 521/2000, Training Loss (NLML): -1.4405
+curve dfGP Run 3/8, Epoch 541/2000, Training Loss (NLML): -1.4404
+Early stopping triggered after 542 epochs.
+
+--- Training Run 4/8 ---
+
+Start Training
+curve dfGP Run 4/8, Epoch 1/2000, Training Loss (NLML): 3.5667
+curve dfGP Run 4/8, Epoch 21/2000, Training Loss (NLML): 0.7399
+curve dfGP Run 4/8, Epoch 41/2000, Training Loss (NLML): -0.4617
+curve dfGP Run 4/8, Epoch 61/2000, Training Loss (NLML): -0.9730
+curve dfGP Run 4/8, Epoch 81/2000, Training Loss (NLML): -1.1227
+curve dfGP Run 4/8, Epoch 101/2000, Training Loss (NLML): -1.1901
+curve dfGP Run 4/8, Epoch 121/2000, Training Loss (NLML): -1.2283
+curve dfGP Run 4/8, Epoch 141/2000, Training Loss (NLML): -1.2562
+curve dfGP Run 4/8, Epoch 161/2000, Training Loss (NLML): -1.2788
+curve dfGP Run 4/8, Epoch 181/2000, Training Loss (NLML): -1.2942
+curve dfGP Run 4/8, Epoch 201/2000, Training Loss (NLML): -1.3059
+curve dfGP Run 4/8, Epoch 221/2000, Training Loss (NLML): -1.3187
+curve dfGP Run 4/8, Epoch 241/2000, Training Loss (NLML): -1.3276
+curve dfGP Run 4/8, Epoch 261/2000, Training Loss (NLML): -1.3360
+curve dfGP Run 4/8, Epoch 281/2000, Training Loss (NLML): -1.3423
+curve dfGP Run 4/8, Epoch 301/2000, Training Loss (NLML): -1.3514
+curve dfGP Run 4/8, Epoch 321/2000, Training Loss (NLML): -1.3550
+curve dfGP Run 4/8, Epoch 341/2000, Training Loss (NLML): -1.3617
+curve dfGP Run 4/8, Epoch 361/2000, Training Loss (NLML): -1.3635
+curve dfGP Run 4/8, Epoch 381/2000, Training Loss (NLML): -1.3680
+curve dfGP Run 4/8, Epoch 401/2000, Training Loss (NLML): -1.3693
+curve dfGP Run 4/8, Epoch 421/2000, Training Loss (NLML): -1.3727
+curve dfGP Run 4/8, Epoch 441/2000, Training Loss (NLML): -1.3745
+curve dfGP Run 4/8, Epoch 461/2000, Training Loss (NLML): -1.3785
+curve dfGP Run 4/8, Epoch 481/2000, Training Loss (NLML): -1.3784
+curve dfGP Run 4/8, Epoch 501/2000, Training Loss (NLML): -1.3808
+curve dfGP Run 4/8, Epoch 521/2000, Training Loss (NLML): -1.3815
+curve dfGP Run 4/8, Epoch 541/2000, Training Loss (NLML): -1.3837
+curve dfGP Run 4/8, Epoch 561/2000, Training Loss (NLML): -1.3854
+curve dfGP Run 4/8, Epoch 581/2000, Training Loss (NLML): -1.3857
+curve dfGP Run 4/8, Epoch 601/2000, Training Loss (NLML): -1.3876
+curve dfGP Run 4/8, Epoch 621/2000, Training Loss (NLML): -1.3900
+curve dfGP Run 4/8, Epoch 641/2000, Training Loss (NLML): -1.3911
+curve dfGP Run 4/8, Epoch 661/2000, Training Loss (NLML): -1.3926
+curve dfGP Run 4/8, Epoch 681/2000, Training Loss (NLML): -1.3943
+curve dfGP Run 4/8, Epoch 701/2000, Training Loss (NLML): -1.3951
+curve dfGP Run 4/8, Epoch 721/2000, Training Loss (NLML): -1.3973
+curve dfGP Run 4/8, Epoch 741/2000, Training Loss (NLML): -1.3987
+curve dfGP Run 4/8, Epoch 761/2000, Training Loss (NLML): -1.4005
+curve dfGP Run 4/8, Epoch 781/2000, Training Loss (NLML): -1.4021
+curve dfGP Run 4/8, Epoch 801/2000, Training Loss (NLML): -1.4034
+curve dfGP Run 4/8, Epoch 821/2000, Training Loss (NLML): -1.4054
+curve dfGP Run 4/8, Epoch 841/2000, Training Loss (NLML): -1.4070
+curve dfGP Run 4/8, Epoch 861/2000, Training Loss (NLML): -1.4089
+curve dfGP Run 4/8, Epoch 881/2000, Training Loss (NLML): -1.4105
+curve dfGP Run 4/8, Epoch 901/2000, Training Loss (NLML): -1.4120
+curve dfGP Run 4/8, Epoch 921/2000, Training Loss (NLML): -1.4132
+curve dfGP Run 4/8, Epoch 941/2000, Training Loss (NLML): -1.4145
+curve dfGP Run 4/8, Epoch 961/2000, Training Loss (NLML): -1.4158
+curve dfGP Run 4/8, Epoch 981/2000, Training Loss (NLML): -1.4169
+curve dfGP Run 4/8, Epoch 1001/2000, Training Loss (NLML): -1.4186
+curve dfGP Run 4/8, Epoch 1021/2000, Training Loss (NLML): -1.4198
+curve dfGP Run 4/8, Epoch 1041/2000, Training Loss (NLML): -1.4209
+curve dfGP Run 4/8, Epoch 1061/2000, Training Loss (NLML): -1.4220
+curve dfGP Run 4/8, Epoch 1081/2000, Training Loss (NLML): -1.4228
+curve dfGP Run 4/8, Epoch 1101/2000, Training Loss (NLML): -1.4235
+curve dfGP Run 4/8, Epoch 1121/2000, Training Loss (NLML): -1.4244
+curve dfGP Run 4/8, Epoch 1141/2000, Training Loss (NLML): -1.4251
+curve dfGP Run 4/8, Epoch 1161/2000, Training Loss (NLML): -1.4256
+curve dfGP Run 4/8, Epoch 1181/2000, Training Loss (NLML): -1.4261
+curve dfGP Run 4/8, Epoch 1201/2000, Training Loss (NLML): -1.4265
+curve dfGP Run 4/8, Epoch 1221/2000, Training Loss (NLML): -1.4270
+curve dfGP Run 4/8, Epoch 1241/2000, Training Loss (NLML): -1.4272
+curve dfGP Run 4/8, Epoch 1261/2000, Training Loss (NLML): -1.4275
+curve dfGP Run 4/8, Epoch 1281/2000, Training Loss (NLML): -1.4276
+curve dfGP Run 4/8, Epoch 1301/2000, Training Loss (NLML): -1.4278
+curve dfGP Run 4/8, Epoch 1321/2000, Training Loss (NLML): -1.4280
+curve dfGP Run 4/8, Epoch 1341/2000, Training Loss (NLML): -1.4281
+curve dfGP Run 4/8, Epoch 1361/2000, Training Loss (NLML): -1.4280
+curve dfGP Run 4/8, Epoch 1381/2000, Training Loss (NLML): -1.4283
+curve dfGP Run 4/8, Epoch 1401/2000, Training Loss (NLML): -1.4284
+curve dfGP Run 4/8, Epoch 1421/2000, Training Loss (NLML): -1.4284
+curve dfGP Run 4/8, Epoch 1441/2000, Training Loss (NLML): -1.4284
+curve dfGP Run 4/8, Epoch 1461/2000, Training Loss (NLML): -1.4283
+curve dfGP Run 4/8, Epoch 1481/2000, Training Loss (NLML): -1.4283
+curve dfGP Run 4/8, Epoch 1501/2000, Training Loss (NLML): -1.4285
+curve dfGP Run 4/8, Epoch 1521/2000, Training Loss (NLML): -1.4283
+curve dfGP Run 4/8, Epoch 1541/2000, Training Loss (NLML): -1.4284
+Early stopping triggered after 1548 epochs.
+
+--- Training Run 5/8 ---
+
+Start Training
+curve dfGP Run 5/8, Epoch 1/2000, Training Loss (NLML): -0.7470
+curve dfGP Run 5/8, Epoch 21/2000, Training Loss (NLML): -1.0097
+curve dfGP Run 5/8, Epoch 41/2000, Training Loss (NLML): -1.1115
+curve dfGP Run 5/8, Epoch 61/2000, Training Loss (NLML): -1.2058
+curve dfGP Run 5/8, Epoch 81/2000, Training Loss (NLML): -1.2732
+curve dfGP Run 5/8, Epoch 101/2000, Training Loss (NLML): -1.3195
+curve dfGP Run 5/8, Epoch 121/2000, Training Loss (NLML): -1.3486
+curve dfGP Run 5/8, Epoch 141/2000, Training Loss (NLML): -1.3653
+curve dfGP Run 5/8, Epoch 161/2000, Training Loss (NLML): -1.3757
+curve dfGP Run 5/8, Epoch 181/2000, Training Loss (NLML): -1.3837
+curve dfGP Run 5/8, Epoch 201/2000, Training Loss (NLML): -1.3892
+curve dfGP Run 5/8, Epoch 221/2000, Training Loss (NLML): -1.3950
+curve dfGP Run 5/8, Epoch 241/2000, Training Loss (NLML): -1.4013
+curve dfGP Run 5/8, Epoch 261/2000, Training Loss (NLML): -1.4073
+curve dfGP Run 5/8, Epoch 281/2000, Training Loss (NLML): -1.4135
+curve dfGP Run 5/8, Epoch 301/2000, Training Loss (NLML): -1.4187
+curve dfGP Run 5/8, Epoch 321/2000, Training Loss (NLML): -1.4234
+curve dfGP Run 5/8, Epoch 341/2000, Training Loss (NLML): -1.4265
+curve dfGP Run 5/8, Epoch 361/2000, Training Loss (NLML): -1.4291
+curve dfGP Run 5/8, Epoch 381/2000, Training Loss (NLML): -1.4315
+curve dfGP Run 5/8, Epoch 401/2000, Training Loss (NLML): -1.4326
+curve dfGP Run 5/8, Epoch 421/2000, Training Loss (NLML): -1.4334
+curve dfGP Run 5/8, Epoch 441/2000, Training Loss (NLML): -1.4338
+curve dfGP Run 5/8, Epoch 461/2000, Training Loss (NLML): -1.4343
+curve dfGP Run 5/8, Epoch 481/2000, Training Loss (NLML): -1.4342
+curve dfGP Run 5/8, Epoch 501/2000, Training Loss (NLML): -1.4341
+curve dfGP Run 5/8, Epoch 521/2000, Training Loss (NLML): -1.4341
+curve dfGP Run 5/8, Epoch 541/2000, Training Loss (NLML): -1.4344
+curve dfGP Run 5/8, Epoch 561/2000, Training Loss (NLML): -1.4343
+curve dfGP Run 5/8, Epoch 581/2000, Training Loss (NLML): -1.4342
+curve dfGP Run 5/8, Epoch 601/2000, Training Loss (NLML): -1.4343
+curve dfGP Run 5/8, Epoch 621/2000, Training Loss (NLML): -1.4344
+curve dfGP Run 5/8, Epoch 641/2000, Training Loss (NLML): -1.4342
+Early stopping triggered after 642 epochs.
+
+--- Training Run 6/8 ---
+
+Start Training
+curve dfGP Run 6/8, Epoch 1/2000, Training Loss (NLML): -0.0359
+curve dfGP Run 6/8, Epoch 21/2000, Training Loss (NLML): -0.4728
+curve dfGP Run 6/8, Epoch 41/2000, Training Loss (NLML): -0.7257
+curve dfGP Run 6/8, Epoch 61/2000, Training Loss (NLML): -0.9030
+curve dfGP Run 6/8, Epoch 81/2000, Training Loss (NLML): -0.9937
+curve dfGP Run 6/8, Epoch 101/2000, Training Loss (NLML): -1.0574
+curve dfGP Run 6/8, Epoch 121/2000, Training Loss (NLML): -1.1322
+curve dfGP Run 6/8, Epoch 141/2000, Training Loss (NLML): -1.2054
+curve dfGP Run 6/8, Epoch 161/2000, Training Loss (NLML): -1.2641
+curve dfGP Run 6/8, Epoch 181/2000, Training Loss (NLML): -1.3110
+curve dfGP Run 6/8, Epoch 201/2000, Training Loss (NLML): -1.3489
+curve dfGP Run 6/8, Epoch 221/2000, Training Loss (NLML): -1.3783
+curve dfGP Run 6/8, Epoch 241/2000, Training Loss (NLML): -1.4019
+curve dfGP Run 6/8, Epoch 261/2000, Training Loss (NLML): -1.4185
+curve dfGP Run 6/8, Epoch 281/2000, Training Loss (NLML): -1.4313
+curve dfGP Run 6/8, Epoch 301/2000, Training Loss (NLML): -1.4411
+curve dfGP Run 6/8, Epoch 321/2000, Training Loss (NLML): -1.4486
+curve dfGP Run 6/8, Epoch 341/2000, Training Loss (NLML): -1.4555
+curve dfGP Run 6/8, Epoch 361/2000, Training Loss (NLML): -1.4608
+curve dfGP Run 6/8, Epoch 381/2000, Training Loss (NLML): -1.4666
+curve dfGP Run 6/8, Epoch 401/2000, Training Loss (NLML): -1.4715
+curve dfGP Run 6/8, Epoch 421/2000, Training Loss (NLML): -1.4762
+curve dfGP Run 6/8, Epoch 441/2000, Training Loss (NLML): -1.4800
+curve dfGP Run 6/8, Epoch 461/2000, Training Loss (NLML): -1.4829
+curve dfGP Run 6/8, Epoch 481/2000, Training Loss (NLML): -1.4860
+curve dfGP Run 6/8, Epoch 501/2000, Training Loss (NLML): -1.4878
+curve dfGP Run 6/8, Epoch 521/2000, Training Loss (NLML): -1.4893
+curve dfGP Run 6/8, Epoch 541/2000, Training Loss (NLML): -1.4900
+curve dfGP Run 6/8, Epoch 561/2000, Training Loss (NLML): -1.4907
+curve dfGP Run 6/8, Epoch 581/2000, Training Loss (NLML): -1.4908
+curve dfGP Run 6/8, Epoch 601/2000, Training Loss (NLML): -1.4911
+curve dfGP Run 6/8, Epoch 621/2000, Training Loss (NLML): -1.4912
+curve dfGP Run 6/8, Epoch 641/2000, Training Loss (NLML): -1.4912
+curve dfGP Run 6/8, Epoch 661/2000, Training Loss (NLML): -1.4913
+curve dfGP Run 6/8, Epoch 681/2000, Training Loss (NLML): -1.4910
+curve dfGP Run 6/8, Epoch 701/2000, Training Loss (NLML): -1.4912
+curve dfGP Run 6/8, Epoch 721/2000, Training Loss (NLML): -1.4911
+curve dfGP Run 6/8, Epoch 741/2000, Training Loss (NLML): -1.4913
+curve dfGP Run 6/8, Epoch 761/2000, Training Loss (NLML): -1.4911
+curve dfGP Run 6/8, Epoch 781/2000, Training Loss (NLML): -1.4912
+curve dfGP Run 6/8, Epoch 801/2000, Training Loss (NLML): -1.4912
+curve dfGP Run 6/8, Epoch 821/2000, Training Loss (NLML): -1.4913
+curve dfGP Run 6/8, Epoch 841/2000, Training Loss (NLML): -1.4912
+curve dfGP Run 6/8, Epoch 861/2000, Training Loss (NLML): -1.4911
+curve dfGP Run 6/8, Epoch 881/2000, Training Loss (NLML): -1.4912
+curve dfGP Run 6/8, Epoch 901/2000, Training Loss (NLML): -1.4911
+curve dfGP Run 6/8, Epoch 921/2000, Training Loss (NLML): -1.4912
+curve dfGP Run 6/8, Epoch 941/2000, Training Loss (NLML): -1.4912
+curve dfGP Run 6/8, Epoch 961/2000, Training Loss (NLML): -1.4913
+curve dfGP Run 6/8, Epoch 981/2000, Training Loss (NLML): -1.4912
+curve dfGP Run 6/8, Epoch 1001/2000, Training Loss (NLML): -1.4912
+Early stopping triggered after 1014 epochs.
+
+--- Training Run 7/8 ---
+
+Start Training
+curve dfGP Run 7/8, Epoch 1/2000, Training Loss (NLML): 8.7067
+curve dfGP Run 7/8, Epoch 21/2000, Training Loss (NLML): 3.8116
+curve dfGP Run 7/8, Epoch 41/2000, Training Loss (NLML): 1.1069
+curve dfGP Run 7/8, Epoch 61/2000, Training Loss (NLML): 0.1333
+curve dfGP Run 7/8, Epoch 81/2000, Training Loss (NLML): -0.3925
+curve dfGP Run 7/8, Epoch 101/2000, Training Loss (NLML): -0.8081
+curve dfGP Run 7/8, Epoch 121/2000, Training Loss (NLML): -1.0592
+curve dfGP Run 7/8, Epoch 141/2000, Training Loss (NLML): -1.1838
+curve dfGP Run 7/8, Epoch 161/2000, Training Loss (NLML): -1.2490
+curve dfGP Run 7/8, Epoch 181/2000, Training Loss (NLML): -1.2862
+curve dfGP Run 7/8, Epoch 201/2000, Training Loss (NLML): -1.3115
+curve dfGP Run 7/8, Epoch 221/2000, Training Loss (NLML): -1.3258
+curve dfGP Run 7/8, Epoch 241/2000, Training Loss (NLML): -1.3430
+curve dfGP Run 7/8, Epoch 261/2000, Training Loss (NLML): -1.3538
+curve dfGP Run 7/8, Epoch 281/2000, Training Loss (NLML): -1.3631
+curve dfGP Run 7/8, Epoch 301/2000, Training Loss (NLML): -1.3692
+curve dfGP Run 7/8, Epoch 321/2000, Training Loss (NLML): -1.3783
+curve dfGP Run 7/8, Epoch 341/2000, Training Loss (NLML): -1.3817
+curve dfGP Run 7/8, Epoch 361/2000, Training Loss (NLML): -1.3888
+curve dfGP Run 7/8, Epoch 381/2000, Training Loss (NLML): -1.3923
+curve dfGP Run 7/8, Epoch 401/2000, Training Loss (NLML): -1.3962
+curve dfGP Run 7/8, Epoch 421/2000, Training Loss (NLML): -1.3989
+curve dfGP Run 7/8, Epoch 441/2000, Training Loss (NLML): -1.3996
+curve dfGP Run 7/8, Epoch 461/2000, Training Loss (NLML): -1.4045
+curve dfGP Run 7/8, Epoch 481/2000, Training Loss (NLML): -1.4034
+curve dfGP Run 7/8, Epoch 501/2000, Training Loss (NLML): -1.4061
+curve dfGP Run 7/8, Epoch 521/2000, Training Loss (NLML): -1.4063
+curve dfGP Run 7/8, Epoch 541/2000, Training Loss (NLML): -1.4061
+curve dfGP Run 7/8, Epoch 561/2000, Training Loss (NLML): -1.4079
+curve dfGP Run 7/8, Epoch 581/2000, Training Loss (NLML): -1.4093
+curve dfGP Run 7/8, Epoch 601/2000, Training Loss (NLML): -1.4103
+curve dfGP Run 7/8, Epoch 621/2000, Training Loss (NLML): -1.4097
+curve dfGP Run 7/8, Epoch 641/2000, Training Loss (NLML): -1.4132
+curve dfGP Run 7/8, Epoch 661/2000, Training Loss (NLML): -1.4122
+curve dfGP Run 7/8, Epoch 681/2000, Training Loss (NLML): -1.4124
+curve dfGP Run 7/8, Epoch 701/2000, Training Loss (NLML): -1.4133
+curve dfGP Run 7/8, Epoch 721/2000, Training Loss (NLML): -1.4140
+curve dfGP Run 7/8, Epoch 741/2000, Training Loss (NLML): -1.4150
+curve dfGP Run 7/8, Epoch 761/2000, Training Loss (NLML): -1.4160
+curve dfGP Run 7/8, Epoch 781/2000, Training Loss (NLML): -1.4186
+curve dfGP Run 7/8, Epoch 801/2000, Training Loss (NLML): -1.4191
+curve dfGP Run 7/8, Epoch 821/2000, Training Loss (NLML): -1.4190
+curve dfGP Run 7/8, Epoch 841/2000, Training Loss (NLML): -1.4202
+curve dfGP Run 7/8, Epoch 861/2000, Training Loss (NLML): -1.4225
+curve dfGP Run 7/8, Epoch 881/2000, Training Loss (NLML): -1.4210
+curve dfGP Run 7/8, Epoch 901/2000, Training Loss (NLML): -1.4227
+curve dfGP Run 7/8, Epoch 921/2000, Training Loss (NLML): -1.4239
+curve dfGP Run 7/8, Epoch 941/2000, Training Loss (NLML): -1.4236
+curve dfGP Run 7/8, Epoch 961/2000, Training Loss (NLML): -1.4257
+curve dfGP Run 7/8, Epoch 981/2000, Training Loss (NLML): -1.4271
+curve dfGP Run 7/8, Epoch 1001/2000, Training Loss (NLML): -1.4272
+curve dfGP Run 7/8, Epoch 1021/2000, Training Loss (NLML): -1.4290
+curve dfGP Run 7/8, Epoch 1041/2000, Training Loss (NLML): -1.4312
+curve dfGP Run 7/8, Epoch 1061/2000, Training Loss (NLML): -1.4304
+curve dfGP Run 7/8, Epoch 1081/2000, Training Loss (NLML): -1.4310
+curve dfGP Run 7/8, Epoch 1101/2000, Training Loss (NLML): -1.4350
+curve dfGP Run 7/8, Epoch 1121/2000, Training Loss (NLML): -1.4354
+curve dfGP Run 7/8, Epoch 1141/2000, Training Loss (NLML): -1.4352
+curve dfGP Run 7/8, Epoch 1161/2000, Training Loss (NLML): -1.4377
+curve dfGP Run 7/8, Epoch 1181/2000, Training Loss (NLML): -1.4383
+curve dfGP Run 7/8, Epoch 1201/2000, Training Loss (NLML): -1.4400
+curve dfGP Run 7/8, Epoch 1221/2000, Training Loss (NLML): -1.4417
+curve dfGP Run 7/8, Epoch 1241/2000, Training Loss (NLML): -1.4424
+curve dfGP Run 7/8, Epoch 1261/2000, Training Loss (NLML): -1.4446
+curve dfGP Run 7/8, Epoch 1281/2000, Training Loss (NLML): -1.4458
+curve dfGP Run 7/8, Epoch 1301/2000, Training Loss (NLML): -1.4475
+curve dfGP Run 7/8, Epoch 1321/2000, Training Loss (NLML): -1.4476
+curve dfGP Run 7/8, Epoch 1341/2000, Training Loss (NLML): -1.4501
+curve dfGP Run 7/8, Epoch 1361/2000, Training Loss (NLML): -1.4519
+curve dfGP Run 7/8, Epoch 1381/2000, Training Loss (NLML): -1.4533
+curve dfGP Run 7/8, Epoch 1401/2000, Training Loss (NLML): -1.4550
+curve dfGP Run 7/8, Epoch 1421/2000, Training Loss (NLML): -1.4557
+curve dfGP Run 7/8, Epoch 1441/2000, Training Loss (NLML): -1.4576
+curve dfGP Run 7/8, Epoch 1461/2000, Training Loss (NLML): -1.4583
+curve dfGP Run 7/8, Epoch 1481/2000, Training Loss (NLML): -1.4599
+curve dfGP Run 7/8, Epoch 1501/2000, Training Loss (NLML): -1.4606
+curve dfGP Run 7/8, Epoch 1521/2000, Training Loss (NLML): -1.4616
+curve dfGP Run 7/8, Epoch 1541/2000, Training Loss (NLML): -1.4633
+curve dfGP Run 7/8, Epoch 1561/2000, Training Loss (NLML): -1.4646
+curve dfGP Run 7/8, Epoch 1581/2000, Training Loss (NLML): -1.4653
+curve dfGP Run 7/8, Epoch 1601/2000, Training Loss (NLML): -1.4663
+curve dfGP Run 7/8, Epoch 1621/2000, Training Loss (NLML): -1.4674
+curve dfGP Run 7/8, Epoch 1641/2000, Training Loss (NLML): -1.4682
+curve dfGP Run 7/8, Epoch 1661/2000, Training Loss (NLML): -1.4688
+curve dfGP Run 7/8, Epoch 1681/2000, Training Loss (NLML): -1.4698
+curve dfGP Run 7/8, Epoch 1701/2000, Training Loss (NLML): -1.4703
+curve dfGP Run 7/8, Epoch 1721/2000, Training Loss (NLML): -1.4705
+curve dfGP Run 7/8, Epoch 1741/2000, Training Loss (NLML): -1.4709
+curve dfGP Run 7/8, Epoch 1761/2000, Training Loss (NLML): -1.4716
+curve dfGP Run 7/8, Epoch 1781/2000, Training Loss (NLML): -1.4720
+curve dfGP Run 7/8, Epoch 1801/2000, Training Loss (NLML): -1.4724
+curve dfGP Run 7/8, Epoch 1821/2000, Training Loss (NLML): -1.4725
+curve dfGP Run 7/8, Epoch 1841/2000, Training Loss (NLML): -1.4727
+curve dfGP Run 7/8, Epoch 1861/2000, Training Loss (NLML): -1.4730
+curve dfGP Run 7/8, Epoch 1881/2000, Training Loss (NLML): -1.4731
+curve dfGP Run 7/8, Epoch 1901/2000, Training Loss (NLML): -1.4733
+curve dfGP Run 7/8, Epoch 1921/2000, Training Loss (NLML): -1.4736
+curve dfGP Run 7/8, Epoch 1941/2000, Training Loss (NLML): -1.4737
+curve dfGP Run 7/8, Epoch 1961/2000, Training Loss (NLML): -1.4736
+curve dfGP Run 7/8, Epoch 1981/2000, Training Loss (NLML): -1.4738
+
+--- Training Run 8/8 ---
+
+Start Training
+curve dfGP Run 8/8, Epoch 1/2000, Training Loss (NLML): 1.7750
+curve dfGP Run 8/8, Epoch 21/2000, Training Loss (NLML): 0.6689
+curve dfGP Run 8/8, Epoch 41/2000, Training Loss (NLML): -0.0628
+curve dfGP Run 8/8, Epoch 61/2000, Training Loss (NLML): -0.7019
+curve dfGP Run 8/8, Epoch 81/2000, Training Loss (NLML): -0.9605
+curve dfGP Run 8/8, Epoch 101/2000, Training Loss (NLML): -1.0338
+curve dfGP Run 8/8, Epoch 121/2000, Training Loss (NLML): -1.0806
+curve dfGP Run 8/8, Epoch 141/2000, Training Loss (NLML): -1.1251
+curve dfGP Run 8/8, Epoch 161/2000, Training Loss (NLML): -1.1621
+curve dfGP Run 8/8, Epoch 181/2000, Training Loss (NLML): -1.1915
+curve dfGP Run 8/8, Epoch 201/2000, Training Loss (NLML): -1.2167
+curve dfGP Run 8/8, Epoch 221/2000, Training Loss (NLML): -1.2379
+curve dfGP Run 8/8, Epoch 241/2000, Training Loss (NLML): -1.2570
+curve dfGP Run 8/8, Epoch 261/2000, Training Loss (NLML): -1.2741
+curve dfGP Run 8/8, Epoch 281/2000, Training Loss (NLML): -1.2900
+curve dfGP Run 8/8, Epoch 301/2000, Training Loss (NLML): -1.3045
+curve dfGP Run 8/8, Epoch 321/2000, Training Loss (NLML): -1.3189
+curve dfGP Run 8/8, Epoch 341/2000, Training Loss (NLML): -1.3324
+curve dfGP Run 8/8, Epoch 361/2000, Training Loss (NLML): -1.3437
+curve dfGP Run 8/8, Epoch 381/2000, Training Loss (NLML): -1.3552
+curve dfGP Run 8/8, Epoch 401/2000, Training Loss (NLML): -1.3662
+curve dfGP Run 8/8, Epoch 421/2000, Training Loss (NLML): -1.3751
+curve dfGP Run 8/8, Epoch 441/2000, Training Loss (NLML): -1.3841
+curve dfGP Run 8/8, Epoch 461/2000, Training Loss (NLML): -1.3924
+curve dfGP Run 8/8, Epoch 481/2000, Training Loss (NLML): -1.3999
+curve dfGP Run 8/8, Epoch 501/2000, Training Loss (NLML): -1.4067
+curve dfGP Run 8/8, Epoch 521/2000, Training Loss (NLML): -1.4126
+curve dfGP Run 8/8, Epoch 541/2000, Training Loss (NLML): -1.4181
+curve dfGP Run 8/8, Epoch 561/2000, Training Loss (NLML): -1.4233
+curve dfGP Run 8/8, Epoch 581/2000, Training Loss (NLML): -1.4285
+curve dfGP Run 8/8, Epoch 601/2000, Training Loss (NLML): -1.4333
+curve dfGP Run 8/8, Epoch 621/2000, Training Loss (NLML): -1.4372
+curve dfGP Run 8/8, Epoch 641/2000, Training Loss (NLML): -1.4406
+curve dfGP Run 8/8, Epoch 661/2000, Training Loss (NLML): -1.4454
+curve dfGP Run 8/8, Epoch 681/2000, Training Loss (NLML): -1.4496
+curve dfGP Run 8/8, Epoch 701/2000, Training Loss (NLML): -1.4524
+curve dfGP Run 8/8, Epoch 721/2000, Training Loss (NLML): -1.4560
+curve dfGP Run 8/8, Epoch 741/2000, Training Loss (NLML): -1.4594
+curve dfGP Run 8/8, Epoch 761/2000, Training Loss (NLML): -1.4622
+curve dfGP Run 8/8, Epoch 781/2000, Training Loss (NLML): -1.4654
+curve dfGP Run 8/8, Epoch 801/2000, Training Loss (NLML): -1.4674
+curve dfGP Run 8/8, Epoch 821/2000, Training Loss (NLML): -1.4695
+curve dfGP Run 8/8, Epoch 841/2000, Training Loss (NLML): -1.4718
+curve dfGP Run 8/8, Epoch 861/2000, Training Loss (NLML): -1.4729
+curve dfGP Run 8/8, Epoch 881/2000, Training Loss (NLML): -1.4745
+curve dfGP Run 8/8, Epoch 901/2000, Training Loss (NLML): -1.4754
+curve dfGP Run 8/8, Epoch 921/2000, Training Loss (NLML): -1.4760
+curve dfGP Run 8/8, Epoch 941/2000, Training Loss (NLML): -1.4764
+curve dfGP Run 8/8, Epoch 961/2000, Training Loss (NLML): -1.4771
+curve dfGP Run 8/8, Epoch 981/2000, Training Loss (NLML): -1.4772
+curve dfGP Run 8/8, Epoch 1001/2000, Training Loss (NLML): -1.4773
+curve dfGP Run 8/8, Epoch 1021/2000, Training Loss (NLML): -1.4774
+curve dfGP Run 8/8, Epoch 1041/2000, Training Loss (NLML): -1.4774
+curve dfGP Run 8/8, Epoch 1061/2000, Training Loss (NLML): -1.4776
+curve dfGP Run 8/8, Epoch 1081/2000, Training Loss (NLML): -1.4774
+curve dfGP Run 8/8, Epoch 1101/2000, Training Loss (NLML): -1.4777
+curve dfGP Run 8/8, Epoch 1121/2000, Training Loss (NLML): -1.4777
+curve dfGP Run 8/8, Epoch 1141/2000, Training Loss (NLML): -1.4777
+curve dfGP Run 8/8, Epoch 1161/2000, Training Loss (NLML): -1.4775
+curve dfGP Run 8/8, Epoch 1181/2000, Training Loss (NLML): -1.4775
+Early stopping triggered after 1189 epochs.
+
+Results per run saved to results_sim/dfGP/curve_dfGP_metrics_per_run.csv
+
+Mean & Std saved to results_sim/dfGP/curve_dfGP_metrics_summary.csv
+=== DEFLECTION ===
+Training inputs shape: torch.Size([196, 2])
+Training observations shape: torch.Size([196, 2])
+Training inputs dtype: torch.float32
+Training inputs device: cuda:0
+Training observations device: cuda:0
+
+=== DEFLECTION ===
+Test inputs shape: torch.Size([400, 2])
+Test observations shape: torch.Size([400, 2])
+Test inputs dtype: torch.float32
+Test inputs device: cuda:0
+Test observations device: cuda:0
+
+
+--- Training Run 1/8 ---
+
+Start Training
+deflection dfGP Run 1/8, Epoch 1/2000, Training Loss (NLML): 0.9143, Training RMSE: 0.1205
+deflection dfGP Run 1/8, Epoch 21/2000, Training Loss (NLML): -0.0157, Training RMSE: 0.0986
+deflection dfGP Run 1/8, Epoch 41/2000, Training Loss (NLML): -0.5496, Training RMSE: 0.0826
+deflection dfGP Run 1/8, Epoch 61/2000, Training Loss (NLML): -0.7518, Training RMSE: 0.0754
+deflection dfGP Run 1/8, Epoch 81/2000, Training Loss (NLML): -0.8305, Training RMSE: 0.0711
+deflection dfGP Run 1/8, Epoch 101/2000, Training Loss (NLML): -0.8770, Training RMSE: 0.0670
+deflection dfGP Run 1/8, Epoch 121/2000, Training Loss (NLML): -0.9218, Training RMSE: 0.0617
+deflection dfGP Run 1/8, Epoch 141/2000, Training Loss (NLML): -0.9796, Training RMSE: 0.0544
+deflection dfGP Run 1/8, Epoch 161/2000, Training Loss (NLML): -1.0494, Training RMSE: 0.0461
+deflection dfGP Run 1/8, Epoch 181/2000, Training Loss (NLML): -1.1205, Training RMSE: 0.0381
+deflection dfGP Run 1/8, Epoch 201/2000, Training Loss (NLML): -1.1855, Training RMSE: 0.0317
+deflection dfGP Run 1/8, Epoch 221/2000, Training Loss (NLML): -1.2387, Training RMSE: 0.0281
+deflection dfGP Run 1/8, Epoch 241/2000, Training Loss (NLML): -1.2810, Training RMSE: 0.0263
+deflection dfGP Run 1/8, Epoch 261/2000, Training Loss (NLML): -1.3159, Training RMSE: 0.0252
+deflection dfGP Run 1/8, Epoch 281/2000, Training Loss (NLML): -1.3463, Training RMSE: 0.0243
+deflection dfGP Run 1/8, Epoch 301/2000, Training Loss (NLML): -1.3723, Training RMSE: 0.0233
+deflection dfGP Run 1/8, Epoch 321/2000, Training Loss (NLML): -1.3945, Training RMSE: 0.0224
+deflection dfGP Run 1/8, Epoch 341/2000, Training Loss (NLML): -1.4139, Training RMSE: 0.0213
+deflection dfGP Run 1/8, Epoch 361/2000, Training Loss (NLML): -1.4309, Training RMSE: 0.0202
+deflection dfGP Run 1/8, Epoch 381/2000, Training Loss (NLML): -1.4470, Training RMSE: 0.0192
+deflection dfGP Run 1/8, Epoch 401/2000, Training Loss (NLML): -1.4596, Training RMSE: 0.0183
+deflection dfGP Run 1/8, Epoch 421/2000, Training Loss (NLML): -1.4695, Training RMSE: 0.0176
+deflection dfGP Run 1/8, Epoch 441/2000, Training Loss (NLML): -1.4775, Training RMSE: 0.0171
+deflection dfGP Run 1/8, Epoch 461/2000, Training Loss (NLML): -1.4837, Training RMSE: 0.0167
+deflection dfGP Run 1/8, Epoch 481/2000, Training Loss (NLML): -1.4859, Training RMSE: 0.0165
+deflection dfGP Run 1/8, Epoch 501/2000, Training Loss (NLML): -1.4864, Training RMSE: 0.0162
+deflection dfGP Run 1/8, Epoch 521/2000, Training Loss (NLML): -1.4898, Training RMSE: 0.0160
+deflection dfGP Run 1/8, Epoch 541/2000, Training Loss (NLML): -1.4913, Training RMSE: 0.0160
+deflection dfGP Run 1/8, Epoch 561/2000, Training Loss (NLML): -1.4920, Training RMSE: 0.0158
+deflection dfGP Run 1/8, Epoch 581/2000, Training Loss (NLML): -1.4952, Training RMSE: 0.0158
+deflection dfGP Run 1/8, Epoch 601/2000, Training Loss (NLML): -1.4939, Training RMSE: 0.0157
+deflection dfGP Run 1/8, Epoch 621/2000, Training Loss (NLML): -1.4947, Training RMSE: 0.0158
+deflection dfGP Run 1/8, Epoch 641/2000, Training Loss (NLML): -1.4950, Training RMSE: 0.0156
+deflection dfGP Run 1/8, Epoch 661/2000, Training Loss (NLML): -1.4964, Training RMSE: 0.0156
+deflection dfGP Run 1/8, Epoch 681/2000, Training Loss (NLML): -1.4952, Training RMSE: 0.0156
+deflection dfGP Run 1/8, Epoch 701/2000, Training Loss (NLML): -1.4971, Training RMSE: 0.0156
+deflection dfGP Run 1/8, Epoch 721/2000, Training Loss (NLML): -1.4963, Training RMSE: 0.0155
+deflection dfGP Run 1/8, Epoch 741/2000, Training Loss (NLML): -1.4985, Training RMSE: 0.0155
+deflection dfGP Run 1/8, Epoch 761/2000, Training Loss (NLML): -1.4977, Training RMSE: 0.0155
+deflection dfGP Run 1/8, Epoch 781/2000, Training Loss (NLML): -1.4992, Training RMSE: 0.0155
+deflection dfGP Run 1/8, Epoch 801/2000, Training Loss (NLML): -1.4999, Training RMSE: 0.0154
+deflection dfGP Run 1/8, Epoch 821/2000, Training Loss (NLML): -1.4995, Training RMSE: 0.0155
+deflection dfGP Run 1/8, Epoch 841/2000, Training Loss (NLML): -1.4994, Training RMSE: 0.0154
+deflection dfGP Run 1/8, Epoch 861/2000, Training Loss (NLML): -1.5015, Training RMSE: 0.0154
+deflection dfGP Run 1/8, Epoch 881/2000, Training Loss (NLML): -1.5013, Training RMSE: 0.0154
+deflection dfGP Run 1/8, Epoch 901/2000, Training Loss (NLML): -1.5028, Training RMSE: 0.0155
+deflection dfGP Run 1/8, Epoch 921/2000, Training Loss (NLML): -1.5034, Training RMSE: 0.0154
+deflection dfGP Run 1/8, Epoch 941/2000, Training Loss (NLML): -1.5038, Training RMSE: 0.0154
+deflection dfGP Run 1/8, Epoch 961/2000, Training Loss (NLML): -1.5046, Training RMSE: 0.0154
+deflection dfGP Run 1/8, Epoch 981/2000, Training Loss (NLML): -1.5051, Training RMSE: 0.0153
+deflection dfGP Run 1/8, Epoch 1001/2000, Training Loss (NLML): -1.5062, Training RMSE: 0.0153
+deflection dfGP Run 1/8, Epoch 1021/2000, Training Loss (NLML): -1.5063, Training RMSE: 0.0153
+deflection dfGP Run 1/8, Epoch 1041/2000, Training Loss (NLML): -1.5071, Training RMSE: 0.0153
+deflection dfGP Run 1/8, Epoch 1061/2000, Training Loss (NLML): -1.5074, Training RMSE: 0.0153
+deflection dfGP Run 1/8, Epoch 1081/2000, Training Loss (NLML): -1.5088, Training RMSE: 0.0153
+deflection dfGP Run 1/8, Epoch 1101/2000, Training Loss (NLML): -1.5082, Training RMSE: 0.0153
+deflection dfGP Run 1/8, Epoch 1121/2000, Training Loss (NLML): -1.5094, Training RMSE: 0.0153
+deflection dfGP Run 1/8, Epoch 1141/2000, Training Loss (NLML): -1.5095, Training RMSE: 0.0152
+deflection dfGP Run 1/8, Epoch 1161/2000, Training Loss (NLML): -1.5092, Training RMSE: 0.0152
+deflection dfGP Run 1/8, Epoch 1181/2000, Training Loss (NLML): -1.5094, Training RMSE: 0.0152
+deflection dfGP Run 1/8, Epoch 1201/2000, Training Loss (NLML): -1.5104, Training RMSE: 0.0152
+deflection dfGP Run 1/8, Epoch 1221/2000, Training Loss (NLML): -1.5100, Training RMSE: 0.0152
+deflection dfGP Run 1/8, Epoch 1241/2000, Training Loss (NLML): -1.5111, Training RMSE: 0.0152
+deflection dfGP Run 1/8, Epoch 1261/2000, Training Loss (NLML): -1.5111, Training RMSE: 0.0151
+deflection dfGP Run 1/8, Epoch 1281/2000, Training Loss (NLML): -1.5110, Training RMSE: 0.0151
+deflection dfGP Run 1/8, Epoch 1301/2000, Training Loss (NLML): -1.5111, Training RMSE: 0.0151
+deflection dfGP Run 1/8, Epoch 1321/2000, Training Loss (NLML): -1.5114, Training RMSE: 0.0151
+deflection dfGP Run 1/8, Epoch 1341/2000, Training Loss (NLML): -1.5111, Training RMSE: 0.0151
+deflection dfGP Run 1/8, Epoch 1361/2000, Training Loss (NLML): -1.5114, Training RMSE: 0.0151
+deflection dfGP Run 1/8, Epoch 1381/2000, Training Loss (NLML): -1.5122, Training RMSE: 0.0151
+deflection dfGP Run 1/8, Epoch 1401/2000, Training Loss (NLML): -1.5115, Training RMSE: 0.0151
+deflection dfGP Run 1/8, Epoch 1421/2000, Training Loss (NLML): -1.5118, Training RMSE: 0.0151
+deflection dfGP Run 1/8, Epoch 1441/2000, Training Loss (NLML): -1.5121, Training RMSE: 0.0151
+deflection dfGP Run 1/8, Epoch 1461/2000, Training Loss (NLML): -1.5120, Training RMSE: 0.0151
+deflection dfGP Run 1/8, Epoch 1481/2000, Training Loss (NLML): -1.5117, Training RMSE: 0.0150
+deflection dfGP Run 1/8, Epoch 1501/2000, Training Loss (NLML): -1.5120, Training RMSE: 0.0150
+deflection dfGP Run 1/8, Epoch 1521/2000, Training Loss (NLML): -1.5115, Training RMSE: 0.0150
+deflection dfGP Run 1/8, Epoch 1541/2000, Training Loss (NLML): -1.5120, Training RMSE: 0.0151
+deflection dfGP Run 1/8, Epoch 1561/2000, Training Loss (NLML): -1.5120, Training RMSE: 0.0151
+deflection dfGP Run 1/8, Epoch 1581/2000, Training Loss (NLML): -1.5122, Training RMSE: 0.0151
+deflection dfGP Run 1/8, Epoch 1601/2000, Training Loss (NLML): -1.5114, Training RMSE: 0.0151
+Early stopping triggered after 1613 epochs.
+
+--- Training Run 2/8 ---
+
+Start Training
+deflection dfGP Run 2/8, Epoch 1/2000, Training Loss (NLML): -0.0950
+deflection dfGP Run 2/8, Epoch 21/2000, Training Loss (NLML): -0.6180
+deflection dfGP Run 2/8, Epoch 41/2000, Training Loss (NLML): -0.7976
+deflection dfGP Run 2/8, Epoch 61/2000, Training Loss (NLML): -0.8757
+deflection dfGP Run 2/8, Epoch 81/2000, Training Loss (NLML): -0.9509
+deflection dfGP Run 2/8, Epoch 101/2000, Training Loss (NLML): -1.0545
+deflection dfGP Run 2/8, Epoch 121/2000, Training Loss (NLML): -1.1702
+deflection dfGP Run 2/8, Epoch 141/2000, Training Loss (NLML): -1.2650
+deflection dfGP Run 2/8, Epoch 161/2000, Training Loss (NLML): -1.3303
+deflection dfGP Run 2/8, Epoch 181/2000, Training Loss (NLML): -1.3787
+deflection dfGP Run 2/8, Epoch 201/2000, Training Loss (NLML): -1.4163
+deflection dfGP Run 2/8, Epoch 221/2000, Training Loss (NLML): -1.4476
+deflection dfGP Run 2/8, Epoch 241/2000, Training Loss (NLML): -1.4707
+deflection dfGP Run 2/8, Epoch 261/2000, Training Loss (NLML): -1.4877
+deflection dfGP Run 2/8, Epoch 281/2000, Training Loss (NLML): -1.4989
+deflection dfGP Run 2/8, Epoch 301/2000, Training Loss (NLML): -1.5053
+deflection dfGP Run 2/8, Epoch 321/2000, Training Loss (NLML): -1.5077
+deflection dfGP Run 2/8, Epoch 341/2000, Training Loss (NLML): -1.5103
+deflection dfGP Run 2/8, Epoch 361/2000, Training Loss (NLML): -1.5111
+deflection dfGP Run 2/8, Epoch 381/2000, Training Loss (NLML): -1.5132
+deflection dfGP Run 2/8, Epoch 401/2000, Training Loss (NLML): -1.5129
+deflection dfGP Run 2/8, Epoch 421/2000, Training Loss (NLML): -1.5145
+deflection dfGP Run 2/8, Epoch 441/2000, Training Loss (NLML): -1.5149
+deflection dfGP Run 2/8, Epoch 461/2000, Training Loss (NLML): -1.5150
+deflection dfGP Run 2/8, Epoch 481/2000, Training Loss (NLML): -1.5170
+deflection dfGP Run 2/8, Epoch 501/2000, Training Loss (NLML): -1.5166
+deflection dfGP Run 2/8, Epoch 521/2000, Training Loss (NLML): -1.5179
+deflection dfGP Run 2/8, Epoch 541/2000, Training Loss (NLML): -1.5197
+deflection dfGP Run 2/8, Epoch 561/2000, Training Loss (NLML): -1.5208
+deflection dfGP Run 2/8, Epoch 581/2000, Training Loss (NLML): -1.5212
+deflection dfGP Run 2/8, Epoch 601/2000, Training Loss (NLML): -1.5213
+deflection dfGP Run 2/8, Epoch 621/2000, Training Loss (NLML): -1.5223
+deflection dfGP Run 2/8, Epoch 641/2000, Training Loss (NLML): -1.5226
+deflection dfGP Run 2/8, Epoch 661/2000, Training Loss (NLML): -1.5234
+deflection dfGP Run 2/8, Epoch 681/2000, Training Loss (NLML): -1.5242
+deflection dfGP Run 2/8, Epoch 701/2000, Training Loss (NLML): -1.5244
+deflection dfGP Run 2/8, Epoch 721/2000, Training Loss (NLML): -1.5247
+deflection dfGP Run 2/8, Epoch 741/2000, Training Loss (NLML): -1.5254
+deflection dfGP Run 2/8, Epoch 761/2000, Training Loss (NLML): -1.5256
+deflection dfGP Run 2/8, Epoch 781/2000, Training Loss (NLML): -1.5254
+deflection dfGP Run 2/8, Epoch 801/2000, Training Loss (NLML): -1.5258
+deflection dfGP Run 2/8, Epoch 821/2000, Training Loss (NLML): -1.5263
+deflection dfGP Run 2/8, Epoch 841/2000, Training Loss (NLML): -1.5265
+deflection dfGP Run 2/8, Epoch 861/2000, Training Loss (NLML): -1.5266
+deflection dfGP Run 2/8, Epoch 881/2000, Training Loss (NLML): -1.5266
+deflection dfGP Run 2/8, Epoch 901/2000, Training Loss (NLML): -1.5265
+deflection dfGP Run 2/8, Epoch 921/2000, Training Loss (NLML): -1.5267
+deflection dfGP Run 2/8, Epoch 941/2000, Training Loss (NLML): -1.5266
+deflection dfGP Run 2/8, Epoch 961/2000, Training Loss (NLML): -1.5269
+deflection dfGP Run 2/8, Epoch 981/2000, Training Loss (NLML): -1.5268
+deflection dfGP Run 2/8, Epoch 1001/2000, Training Loss (NLML): -1.5264
+deflection dfGP Run 2/8, Epoch 1021/2000, Training Loss (NLML): -1.5267
+deflection dfGP Run 2/8, Epoch 1041/2000, Training Loss (NLML): -1.5264
+deflection dfGP Run 2/8, Epoch 1061/2000, Training Loss (NLML): -1.5264
+deflection dfGP Run 2/8, Epoch 1081/2000, Training Loss (NLML): -1.5270
+deflection dfGP Run 2/8, Epoch 1101/2000, Training Loss (NLML): -1.5267
+deflection dfGP Run 2/8, Epoch 1121/2000, Training Loss (NLML): -1.5270
+Early stopping triggered after 1129 epochs.
+
+--- Training Run 3/8 ---
+
+Start Training
+deflection dfGP Run 3/8, Epoch 1/2000, Training Loss (NLML): -0.6957
+deflection dfGP Run 3/8, Epoch 21/2000, Training Loss (NLML): -0.9164
+deflection dfGP Run 3/8, Epoch 41/2000, Training Loss (NLML): -1.1006
+deflection dfGP Run 3/8, Epoch 61/2000, Training Loss (NLML): -1.2777
+deflection dfGP Run 3/8, Epoch 81/2000, Training Loss (NLML): -1.3746
+deflection dfGP Run 3/8, Epoch 101/2000, Training Loss (NLML): -1.4342
+deflection dfGP Run 3/8, Epoch 121/2000, Training Loss (NLML): -1.4785
+deflection dfGP Run 3/8, Epoch 141/2000, Training Loss (NLML): -1.5129
+deflection dfGP Run 3/8, Epoch 161/2000, Training Loss (NLML): -1.5355
+deflection dfGP Run 3/8, Epoch 181/2000, Training Loss (NLML): -1.5490
+deflection dfGP Run 3/8, Epoch 201/2000, Training Loss (NLML): -1.5579
+deflection dfGP Run 3/8, Epoch 221/2000, Training Loss (NLML): -1.5620
+deflection dfGP Run 3/8, Epoch 241/2000, Training Loss (NLML): -1.5655
+deflection dfGP Run 3/8, Epoch 261/2000, Training Loss (NLML): -1.5653
+deflection dfGP Run 3/8, Epoch 281/2000, Training Loss (NLML): -1.5680
+deflection dfGP Run 3/8, Epoch 301/2000, Training Loss (NLML): -1.5688
+deflection dfGP Run 3/8, Epoch 321/2000, Training Loss (NLML): -1.5694
+deflection dfGP Run 3/8, Epoch 341/2000, Training Loss (NLML): -1.5700
+deflection dfGP Run 3/8, Epoch 361/2000, Training Loss (NLML): -1.5704
+deflection dfGP Run 3/8, Epoch 381/2000, Training Loss (NLML): -1.5704
+deflection dfGP Run 3/8, Epoch 401/2000, Training Loss (NLML): -1.5716
+deflection dfGP Run 3/8, Epoch 421/2000, Training Loss (NLML): -1.5715
+deflection dfGP Run 3/8, Epoch 441/2000, Training Loss (NLML): -1.5724
+deflection dfGP Run 3/8, Epoch 461/2000, Training Loss (NLML): -1.5725
+deflection dfGP Run 3/8, Epoch 481/2000, Training Loss (NLML): -1.5715
+deflection dfGP Run 3/8, Epoch 501/2000, Training Loss (NLML): -1.5719
+deflection dfGP Run 3/8, Epoch 521/2000, Training Loss (NLML): -1.5725
+Early stopping triggered after 530 epochs.
+
+--- Training Run 4/8 ---
+
+Start Training
+deflection dfGP Run 4/8, Epoch 1/2000, Training Loss (NLML): 0.7164
+deflection dfGP Run 4/8, Epoch 21/2000, Training Loss (NLML): -0.2278
+deflection dfGP Run 4/8, Epoch 41/2000, Training Loss (NLML): -0.6287
+deflection dfGP Run 4/8, Epoch 61/2000, Training Loss (NLML): -0.8005
+deflection dfGP Run 4/8, Epoch 81/2000, Training Loss (NLML): -0.9520
+deflection dfGP Run 4/8, Epoch 101/2000, Training Loss (NLML): -1.1020
+deflection dfGP Run 4/8, Epoch 121/2000, Training Loss (NLML): -1.2269
+deflection dfGP Run 4/8, Epoch 141/2000, Training Loss (NLML): -1.3130
+deflection dfGP Run 4/8, Epoch 161/2000, Training Loss (NLML): -1.3589
+deflection dfGP Run 4/8, Epoch 181/2000, Training Loss (NLML): -1.3861
+deflection dfGP Run 4/8, Epoch 201/2000, Training Loss (NLML): -1.4058
+deflection dfGP Run 4/8, Epoch 221/2000, Training Loss (NLML): -1.4229
+deflection dfGP Run 4/8, Epoch 241/2000, Training Loss (NLML): -1.4390
+deflection dfGP Run 4/8, Epoch 261/2000, Training Loss (NLML): -1.4537
+deflection dfGP Run 4/8, Epoch 281/2000, Training Loss (NLML): -1.4659
+deflection dfGP Run 4/8, Epoch 301/2000, Training Loss (NLML): -1.4774
+deflection dfGP Run 4/8, Epoch 321/2000, Training Loss (NLML): -1.4874
+deflection dfGP Run 4/8, Epoch 341/2000, Training Loss (NLML): -1.4953
+deflection dfGP Run 4/8, Epoch 361/2000, Training Loss (NLML): -1.5007
+deflection dfGP Run 4/8, Epoch 381/2000, Training Loss (NLML): -1.5051
+deflection dfGP Run 4/8, Epoch 401/2000, Training Loss (NLML): -1.5101
+deflection dfGP Run 4/8, Epoch 421/2000, Training Loss (NLML): -1.5113
+deflection dfGP Run 4/8, Epoch 441/2000, Training Loss (NLML): -1.5147
+deflection dfGP Run 4/8, Epoch 461/2000, Training Loss (NLML): -1.5163
+deflection dfGP Run 4/8, Epoch 481/2000, Training Loss (NLML): -1.5169
+deflection dfGP Run 4/8, Epoch 501/2000, Training Loss (NLML): -1.5193
+deflection dfGP Run 4/8, Epoch 521/2000, Training Loss (NLML): -1.5192
+deflection dfGP Run 4/8, Epoch 541/2000, Training Loss (NLML): -1.5200
+deflection dfGP Run 4/8, Epoch 561/2000, Training Loss (NLML): -1.5207
+deflection dfGP Run 4/8, Epoch 581/2000, Training Loss (NLML): -1.5207
+deflection dfGP Run 4/8, Epoch 601/2000, Training Loss (NLML): -1.5221
+deflection dfGP Run 4/8, Epoch 621/2000, Training Loss (NLML): -1.5222
+deflection dfGP Run 4/8, Epoch 641/2000, Training Loss (NLML): -1.5246
+deflection dfGP Run 4/8, Epoch 661/2000, Training Loss (NLML): -1.5241
+deflection dfGP Run 4/8, Epoch 681/2000, Training Loss (NLML): -1.5252
+deflection dfGP Run 4/8, Epoch 701/2000, Training Loss (NLML): -1.5266
+deflection dfGP Run 4/8, Epoch 721/2000, Training Loss (NLML): -1.5278
+deflection dfGP Run 4/8, Epoch 741/2000, Training Loss (NLML): -1.5277
+deflection dfGP Run 4/8, Epoch 761/2000, Training Loss (NLML): -1.5281
+deflection dfGP Run 4/8, Epoch 781/2000, Training Loss (NLML): -1.5289
+deflection dfGP Run 4/8, Epoch 801/2000, Training Loss (NLML): -1.5286
+deflection dfGP Run 4/8, Epoch 821/2000, Training Loss (NLML): -1.5292
+deflection dfGP Run 4/8, Epoch 841/2000, Training Loss (NLML): -1.5301
+deflection dfGP Run 4/8, Epoch 861/2000, Training Loss (NLML): -1.5308
+deflection dfGP Run 4/8, Epoch 881/2000, Training Loss (NLML): -1.5316
+deflection dfGP Run 4/8, Epoch 901/2000, Training Loss (NLML): -1.5322
+deflection dfGP Run 4/8, Epoch 921/2000, Training Loss (NLML): -1.5325
+deflection dfGP Run 4/8, Epoch 941/2000, Training Loss (NLML): -1.5323
+deflection dfGP Run 4/8, Epoch 961/2000, Training Loss (NLML): -1.5325
+deflection dfGP Run 4/8, Epoch 981/2000, Training Loss (NLML): -1.5338
+deflection dfGP Run 4/8, Epoch 1001/2000, Training Loss (NLML): -1.5329
+deflection dfGP Run 4/8, Epoch 1021/2000, Training Loss (NLML): -1.5341
+deflection dfGP Run 4/8, Epoch 1041/2000, Training Loss (NLML): -1.5336
+deflection dfGP Run 4/8, Epoch 1061/2000, Training Loss (NLML): -1.5334
+deflection dfGP Run 4/8, Epoch 1081/2000, Training Loss (NLML): -1.5339
+deflection dfGP Run 4/8, Epoch 1101/2000, Training Loss (NLML): -1.5342
+deflection dfGP Run 4/8, Epoch 1121/2000, Training Loss (NLML): -1.5342
+deflection dfGP Run 4/8, Epoch 1141/2000, Training Loss (NLML): -1.5342
+deflection dfGP Run 4/8, Epoch 1161/2000, Training Loss (NLML): -1.5342
+deflection dfGP Run 4/8, Epoch 1181/2000, Training Loss (NLML): -1.5338
+deflection dfGP Run 4/8, Epoch 1201/2000, Training Loss (NLML): -1.5340
+deflection dfGP Run 4/8, Epoch 1221/2000, Training Loss (NLML): -1.5344
+deflection dfGP Run 4/8, Epoch 1241/2000, Training Loss (NLML): -1.5342
+deflection dfGP Run 4/8, Epoch 1261/2000, Training Loss (NLML): -1.5339
+deflection dfGP Run 4/8, Epoch 1281/2000, Training Loss (NLML): -1.5343
+deflection dfGP Run 4/8, Epoch 1301/2000, Training Loss (NLML): -1.5348
+deflection dfGP Run 4/8, Epoch 1321/2000, Training Loss (NLML): -1.5344
+deflection dfGP Run 4/8, Epoch 1341/2000, Training Loss (NLML): -1.5343
+deflection dfGP Run 4/8, Epoch 1361/2000, Training Loss (NLML): -1.5342
+Early stopping triggered after 1375 epochs.
+
+--- Training Run 5/8 ---
+
+Start Training
+deflection dfGP Run 5/8, Epoch 1/2000, Training Loss (NLML): -0.7617
+deflection dfGP Run 5/8, Epoch 21/2000, Training Loss (NLML): -1.2567
+deflection dfGP Run 5/8, Epoch 41/2000, Training Loss (NLML): -1.3934
+deflection dfGP Run 5/8, Epoch 61/2000, Training Loss (NLML): -1.4358
+deflection dfGP Run 5/8, Epoch 81/2000, Training Loss (NLML): -1.4659
+deflection dfGP Run 5/8, Epoch 101/2000, Training Loss (NLML): -1.4905
+deflection dfGP Run 5/8, Epoch 121/2000, Training Loss (NLML): -1.5124
+deflection dfGP Run 5/8, Epoch 141/2000, Training Loss (NLML): -1.5279
+deflection dfGP Run 5/8, Epoch 161/2000, Training Loss (NLML): -1.5356
+deflection dfGP Run 5/8, Epoch 181/2000, Training Loss (NLML): -1.5387
+deflection dfGP Run 5/8, Epoch 201/2000, Training Loss (NLML): -1.5415
+deflection dfGP Run 5/8, Epoch 221/2000, Training Loss (NLML): -1.5401
+deflection dfGP Run 5/8, Epoch 241/2000, Training Loss (NLML): -1.5409
+deflection dfGP Run 5/8, Epoch 261/2000, Training Loss (NLML): -1.5415
+deflection dfGP Run 5/8, Epoch 281/2000, Training Loss (NLML): -1.5425
+deflection dfGP Run 5/8, Epoch 301/2000, Training Loss (NLML): -1.5419
+deflection dfGP Run 5/8, Epoch 321/2000, Training Loss (NLML): -1.5441
+deflection dfGP Run 5/8, Epoch 341/2000, Training Loss (NLML): -1.5443
+deflection dfGP Run 5/8, Epoch 361/2000, Training Loss (NLML): -1.5446
+deflection dfGP Run 5/8, Epoch 381/2000, Training Loss (NLML): -1.5456
+deflection dfGP Run 5/8, Epoch 401/2000, Training Loss (NLML): -1.5458
+deflection dfGP Run 5/8, Epoch 421/2000, Training Loss (NLML): -1.5459
+deflection dfGP Run 5/8, Epoch 441/2000, Training Loss (NLML): -1.5459
+deflection dfGP Run 5/8, Epoch 461/2000, Training Loss (NLML): -1.5474
+deflection dfGP Run 5/8, Epoch 481/2000, Training Loss (NLML): -1.5475
+deflection dfGP Run 5/8, Epoch 501/2000, Training Loss (NLML): -1.5479
+deflection dfGP Run 5/8, Epoch 521/2000, Training Loss (NLML): -1.5480
+deflection dfGP Run 5/8, Epoch 541/2000, Training Loss (NLML): -1.5477
+deflection dfGP Run 5/8, Epoch 561/2000, Training Loss (NLML): -1.5475
+deflection dfGP Run 5/8, Epoch 581/2000, Training Loss (NLML): -1.5479
+deflection dfGP Run 5/8, Epoch 601/2000, Training Loss (NLML): -1.5470
+deflection dfGP Run 5/8, Epoch 621/2000, Training Loss (NLML): -1.5484
+deflection dfGP Run 5/8, Epoch 641/2000, Training Loss (NLML): -1.5478
+deflection dfGP Run 5/8, Epoch 661/2000, Training Loss (NLML): -1.5478
+deflection dfGP Run 5/8, Epoch 681/2000, Training Loss (NLML): -1.5481
+deflection dfGP Run 5/8, Epoch 701/2000, Training Loss (NLML): -1.5483
+deflection dfGP Run 5/8, Epoch 721/2000, Training Loss (NLML): -1.5481
+deflection dfGP Run 5/8, Epoch 741/2000, Training Loss (NLML): -1.5481
+deflection dfGP Run 5/8, Epoch 761/2000, Training Loss (NLML): -1.5478
+deflection dfGP Run 5/8, Epoch 781/2000, Training Loss (NLML): -1.5482
+deflection dfGP Run 5/8, Epoch 801/2000, Training Loss (NLML): -1.5485
+Early stopping triggered after 816 epochs.
+
+--- Training Run 6/8 ---
+
+Start Training
+deflection dfGP Run 6/8, Epoch 1/2000, Training Loss (NLML): -0.6263
+deflection dfGP Run 6/8, Epoch 21/2000, Training Loss (NLML): -0.8382
+deflection dfGP Run 6/8, Epoch 41/2000, Training Loss (NLML): -0.9313
+deflection dfGP Run 6/8, Epoch 61/2000, Training Loss (NLML): -1.0632
+deflection dfGP Run 6/8, Epoch 81/2000, Training Loss (NLML): -1.2299
+deflection dfGP Run 6/8, Epoch 101/2000, Training Loss (NLML): -1.3344
+deflection dfGP Run 6/8, Epoch 121/2000, Training Loss (NLML): -1.3889
+deflection dfGP Run 6/8, Epoch 141/2000, Training Loss (NLML): -1.4208
+deflection dfGP Run 6/8, Epoch 161/2000, Training Loss (NLML): -1.4424
+deflection dfGP Run 6/8, Epoch 181/2000, Training Loss (NLML): -1.4552
+deflection dfGP Run 6/8, Epoch 201/2000, Training Loss (NLML): -1.4645
+deflection dfGP Run 6/8, Epoch 221/2000, Training Loss (NLML): -1.4706
+deflection dfGP Run 6/8, Epoch 241/2000, Training Loss (NLML): -1.4738
+deflection dfGP Run 6/8, Epoch 261/2000, Training Loss (NLML): -1.4752
+deflection dfGP Run 6/8, Epoch 281/2000, Training Loss (NLML): -1.4782
+deflection dfGP Run 6/8, Epoch 301/2000, Training Loss (NLML): -1.4791
+deflection dfGP Run 6/8, Epoch 321/2000, Training Loss (NLML): -1.4812
+deflection dfGP Run 6/8, Epoch 341/2000, Training Loss (NLML): -1.4838
+deflection dfGP Run 6/8, Epoch 361/2000, Training Loss (NLML): -1.4859
+deflection dfGP Run 6/8, Epoch 381/2000, Training Loss (NLML): -1.4881
+deflection dfGP Run 6/8, Epoch 401/2000, Training Loss (NLML): -1.4890
+deflection dfGP Run 6/8, Epoch 421/2000, Training Loss (NLML): -1.4901
+deflection dfGP Run 6/8, Epoch 441/2000, Training Loss (NLML): -1.4912
+deflection dfGP Run 6/8, Epoch 461/2000, Training Loss (NLML): -1.4922
+deflection dfGP Run 6/8, Epoch 481/2000, Training Loss (NLML): -1.4930
+deflection dfGP Run 6/8, Epoch 501/2000, Training Loss (NLML): -1.4930
+deflection dfGP Run 6/8, Epoch 521/2000, Training Loss (NLML): -1.4930
+deflection dfGP Run 6/8, Epoch 541/2000, Training Loss (NLML): -1.4930
+deflection dfGP Run 6/8, Epoch 561/2000, Training Loss (NLML): -1.4935
+deflection dfGP Run 6/8, Epoch 581/2000, Training Loss (NLML): -1.4930
+deflection dfGP Run 6/8, Epoch 601/2000, Training Loss (NLML): -1.4933
+deflection dfGP Run 6/8, Epoch 621/2000, Training Loss (NLML): -1.4937
+deflection dfGP Run 6/8, Epoch 641/2000, Training Loss (NLML): -1.4935
+deflection dfGP Run 6/8, Epoch 661/2000, Training Loss (NLML): -1.4937
+deflection dfGP Run 6/8, Epoch 681/2000, Training Loss (NLML): -1.4935
+deflection dfGP Run 6/8, Epoch 701/2000, Training Loss (NLML): -1.4930
+deflection dfGP Run 6/8, Epoch 721/2000, Training Loss (NLML): -1.4935
+Early stopping triggered after 733 epochs.
+
+--- Training Run 7/8 ---
+
+Start Training
+deflection dfGP Run 7/8, Epoch 1/2000, Training Loss (NLML): 4.6623
+deflection dfGP Run 7/8, Epoch 21/2000, Training Loss (NLML): 2.0267
+deflection dfGP Run 7/8, Epoch 41/2000, Training Loss (NLML): 0.0474
+deflection dfGP Run 7/8, Epoch 61/2000, Training Loss (NLML): -0.9035
+deflection dfGP Run 7/8, Epoch 81/2000, Training Loss (NLML): -1.2149
+deflection dfGP Run 7/8, Epoch 101/2000, Training Loss (NLML): -1.3146
+deflection dfGP Run 7/8, Epoch 121/2000, Training Loss (NLML): -1.3626
+deflection dfGP Run 7/8, Epoch 141/2000, Training Loss (NLML): -1.3929
+deflection dfGP Run 7/8, Epoch 161/2000, Training Loss (NLML): -1.4141
+deflection dfGP Run 7/8, Epoch 181/2000, Training Loss (NLML): -1.4315
+deflection dfGP Run 7/8, Epoch 201/2000, Training Loss (NLML): -1.4452
+deflection dfGP Run 7/8, Epoch 221/2000, Training Loss (NLML): -1.4550
+deflection dfGP Run 7/8, Epoch 241/2000, Training Loss (NLML): -1.4618
+deflection dfGP Run 7/8, Epoch 261/2000, Training Loss (NLML): -1.4688
+deflection dfGP Run 7/8, Epoch 281/2000, Training Loss (NLML): -1.4737
+deflection dfGP Run 7/8, Epoch 301/2000, Training Loss (NLML): -1.4778
+deflection dfGP Run 7/8, Epoch 321/2000, Training Loss (NLML): -1.4784
+deflection dfGP Run 7/8, Epoch 341/2000, Training Loss (NLML): -1.4797
+deflection dfGP Run 7/8, Epoch 361/2000, Training Loss (NLML): -1.4821
+deflection dfGP Run 7/8, Epoch 381/2000, Training Loss (NLML): -1.4835
+deflection dfGP Run 7/8, Epoch 401/2000, Training Loss (NLML): -1.4850
+deflection dfGP Run 7/8, Epoch 421/2000, Training Loss (NLML): -1.4854
+deflection dfGP Run 7/8, Epoch 441/2000, Training Loss (NLML): -1.4840
+deflection dfGP Run 7/8, Epoch 461/2000, Training Loss (NLML): -1.4866
+deflection dfGP Run 7/8, Epoch 481/2000, Training Loss (NLML): -1.4863
+deflection dfGP Run 7/8, Epoch 501/2000, Training Loss (NLML): -1.4857
+deflection dfGP Run 7/8, Epoch 521/2000, Training Loss (NLML): -1.4866
+deflection dfGP Run 7/8, Epoch 541/2000, Training Loss (NLML): -1.4866
+deflection dfGP Run 7/8, Epoch 561/2000, Training Loss (NLML): -1.4876
+deflection dfGP Run 7/8, Epoch 581/2000, Training Loss (NLML): -1.4878
+deflection dfGP Run 7/8, Epoch 601/2000, Training Loss (NLML): -1.4878
+deflection dfGP Run 7/8, Epoch 621/2000, Training Loss (NLML): -1.4887
+deflection dfGP Run 7/8, Epoch 641/2000, Training Loss (NLML): -1.4878
+deflection dfGP Run 7/8, Epoch 661/2000, Training Loss (NLML): -1.4889
+deflection dfGP Run 7/8, Epoch 681/2000, Training Loss (NLML): -1.4896
+deflection dfGP Run 7/8, Epoch 701/2000, Training Loss (NLML): -1.4895
+deflection dfGP Run 7/8, Epoch 721/2000, Training Loss (NLML): -1.4897
+deflection dfGP Run 7/8, Epoch 741/2000, Training Loss (NLML): -1.4907
+deflection dfGP Run 7/8, Epoch 761/2000, Training Loss (NLML): -1.4907
+deflection dfGP Run 7/8, Epoch 781/2000, Training Loss (NLML): -1.4920
+deflection dfGP Run 7/8, Epoch 801/2000, Training Loss (NLML): -1.4902
+deflection dfGP Run 7/8, Epoch 821/2000, Training Loss (NLML): -1.4909
+deflection dfGP Run 7/8, Epoch 841/2000, Training Loss (NLML): -1.4924
+deflection dfGP Run 7/8, Epoch 861/2000, Training Loss (NLML): -1.4925
+deflection dfGP Run 7/8, Epoch 881/2000, Training Loss (NLML): -1.4928
+deflection dfGP Run 7/8, Epoch 901/2000, Training Loss (NLML): -1.4928
+deflection dfGP Run 7/8, Epoch 921/2000, Training Loss (NLML): -1.4929
+deflection dfGP Run 7/8, Epoch 941/2000, Training Loss (NLML): -1.4942
+deflection dfGP Run 7/8, Epoch 961/2000, Training Loss (NLML): -1.4932
+deflection dfGP Run 7/8, Epoch 981/2000, Training Loss (NLML): -1.4939
+deflection dfGP Run 7/8, Epoch 1001/2000, Training Loss (NLML): -1.4952
+deflection dfGP Run 7/8, Epoch 1021/2000, Training Loss (NLML): -1.4951
+deflection dfGP Run 7/8, Epoch 1041/2000, Training Loss (NLML): -1.4955
+deflection dfGP Run 7/8, Epoch 1061/2000, Training Loss (NLML): -1.4957
+deflection dfGP Run 7/8, Epoch 1081/2000, Training Loss (NLML): -1.4962
+deflection dfGP Run 7/8, Epoch 1101/2000, Training Loss (NLML): -1.4959
+deflection dfGP Run 7/8, Epoch 1121/2000, Training Loss (NLML): -1.4967
+deflection dfGP Run 7/8, Epoch 1141/2000, Training Loss (NLML): -1.4975
+deflection dfGP Run 7/8, Epoch 1161/2000, Training Loss (NLML): -1.4969
+deflection dfGP Run 7/8, Epoch 1181/2000, Training Loss (NLML): -1.4978
+deflection dfGP Run 7/8, Epoch 1201/2000, Training Loss (NLML): -1.4981
+deflection dfGP Run 7/8, Epoch 1221/2000, Training Loss (NLML): -1.4981
+deflection dfGP Run 7/8, Epoch 1241/2000, Training Loss (NLML): -1.4976
+deflection dfGP Run 7/8, Epoch 1261/2000, Training Loss (NLML): -1.4982
+deflection dfGP Run 7/8, Epoch 1281/2000, Training Loss (NLML): -1.4981
+deflection dfGP Run 7/8, Epoch 1301/2000, Training Loss (NLML): -1.4994
+deflection dfGP Run 7/8, Epoch 1321/2000, Training Loss (NLML): -1.5001
+deflection dfGP Run 7/8, Epoch 1341/2000, Training Loss (NLML): -1.4993
+deflection dfGP Run 7/8, Epoch 1361/2000, Training Loss (NLML): -1.5001
+deflection dfGP Run 7/8, Epoch 1381/2000, Training Loss (NLML): -1.5002
+deflection dfGP Run 7/8, Epoch 1401/2000, Training Loss (NLML): -1.5005
+deflection dfGP Run 7/8, Epoch 1421/2000, Training Loss (NLML): -1.5007
+deflection dfGP Run 7/8, Epoch 1441/2000, Training Loss (NLML): -1.5006
+deflection dfGP Run 7/8, Epoch 1461/2000, Training Loss (NLML): -1.5011
+deflection dfGP Run 7/8, Epoch 1481/2000, Training Loss (NLML): -1.5014
+deflection dfGP Run 7/8, Epoch 1501/2000, Training Loss (NLML): -1.5012
+deflection dfGP Run 7/8, Epoch 1521/2000, Training Loss (NLML): -1.5011
+deflection dfGP Run 7/8, Epoch 1541/2000, Training Loss (NLML): -1.5014
+deflection dfGP Run 7/8, Epoch 1561/2000, Training Loss (NLML): -1.5014
+deflection dfGP Run 7/8, Epoch 1581/2000, Training Loss (NLML): -1.5009
+deflection dfGP Run 7/8, Epoch 1601/2000, Training Loss (NLML): -1.5020
+deflection dfGP Run 7/8, Epoch 1621/2000, Training Loss (NLML): -1.5018
+deflection dfGP Run 7/8, Epoch 1641/2000, Training Loss (NLML): -1.5022
+deflection dfGP Run 7/8, Epoch 1661/2000, Training Loss (NLML): -1.5021
+deflection dfGP Run 7/8, Epoch 1681/2000, Training Loss (NLML): -1.5024
+deflection dfGP Run 7/8, Epoch 1701/2000, Training Loss (NLML): -1.5025
+deflection dfGP Run 7/8, Epoch 1721/2000, Training Loss (NLML): -1.5025
+deflection dfGP Run 7/8, Epoch 1741/2000, Training Loss (NLML): -1.5026
+deflection dfGP Run 7/8, Epoch 1761/2000, Training Loss (NLML): -1.5022
+deflection dfGP Run 7/8, Epoch 1781/2000, Training Loss (NLML): -1.5025
+deflection dfGP Run 7/8, Epoch 1801/2000, Training Loss (NLML): -1.5024
+deflection dfGP Run 7/8, Epoch 1821/2000, Training Loss (NLML): -1.5021
+deflection dfGP Run 7/8, Epoch 1841/2000, Training Loss (NLML): -1.5026
+deflection dfGP Run 7/8, Epoch 1861/2000, Training Loss (NLML): -1.5023
+deflection dfGP Run 7/8, Epoch 1881/2000, Training Loss (NLML): -1.5026
+deflection dfGP Run 7/8, Epoch 1901/2000, Training Loss (NLML): -1.5031
+Early stopping triggered after 1905 epochs.
+
+--- Training Run 8/8 ---
+
+Start Training
+deflection dfGP Run 8/8, Epoch 1/2000, Training Loss (NLML): 10.4080
+deflection dfGP Run 8/8, Epoch 21/2000, Training Loss (NLML): 5.4200
+deflection dfGP Run 8/8, Epoch 41/2000, Training Loss (NLML): 2.8593
+deflection dfGP Run 8/8, Epoch 61/2000, Training Loss (NLML): 1.4841
+deflection dfGP Run 8/8, Epoch 81/2000, Training Loss (NLML): 0.7285
+deflection dfGP Run 8/8, Epoch 101/2000, Training Loss (NLML): 0.1136
+deflection dfGP Run 8/8, Epoch 121/2000, Training Loss (NLML): -0.4194
+deflection dfGP Run 8/8, Epoch 141/2000, Training Loss (NLML): -0.7413
+deflection dfGP Run 8/8, Epoch 161/2000, Training Loss (NLML): -0.8978
+deflection dfGP Run 8/8, Epoch 181/2000, Training Loss (NLML): -0.9869
+deflection dfGP Run 8/8, Epoch 201/2000, Training Loss (NLML): -1.0499
+deflection dfGP Run 8/8, Epoch 221/2000, Training Loss (NLML): -1.1028
+deflection dfGP Run 8/8, Epoch 241/2000, Training Loss (NLML): -1.1435
+deflection dfGP Run 8/8, Epoch 261/2000, Training Loss (NLML): -1.1789
+deflection dfGP Run 8/8, Epoch 281/2000, Training Loss (NLML): -1.2154
+deflection dfGP Run 8/8, Epoch 301/2000, Training Loss (NLML): -1.2520
+deflection dfGP Run 8/8, Epoch 321/2000, Training Loss (NLML): -1.2905
+deflection dfGP Run 8/8, Epoch 341/2000, Training Loss (NLML): -1.3230
+deflection dfGP Run 8/8, Epoch 361/2000, Training Loss (NLML): -1.3575
+deflection dfGP Run 8/8, Epoch 381/2000, Training Loss (NLML): -1.3826
+deflection dfGP Run 8/8, Epoch 401/2000, Training Loss (NLML): -1.4086
+deflection dfGP Run 8/8, Epoch 421/2000, Training Loss (NLML): -1.4288
+deflection dfGP Run 8/8, Epoch 441/2000, Training Loss (NLML): -1.4512
+deflection dfGP Run 8/8, Epoch 461/2000, Training Loss (NLML): -1.4649
+deflection dfGP Run 8/8, Epoch 481/2000, Training Loss (NLML): -1.4802
+deflection dfGP Run 8/8, Epoch 501/2000, Training Loss (NLML): -1.4910
+deflection dfGP Run 8/8, Epoch 521/2000, Training Loss (NLML): -1.4983
+deflection dfGP Run 8/8, Epoch 541/2000, Training Loss (NLML): -1.5037
+deflection dfGP Run 8/8, Epoch 561/2000, Training Loss (NLML): -1.5098
+deflection dfGP Run 8/8, Epoch 581/2000, Training Loss (NLML): -1.5133
+deflection dfGP Run 8/8, Epoch 601/2000, Training Loss (NLML): -1.5138
+deflection dfGP Run 8/8, Epoch 621/2000, Training Loss (NLML): -1.5174
+deflection dfGP Run 8/8, Epoch 641/2000, Training Loss (NLML): -1.5168
+deflection dfGP Run 8/8, Epoch 661/2000, Training Loss (NLML): -1.5184
+deflection dfGP Run 8/8, Epoch 681/2000, Training Loss (NLML): -1.5183
+deflection dfGP Run 8/8, Epoch 701/2000, Training Loss (NLML): -1.5204
+deflection dfGP Run 8/8, Epoch 721/2000, Training Loss (NLML): -1.5207
+deflection dfGP Run 8/8, Epoch 741/2000, Training Loss (NLML): -1.5215
+deflection dfGP Run 8/8, Epoch 761/2000, Training Loss (NLML): -1.5205
+deflection dfGP Run 8/8, Epoch 781/2000, Training Loss (NLML): -1.5226
+deflection dfGP Run 8/8, Epoch 801/2000, Training Loss (NLML): -1.5221
+deflection dfGP Run 8/8, Epoch 821/2000, Training Loss (NLML): -1.5220
+deflection dfGP Run 8/8, Epoch 841/2000, Training Loss (NLML): -1.5227
+deflection dfGP Run 8/8, Epoch 861/2000, Training Loss (NLML): -1.5228
+deflection dfGP Run 8/8, Epoch 881/2000, Training Loss (NLML): -1.5218
+deflection dfGP Run 8/8, Epoch 901/2000, Training Loss (NLML): -1.5237
+deflection dfGP Run 8/8, Epoch 921/2000, Training Loss (NLML): -1.5240
+deflection dfGP Run 8/8, Epoch 941/2000, Training Loss (NLML): -1.5225
+deflection dfGP Run 8/8, Epoch 961/2000, Training Loss (NLML): -1.5240
+deflection dfGP Run 8/8, Epoch 981/2000, Training Loss (NLML): -1.5220
+deflection dfGP Run 8/8, Epoch 1001/2000, Training Loss (NLML): -1.5238
+deflection dfGP Run 8/8, Epoch 1021/2000, Training Loss (NLML): -1.5232
+deflection dfGP Run 8/8, Epoch 1041/2000, Training Loss (NLML): -1.5243
+deflection dfGP Run 8/8, Epoch 1061/2000, Training Loss (NLML): -1.5232
+deflection dfGP Run 8/8, Epoch 1081/2000, Training Loss (NLML): -1.5243
+deflection dfGP Run 8/8, Epoch 1101/2000, Training Loss (NLML): -1.5251
+deflection dfGP Run 8/8, Epoch 1121/2000, Training Loss (NLML): -1.5256
+deflection dfGP Run 8/8, Epoch 1141/2000, Training Loss (NLML): -1.5237
+deflection dfGP Run 8/8, Epoch 1161/2000, Training Loss (NLML): -1.5241
+deflection dfGP Run 8/8, Epoch 1181/2000, Training Loss (NLML): -1.5251
+deflection dfGP Run 8/8, Epoch 1201/2000, Training Loss (NLML): -1.5266
+deflection dfGP Run 8/8, Epoch 1221/2000, Training Loss (NLML): -1.5256
+deflection dfGP Run 8/8, Epoch 1241/2000, Training Loss (NLML): -1.5272
+deflection dfGP Run 8/8, Epoch 1261/2000, Training Loss (NLML): -1.5264
+deflection dfGP Run 8/8, Epoch 1281/2000, Training Loss (NLML): -1.5264
+deflection dfGP Run 8/8, Epoch 1301/2000, Training Loss (NLML): -1.5263
+deflection dfGP Run 8/8, Epoch 1321/2000, Training Loss (NLML): -1.5274
+deflection dfGP Run 8/8, Epoch 1341/2000, Training Loss (NLML): -1.5265
+deflection dfGP Run 8/8, Epoch 1361/2000, Training Loss (NLML): -1.5271
+deflection dfGP Run 8/8, Epoch 1381/2000, Training Loss (NLML): -1.5263
+deflection dfGP Run 8/8, Epoch 1401/2000, Training Loss (NLML): -1.5270
+deflection dfGP Run 8/8, Epoch 1421/2000, Training Loss (NLML): -1.5274
+Early stopping triggered after 1426 epochs.
+
+Results per run saved to results_sim/dfGP/deflection_dfGP_metrics_per_run.csv
+
+Mean & Std saved to results_sim/dfGP/deflection_dfGP_metrics_summary.csv
+=== EDGE ===
+Training inputs shape: torch.Size([196, 2])
+Training observations shape: torch.Size([196, 2])
+Training inputs dtype: torch.float32
+Training inputs device: cuda:0
+Training observations device: cuda:0
+
+=== EDGE ===
+Test inputs shape: torch.Size([400, 2])
+Test observations shape: torch.Size([400, 2])
+Test inputs dtype: torch.float32
+Test inputs device: cuda:0
+Test observations device: cuda:0
+
+
+--- Training Run 1/8 ---
+
+Start Training
+edge dfGP Run 1/8, Epoch 1/2000, Training Loss (NLML): -0.7281, Training RMSE: 0.0705
+edge dfGP Run 1/8, Epoch 21/2000, Training Loss (NLML): -0.8419, Training RMSE: 0.0678
+edge dfGP Run 1/8, Epoch 41/2000, Training Loss (NLML): -0.8923, Training RMSE: 0.0674
+edge dfGP Run 1/8, Epoch 61/2000, Training Loss (NLML): -0.9189, Training RMSE: 0.0666
+edge dfGP Run 1/8, Epoch 81/2000, Training Loss (NLML): -0.9414, Training RMSE: 0.0642
+edge dfGP Run 1/8, Epoch 101/2000, Training Loss (NLML): -0.9686, Training RMSE: 0.0598
+edge dfGP Run 1/8, Epoch 121/2000, Training Loss (NLML): -0.9905, Training RMSE: 0.0564
+edge dfGP Run 1/8, Epoch 141/2000, Training Loss (NLML): -1.0007, Training RMSE: 0.0557
+edge dfGP Run 1/8, Epoch 161/2000, Training Loss (NLML): -1.0091, Training RMSE: 0.0553
+edge dfGP Run 1/8, Epoch 181/2000, Training Loss (NLML): -1.0161, Training RMSE: 0.0549
+edge dfGP Run 1/8, Epoch 201/2000, Training Loss (NLML): -1.0224, Training RMSE: 0.0544
+edge dfGP Run 1/8, Epoch 221/2000, Training Loss (NLML): -1.0282, Training RMSE: 0.0540
+edge dfGP Run 1/8, Epoch 241/2000, Training Loss (NLML): -1.0335, Training RMSE: 0.0536
+edge dfGP Run 1/8, Epoch 261/2000, Training Loss (NLML): -1.0383, Training RMSE: 0.0530
+edge dfGP Run 1/8, Epoch 281/2000, Training Loss (NLML): -1.0430, Training RMSE: 0.0522
+edge dfGP Run 1/8, Epoch 301/2000, Training Loss (NLML): -1.0485, Training RMSE: 0.0506
+edge dfGP Run 1/8, Epoch 321/2000, Training Loss (NLML): -1.0619, Training RMSE: 0.0456
+edge dfGP Run 1/8, Epoch 341/2000, Training Loss (NLML): -1.1050, Training RMSE: 0.0346
+edge dfGP Run 1/8, Epoch 361/2000, Training Loss (NLML): -1.1450, Training RMSE: 0.0303
+edge dfGP Run 1/8, Epoch 381/2000, Training Loss (NLML): -1.1766, Training RMSE: 0.0263
+edge dfGP Run 1/8, Epoch 401/2000, Training Loss (NLML): -1.2023, Training RMSE: 0.0233
+edge dfGP Run 1/8, Epoch 421/2000, Training Loss (NLML): -1.2222, Training RMSE: 0.0214
+edge dfGP Run 1/8, Epoch 441/2000, Training Loss (NLML): -1.2353, Training RMSE: 0.0203
+edge dfGP Run 1/8, Epoch 461/2000, Training Loss (NLML): -1.2426, Training RMSE: 0.0195
+edge dfGP Run 1/8, Epoch 481/2000, Training Loss (NLML): -1.2463, Training RMSE: 0.0191
+edge dfGP Run 1/8, Epoch 501/2000, Training Loss (NLML): -1.2479, Training RMSE: 0.0188
+edge dfGP Run 1/8, Epoch 521/2000, Training Loss (NLML): -1.2485, Training RMSE: 0.0186
+edge dfGP Run 1/8, Epoch 541/2000, Training Loss (NLML): -1.2487, Training RMSE: 0.0185
+edge dfGP Run 1/8, Epoch 561/2000, Training Loss (NLML): -1.2487, Training RMSE: 0.0185
+edge dfGP Run 1/8, Epoch 581/2000, Training Loss (NLML): -1.2488, Training RMSE: 0.0184
+edge dfGP Run 1/8, Epoch 601/2000, Training Loss (NLML): -1.2488, Training RMSE: 0.0184
+edge dfGP Run 1/8, Epoch 621/2000, Training Loss (NLML): -1.2488, Training RMSE: 0.0184
+edge dfGP Run 1/8, Epoch 641/2000, Training Loss (NLML): -1.2487, Training RMSE: 0.0184
+edge dfGP Run 1/8, Epoch 661/2000, Training Loss (NLML): -1.2488, Training RMSE: 0.0184
+edge dfGP Run 1/8, Epoch 681/2000, Training Loss (NLML): -1.2487, Training RMSE: 0.0184
+Early stopping triggered after 695 epochs.
+
+--- Training Run 2/8 ---
+
+Start Training
+edge dfGP Run 2/8, Epoch 1/2000, Training Loss (NLML): -0.6663
+edge dfGP Run 2/8, Epoch 21/2000, Training Loss (NLML): -0.8228
+edge dfGP Run 2/8, Epoch 41/2000, Training Loss (NLML): -0.8750
+edge dfGP Run 2/8, Epoch 61/2000, Training Loss (NLML): -0.8935
+edge dfGP Run 2/8, Epoch 81/2000, Training Loss (NLML): -0.9024
+edge dfGP Run 2/8, Epoch 101/2000, Training Loss (NLML): -0.9077
+edge dfGP Run 2/8, Epoch 121/2000, Training Loss (NLML): -0.9113
+edge dfGP Run 2/8, Epoch 141/2000, Training Loss (NLML): -0.9142
+edge dfGP Run 2/8, Epoch 161/2000, Training Loss (NLML): -0.9171
+edge dfGP Run 2/8, Epoch 181/2000, Training Loss (NLML): -0.9201
+edge dfGP Run 2/8, Epoch 201/2000, Training Loss (NLML): -0.9239
+edge dfGP Run 2/8, Epoch 221/2000, Training Loss (NLML): -0.9294
+edge dfGP Run 2/8, Epoch 241/2000, Training Loss (NLML): -0.9380
+edge dfGP Run 2/8, Epoch 261/2000, Training Loss (NLML): -0.9522
+edge dfGP Run 2/8, Epoch 281/2000, Training Loss (NLML): -0.9774
+edge dfGP Run 2/8, Epoch 301/2000, Training Loss (NLML): -0.9953
+edge dfGP Run 2/8, Epoch 321/2000, Training Loss (NLML): -1.0002
+edge dfGP Run 2/8, Epoch 341/2000, Training Loss (NLML): -1.0053
+edge dfGP Run 2/8, Epoch 361/2000, Training Loss (NLML): -1.0104
+edge dfGP Run 2/8, Epoch 381/2000, Training Loss (NLML): -1.0155
+edge dfGP Run 2/8, Epoch 401/2000, Training Loss (NLML): -1.0206
+edge dfGP Run 2/8, Epoch 421/2000, Training Loss (NLML): -1.0254
+edge dfGP Run 2/8, Epoch 441/2000, Training Loss (NLML): -1.0299
+edge dfGP Run 2/8, Epoch 461/2000, Training Loss (NLML): -1.0340
+edge dfGP Run 2/8, Epoch 481/2000, Training Loss (NLML): -1.0376
+edge dfGP Run 2/8, Epoch 501/2000, Training Loss (NLML): -1.0408
+edge dfGP Run 2/8, Epoch 521/2000, Training Loss (NLML): -1.0435
+edge dfGP Run 2/8, Epoch 541/2000, Training Loss (NLML): -1.0463
+edge dfGP Run 2/8, Epoch 561/2000, Training Loss (NLML): -1.0514
+edge dfGP Run 2/8, Epoch 581/2000, Training Loss (NLML): -1.1058
+edge dfGP Run 2/8, Epoch 601/2000, Training Loss (NLML): -1.2126
+edge dfGP Run 2/8, Epoch 621/2000, Training Loss (NLML): -1.2798
+edge dfGP Run 2/8, Epoch 641/2000, Training Loss (NLML): -1.3042
+edge dfGP Run 2/8, Epoch 661/2000, Training Loss (NLML): -1.3085
+edge dfGP Run 2/8, Epoch 681/2000, Training Loss (NLML): -1.3087
+edge dfGP Run 2/8, Epoch 701/2000, Training Loss (NLML): -1.3086
+edge dfGP Run 2/8, Epoch 721/2000, Training Loss (NLML): -1.3086
+edge dfGP Run 2/8, Epoch 741/2000, Training Loss (NLML): -1.3086
+edge dfGP Run 2/8, Epoch 761/2000, Training Loss (NLML): -1.3087
+edge dfGP Run 2/8, Epoch 781/2000, Training Loss (NLML): -1.3086
+edge dfGP Run 2/8, Epoch 801/2000, Training Loss (NLML): -1.3087
+edge dfGP Run 2/8, Epoch 821/2000, Training Loss (NLML): -1.3086
+edge dfGP Run 2/8, Epoch 841/2000, Training Loss (NLML): -1.3087
+edge dfGP Run 2/8, Epoch 861/2000, Training Loss (NLML): -1.3087
+edge dfGP Run 2/8, Epoch 881/2000, Training Loss (NLML): -1.3087
+edge dfGP Run 2/8, Epoch 901/2000, Training Loss (NLML): -1.3086
+edge dfGP Run 2/8, Epoch 921/2000, Training Loss (NLML): -1.3087
+Early stopping triggered after 925 epochs.
+
+--- Training Run 3/8 ---
+
+Start Training
+edge dfGP Run 3/8, Epoch 1/2000, Training Loss (NLML): -0.5626
+edge dfGP Run 3/8, Epoch 21/2000, Training Loss (NLML): -0.7614
+edge dfGP Run 3/8, Epoch 41/2000, Training Loss (NLML): -0.8625
+edge dfGP Run 3/8, Epoch 61/2000, Training Loss (NLML): -0.9174
+edge dfGP Run 3/8, Epoch 81/2000, Training Loss (NLML): -0.9491
+edge dfGP Run 3/8, Epoch 101/2000, Training Loss (NLML): -0.9702
+edge dfGP Run 3/8, Epoch 121/2000, Training Loss (NLML): -0.9759
+edge dfGP Run 3/8, Epoch 141/2000, Training Loss (NLML): -0.9817
+edge dfGP Run 3/8, Epoch 161/2000, Training Loss (NLML): -0.9866
+edge dfGP Run 3/8, Epoch 181/2000, Training Loss (NLML): -0.9925
+edge dfGP Run 3/8, Epoch 201/2000, Training Loss (NLML): -0.9981
+edge dfGP Run 3/8, Epoch 221/2000, Training Loss (NLML): -1.0039
+edge dfGP Run 3/8, Epoch 241/2000, Training Loss (NLML): -1.0101
+edge dfGP Run 3/8, Epoch 261/2000, Training Loss (NLML): -1.0162
+edge dfGP Run 3/8, Epoch 281/2000, Training Loss (NLML): -1.0224
+edge dfGP Run 3/8, Epoch 301/2000, Training Loss (NLML): -1.0286
+edge dfGP Run 3/8, Epoch 321/2000, Training Loss (NLML): -1.0346
+edge dfGP Run 3/8, Epoch 341/2000, Training Loss (NLML): -1.0405
+edge dfGP Run 3/8, Epoch 361/2000, Training Loss (NLML): -1.0465
+edge dfGP Run 3/8, Epoch 381/2000, Training Loss (NLML): -1.0544
+edge dfGP Run 3/8, Epoch 401/2000, Training Loss (NLML): -1.0717
+edge dfGP Run 3/8, Epoch 421/2000, Training Loss (NLML): -1.1169
+edge dfGP Run 3/8, Epoch 441/2000, Training Loss (NLML): -1.1620
+edge dfGP Run 3/8, Epoch 461/2000, Training Loss (NLML): -1.2005
+edge dfGP Run 3/8, Epoch 481/2000, Training Loss (NLML): -1.2312
+edge dfGP Run 3/8, Epoch 501/2000, Training Loss (NLML): -1.2543
+edge dfGP Run 3/8, Epoch 521/2000, Training Loss (NLML): -1.2708
+edge dfGP Run 3/8, Epoch 541/2000, Training Loss (NLML): -1.2818
+edge dfGP Run 3/8, Epoch 561/2000, Training Loss (NLML): -1.2886
+edge dfGP Run 3/8, Epoch 581/2000, Training Loss (NLML): -1.2926
+edge dfGP Run 3/8, Epoch 601/2000, Training Loss (NLML): -1.2948
+edge dfGP Run 3/8, Epoch 621/2000, Training Loss (NLML): -1.2959
+edge dfGP Run 3/8, Epoch 641/2000, Training Loss (NLML): -1.2965
+edge dfGP Run 3/8, Epoch 661/2000, Training Loss (NLML): -1.2968
+edge dfGP Run 3/8, Epoch 681/2000, Training Loss (NLML): -1.2969
+edge dfGP Run 3/8, Epoch 701/2000, Training Loss (NLML): -1.2968
+edge dfGP Run 3/8, Epoch 721/2000, Training Loss (NLML): -1.2969
+edge dfGP Run 3/8, Epoch 741/2000, Training Loss (NLML): -1.2970
+edge dfGP Run 3/8, Epoch 761/2000, Training Loss (NLML): -1.2969
+edge dfGP Run 3/8, Epoch 781/2000, Training Loss (NLML): -1.2969
+edge dfGP Run 3/8, Epoch 801/2000, Training Loss (NLML): -1.2969
+edge dfGP Run 3/8, Epoch 821/2000, Training Loss (NLML): -1.2970
+edge dfGP Run 3/8, Epoch 841/2000, Training Loss (NLML): -1.2970
+Early stopping triggered after 844 epochs.
+
+--- Training Run 4/8 ---
+
+Start Training
+edge dfGP Run 4/8, Epoch 1/2000, Training Loss (NLML): -0.6031
+edge dfGP Run 4/8, Epoch 21/2000, Training Loss (NLML): -0.7996
+edge dfGP Run 4/8, Epoch 41/2000, Training Loss (NLML): -0.8725
+edge dfGP Run 4/8, Epoch 61/2000, Training Loss (NLML): -0.8985
+edge dfGP Run 4/8, Epoch 81/2000, Training Loss (NLML): -0.9121
+edge dfGP Run 4/8, Epoch 101/2000, Training Loss (NLML): -0.9202
+edge dfGP Run 4/8, Epoch 121/2000, Training Loss (NLML): -0.9252
+edge dfGP Run 4/8, Epoch 141/2000, Training Loss (NLML): -0.9289
+edge dfGP Run 4/8, Epoch 161/2000, Training Loss (NLML): -0.9319
+edge dfGP Run 4/8, Epoch 181/2000, Training Loss (NLML): -0.9347
+edge dfGP Run 4/8, Epoch 201/2000, Training Loss (NLML): -0.9376
+edge dfGP Run 4/8, Epoch 221/2000, Training Loss (NLML): -0.9410
+edge dfGP Run 4/8, Epoch 241/2000, Training Loss (NLML): -0.9457
+edge dfGP Run 4/8, Epoch 261/2000, Training Loss (NLML): -0.9530
+edge dfGP Run 4/8, Epoch 281/2000, Training Loss (NLML): -0.9641
+edge dfGP Run 4/8, Epoch 301/2000, Training Loss (NLML): -0.9815
+edge dfGP Run 4/8, Epoch 321/2000, Training Loss (NLML): -1.0029
+edge dfGP Run 4/8, Epoch 341/2000, Training Loss (NLML): -1.0105
+edge dfGP Run 4/8, Epoch 361/2000, Training Loss (NLML): -1.0147
+edge dfGP Run 4/8, Epoch 381/2000, Training Loss (NLML): -1.0188
+edge dfGP Run 4/8, Epoch 401/2000, Training Loss (NLML): -1.0230
+edge dfGP Run 4/8, Epoch 421/2000, Training Loss (NLML): -1.0274
+edge dfGP Run 4/8, Epoch 441/2000, Training Loss (NLML): -1.0319
+edge dfGP Run 4/8, Epoch 461/2000, Training Loss (NLML): -1.0364
+edge dfGP Run 4/8, Epoch 481/2000, Training Loss (NLML): -1.0408
+edge dfGP Run 4/8, Epoch 501/2000, Training Loss (NLML): -1.0449
+edge dfGP Run 4/8, Epoch 521/2000, Training Loss (NLML): -1.0489
+edge dfGP Run 4/8, Epoch 541/2000, Training Loss (NLML): -1.0525
+edge dfGP Run 4/8, Epoch 561/2000, Training Loss (NLML): -1.0559
+edge dfGP Run 4/8, Epoch 581/2000, Training Loss (NLML): -1.0595
+edge dfGP Run 4/8, Epoch 601/2000, Training Loss (NLML): -1.0644
+edge dfGP Run 4/8, Epoch 621/2000, Training Loss (NLML): -1.0787
+edge dfGP Run 4/8, Epoch 641/2000, Training Loss (NLML): -1.1534
+edge dfGP Run 4/8, Epoch 661/2000, Training Loss (NLML): -1.2450
+edge dfGP Run 4/8, Epoch 681/2000, Training Loss (NLML): -1.2974
+edge dfGP Run 4/8, Epoch 701/2000, Training Loss (NLML): -1.3133
+edge dfGP Run 4/8, Epoch 721/2000, Training Loss (NLML): -1.3153
+edge dfGP Run 4/8, Epoch 741/2000, Training Loss (NLML): -1.3152
+edge dfGP Run 4/8, Epoch 761/2000, Training Loss (NLML): -1.3152
+edge dfGP Run 4/8, Epoch 781/2000, Training Loss (NLML): -1.3152
+edge dfGP Run 4/8, Epoch 801/2000, Training Loss (NLML): -1.3153
+edge dfGP Run 4/8, Epoch 821/2000, Training Loss (NLML): -1.3153
+edge dfGP Run 4/8, Epoch 841/2000, Training Loss (NLML): -1.3153
+edge dfGP Run 4/8, Epoch 861/2000, Training Loss (NLML): -1.3153
+Early stopping triggered after 876 epochs.
+
+--- Training Run 5/8 ---
+
+Start Training
+edge dfGP Run 5/8, Epoch 1/2000, Training Loss (NLML): -0.7575
+edge dfGP Run 5/8, Epoch 21/2000, Training Loss (NLML): -0.8787
+edge dfGP Run 5/8, Epoch 41/2000, Training Loss (NLML): -0.9207
+edge dfGP Run 5/8, Epoch 61/2000, Training Loss (NLML): -0.9327
+edge dfGP Run 5/8, Epoch 81/2000, Training Loss (NLML): -0.9441
+edge dfGP Run 5/8, Epoch 101/2000, Training Loss (NLML): -0.9630
+edge dfGP Run 5/8, Epoch 121/2000, Training Loss (NLML): -0.9896
+edge dfGP Run 5/8, Epoch 141/2000, Training Loss (NLML): -1.0015
+edge dfGP Run 5/8, Epoch 161/2000, Training Loss (NLML): -1.0098
+edge dfGP Run 5/8, Epoch 181/2000, Training Loss (NLML): -1.0172
+edge dfGP Run 5/8, Epoch 201/2000, Training Loss (NLML): -1.0239
+edge dfGP Run 5/8, Epoch 221/2000, Training Loss (NLML): -1.0307
+edge dfGP Run 5/8, Epoch 241/2000, Training Loss (NLML): -1.0371
+edge dfGP Run 5/8, Epoch 261/2000, Training Loss (NLML): -1.0436
+edge dfGP Run 5/8, Epoch 281/2000, Training Loss (NLML): -1.0498
+edge dfGP Run 5/8, Epoch 301/2000, Training Loss (NLML): -1.0559
+edge dfGP Run 5/8, Epoch 321/2000, Training Loss (NLML): -1.0631
+edge dfGP Run 5/8, Epoch 341/2000, Training Loss (NLML): -1.0776
+edge dfGP Run 5/8, Epoch 361/2000, Training Loss (NLML): -1.1259
+edge dfGP Run 5/8, Epoch 381/2000, Training Loss (NLML): -1.1934
+edge dfGP Run 5/8, Epoch 401/2000, Training Loss (NLML): -1.2465
+edge dfGP Run 5/8, Epoch 421/2000, Training Loss (NLML): -1.2826
+edge dfGP Run 5/8, Epoch 441/2000, Training Loss (NLML): -1.3040
+edge dfGP Run 5/8, Epoch 461/2000, Training Loss (NLML): -1.3153
+edge dfGP Run 5/8, Epoch 481/2000, Training Loss (NLML): -1.3204
+edge dfGP Run 5/8, Epoch 501/2000, Training Loss (NLML): -1.3225
+edge dfGP Run 5/8, Epoch 521/2000, Training Loss (NLML): -1.3231
+edge dfGP Run 5/8, Epoch 541/2000, Training Loss (NLML): -1.3233
+edge dfGP Run 5/8, Epoch 561/2000, Training Loss (NLML): -1.3233
+edge dfGP Run 5/8, Epoch 581/2000, Training Loss (NLML): -1.3232
+edge dfGP Run 5/8, Epoch 601/2000, Training Loss (NLML): -1.3233
+edge dfGP Run 5/8, Epoch 621/2000, Training Loss (NLML): -1.3233
+edge dfGP Run 5/8, Epoch 641/2000, Training Loss (NLML): -1.3234
+edge dfGP Run 5/8, Epoch 661/2000, Training Loss (NLML): -1.3232
+edge dfGP Run 5/8, Epoch 681/2000, Training Loss (NLML): -1.3232
+edge dfGP Run 5/8, Epoch 701/2000, Training Loss (NLML): -1.3233
+Early stopping triggered after 707 epochs.
+
+--- Training Run 6/8 ---
+
+Start Training
+edge dfGP Run 6/8, Epoch 1/2000, Training Loss (NLML): -0.7438
+edge dfGP Run 6/8, Epoch 21/2000, Training Loss (NLML): -0.8800
+edge dfGP Run 6/8, Epoch 41/2000, Training Loss (NLML): -0.9282
+edge dfGP Run 6/8, Epoch 61/2000, Training Loss (NLML): -0.9471
+edge dfGP Run 6/8, Epoch 81/2000, Training Loss (NLML): -0.9666
+edge dfGP Run 6/8, Epoch 101/2000, Training Loss (NLML): -0.9925
+edge dfGP Run 6/8, Epoch 121/2000, Training Loss (NLML): -1.0073
+edge dfGP Run 6/8, Epoch 141/2000, Training Loss (NLML): -1.0171
+edge dfGP Run 6/8, Epoch 161/2000, Training Loss (NLML): -1.0251
+edge dfGP Run 6/8, Epoch 181/2000, Training Loss (NLML): -1.0322
+edge dfGP Run 6/8, Epoch 201/2000, Training Loss (NLML): -1.0392
+edge dfGP Run 6/8, Epoch 221/2000, Training Loss (NLML): -1.0457
+edge dfGP Run 6/8, Epoch 241/2000, Training Loss (NLML): -1.0519
+edge dfGP Run 6/8, Epoch 261/2000, Training Loss (NLML): -1.0579
+edge dfGP Run 6/8, Epoch 281/2000, Training Loss (NLML): -1.0638
+edge dfGP Run 6/8, Epoch 301/2000, Training Loss (NLML): -1.0702
+edge dfGP Run 6/8, Epoch 321/2000, Training Loss (NLML): -1.0829
+edge dfGP Run 6/8, Epoch 341/2000, Training Loss (NLML): -1.1230
+edge dfGP Run 6/8, Epoch 361/2000, Training Loss (NLML): -1.1734
+edge dfGP Run 6/8, Epoch 381/2000, Training Loss (NLML): -1.2188
+edge dfGP Run 6/8, Epoch 401/2000, Training Loss (NLML): -1.2553
+edge dfGP Run 6/8, Epoch 421/2000, Training Loss (NLML): -1.2794
+edge dfGP Run 6/8, Epoch 441/2000, Training Loss (NLML): -1.2931
+edge dfGP Run 6/8, Epoch 461/2000, Training Loss (NLML): -1.2995
+edge dfGP Run 6/8, Epoch 481/2000, Training Loss (NLML): -1.3020
+edge dfGP Run 6/8, Epoch 501/2000, Training Loss (NLML): -1.3026
+edge dfGP Run 6/8, Epoch 521/2000, Training Loss (NLML): -1.3029
+edge dfGP Run 6/8, Epoch 541/2000, Training Loss (NLML): -1.3028
+edge dfGP Run 6/8, Epoch 561/2000, Training Loss (NLML): -1.3029
+edge dfGP Run 6/8, Epoch 581/2000, Training Loss (NLML): -1.3029
+edge dfGP Run 6/8, Epoch 601/2000, Training Loss (NLML): -1.3028
+edge dfGP Run 6/8, Epoch 621/2000, Training Loss (NLML): -1.3028
+edge dfGP Run 6/8, Epoch 641/2000, Training Loss (NLML): -1.3028
+edge dfGP Run 6/8, Epoch 661/2000, Training Loss (NLML): -1.3029
+Early stopping triggered after 664 epochs.
+
+--- Training Run 7/8 ---
+
+Start Training
+edge dfGP Run 7/8, Epoch 1/2000, Training Loss (NLML): -0.9256
+edge dfGP Run 7/8, Epoch 21/2000, Training Loss (NLML): -0.9683
+edge dfGP Run 7/8, Epoch 41/2000, Training Loss (NLML): -0.9737
+edge dfGP Run 7/8, Epoch 61/2000, Training Loss (NLML): -0.9821
+edge dfGP Run 7/8, Epoch 81/2000, Training Loss (NLML): -0.9913
+edge dfGP Run 7/8, Epoch 101/2000, Training Loss (NLML): -0.9966
+edge dfGP Run 7/8, Epoch 121/2000, Training Loss (NLML): -1.0014
+edge dfGP Run 7/8, Epoch 141/2000, Training Loss (NLML): -1.0066
+edge dfGP Run 7/8, Epoch 161/2000, Training Loss (NLML): -1.0118
+edge dfGP Run 7/8, Epoch 181/2000, Training Loss (NLML): -1.0171
+edge dfGP Run 7/8, Epoch 201/2000, Training Loss (NLML): -1.0225
+edge dfGP Run 7/8, Epoch 221/2000, Training Loss (NLML): -1.0279
+edge dfGP Run 7/8, Epoch 241/2000, Training Loss (NLML): -1.0331
+edge dfGP Run 7/8, Epoch 261/2000, Training Loss (NLML): -1.0381
+edge dfGP Run 7/8, Epoch 281/2000, Training Loss (NLML): -1.0429
+edge dfGP Run 7/8, Epoch 301/2000, Training Loss (NLML): -1.0474
+edge dfGP Run 7/8, Epoch 321/2000, Training Loss (NLML): -1.0522
+edge dfGP Run 7/8, Epoch 341/2000, Training Loss (NLML): -1.0706
+edge dfGP Run 7/8, Epoch 361/2000, Training Loss (NLML): -1.1818
+edge dfGP Run 7/8, Epoch 381/2000, Training Loss (NLML): -1.2704
+edge dfGP Run 7/8, Epoch 401/2000, Training Loss (NLML): -1.3008
+edge dfGP Run 7/8, Epoch 421/2000, Training Loss (NLML): -1.3050
+edge dfGP Run 7/8, Epoch 441/2000, Training Loss (NLML): -1.3052
+edge dfGP Run 7/8, Epoch 461/2000, Training Loss (NLML): -1.3051
+edge dfGP Run 7/8, Epoch 481/2000, Training Loss (NLML): -1.3052
+edge dfGP Run 7/8, Epoch 501/2000, Training Loss (NLML): -1.3053
+edge dfGP Run 7/8, Epoch 521/2000, Training Loss (NLML): -1.3052
+edge dfGP Run 7/8, Epoch 541/2000, Training Loss (NLML): -1.3052
+edge dfGP Run 7/8, Epoch 561/2000, Training Loss (NLML): -1.3053
+edge dfGP Run 7/8, Epoch 581/2000, Training Loss (NLML): -1.3052
+edge dfGP Run 7/8, Epoch 601/2000, Training Loss (NLML): -1.3052
+edge dfGP Run 7/8, Epoch 621/2000, Training Loss (NLML): -1.3053
+edge dfGP Run 7/8, Epoch 641/2000, Training Loss (NLML): -1.3052
+edge dfGP Run 7/8, Epoch 661/2000, Training Loss (NLML): -1.3052
+edge dfGP Run 7/8, Epoch 681/2000, Training Loss (NLML): -1.3052
+edge dfGP Run 7/8, Epoch 701/2000, Training Loss (NLML): -1.3052
+edge dfGP Run 7/8, Epoch 721/2000, Training Loss (NLML): -1.3052
+edge dfGP Run 7/8, Epoch 741/2000, Training Loss (NLML): -1.3052
+edge dfGP Run 7/8, Epoch 761/2000, Training Loss (NLML): -1.3051
+edge dfGP Run 7/8, Epoch 781/2000, Training Loss (NLML): -1.3052
+edge dfGP Run 7/8, Epoch 801/2000, Training Loss (NLML): -1.3053
+Early stopping triggered after 818 epochs.
+
+--- Training Run 8/8 ---
+
+Start Training
+edge dfGP Run 8/8, Epoch 1/2000, Training Loss (NLML): -0.6002
+edge dfGP Run 8/8, Epoch 21/2000, Training Loss (NLML): -0.8036
+edge dfGP Run 8/8, Epoch 41/2000, Training Loss (NLML): -0.8871
+edge dfGP Run 8/8, Epoch 61/2000, Training Loss (NLML): -0.9172
+edge dfGP Run 8/8, Epoch 81/2000, Training Loss (NLML): -0.9348
+edge dfGP Run 8/8, Epoch 101/2000, Training Loss (NLML): -0.9537
+edge dfGP Run 8/8, Epoch 121/2000, Training Loss (NLML): -0.9785
+edge dfGP Run 8/8, Epoch 141/2000, Training Loss (NLML): -1.0012
+edge dfGP Run 8/8, Epoch 161/2000, Training Loss (NLML): -1.0101
+edge dfGP Run 8/8, Epoch 181/2000, Training Loss (NLML): -1.0179
+edge dfGP Run 8/8, Epoch 201/2000, Training Loss (NLML): -1.0251
+edge dfGP Run 8/8, Epoch 221/2000, Training Loss (NLML): -1.0319
+edge dfGP Run 8/8, Epoch 241/2000, Training Loss (NLML): -1.0385
+edge dfGP Run 8/8, Epoch 261/2000, Training Loss (NLML): -1.0451
+edge dfGP Run 8/8, Epoch 281/2000, Training Loss (NLML): -1.0517
+edge dfGP Run 8/8, Epoch 301/2000, Training Loss (NLML): -1.0581
+edge dfGP Run 8/8, Epoch 321/2000, Training Loss (NLML): -1.0646
+edge dfGP Run 8/8, Epoch 341/2000, Training Loss (NLML): -1.0721
+edge dfGP Run 8/8, Epoch 361/2000, Training Loss (NLML): -1.0833
+edge dfGP Run 8/8, Epoch 381/2000, Training Loss (NLML): -1.1044
+edge dfGP Run 8/8, Epoch 401/2000, Training Loss (NLML): -1.1458
+edge dfGP Run 8/8, Epoch 421/2000, Training Loss (NLML): -1.1871
+edge dfGP Run 8/8, Epoch 441/2000, Training Loss (NLML): -1.2226
+edge dfGP Run 8/8, Epoch 461/2000, Training Loss (NLML): -1.2507
+edge dfGP Run 8/8, Epoch 481/2000, Training Loss (NLML): -1.2715
+edge dfGP Run 8/8, Epoch 501/2000, Training Loss (NLML): -1.2862
+edge dfGP Run 8/8, Epoch 521/2000, Training Loss (NLML): -1.2957
+edge dfGP Run 8/8, Epoch 541/2000, Training Loss (NLML): -1.3013
+edge dfGP Run 8/8, Epoch 561/2000, Training Loss (NLML): -1.3043
+edge dfGP Run 8/8, Epoch 581/2000, Training Loss (NLML): -1.3058
+edge dfGP Run 8/8, Epoch 601/2000, Training Loss (NLML): -1.3064
+edge dfGP Run 8/8, Epoch 621/2000, Training Loss (NLML): -1.3066
+edge dfGP Run 8/8, Epoch 641/2000, Training Loss (NLML): -1.3068
+edge dfGP Run 8/8, Epoch 661/2000, Training Loss (NLML): -1.3068
+edge dfGP Run 8/8, Epoch 681/2000, Training Loss (NLML): -1.3069
+edge dfGP Run 8/8, Epoch 701/2000, Training Loss (NLML): -1.3069
+edge dfGP Run 8/8, Epoch 721/2000, Training Loss (NLML): -1.3069
+edge dfGP Run 8/8, Epoch 741/2000, Training Loss (NLML): -1.3069
+Early stopping triggered after 756 epochs.
+
+Results per run saved to results_sim/dfGP/edge_dfGP_metrics_per_run.csv
+
+Mean & Std saved to results_sim/dfGP/edge_dfGP_metrics_summary.csv
+=== RIDGES ===
+Training inputs shape: torch.Size([196, 2])
+Training observations shape: torch.Size([196, 2])
+Training inputs dtype: torch.float32
+Training inputs device: cuda:0
+Training observations device: cuda:0
+
+=== RIDGES ===
+Test inputs shape: torch.Size([400, 2])
+Test observations shape: torch.Size([400, 2])
+Test inputs dtype: torch.float32
+Test inputs device: cuda:0
+Test observations device: cuda:0
+
+
+--- Training Run 1/8 ---
+
+Start Training
+ridges dfGP Run 1/8, Epoch 1/2000, Training Loss (NLML): -1.5693, Training RMSE: 0.0152
+ridges dfGP Run 1/8, Epoch 21/2000, Training Loss (NLML): -1.6337, Training RMSE: 0.0151
+ridges dfGP Run 1/8, Epoch 41/2000, Training Loss (NLML): -1.6637, Training RMSE: 0.0152
+ridges dfGP Run 1/8, Epoch 61/2000, Training Loss (NLML): -1.6835, Training RMSE: 0.0152
+ridges dfGP Run 1/8, Epoch 81/2000, Training Loss (NLML): -1.6933, Training RMSE: 0.0152
+ridges dfGP Run 1/8, Epoch 101/2000, Training Loss (NLML): -1.6958, Training RMSE: 0.0152
+ridges dfGP Run 1/8, Epoch 121/2000, Training Loss (NLML): -1.6974, Training RMSE: 0.0151
+ridges dfGP Run 1/8, Epoch 141/2000, Training Loss (NLML): -1.6995, Training RMSE: 0.0151
+ridges dfGP Run 1/8, Epoch 161/2000, Training Loss (NLML): -1.7008, Training RMSE: 0.0151
+ridges dfGP Run 1/8, Epoch 181/2000, Training Loss (NLML): -1.7018, Training RMSE: 0.0151
+ridges dfGP Run 1/8, Epoch 201/2000, Training Loss (NLML): -1.7029, Training RMSE: 0.0151
+ridges dfGP Run 1/8, Epoch 221/2000, Training Loss (NLML): -1.7033, Training RMSE: 0.0151
+ridges dfGP Run 1/8, Epoch 241/2000, Training Loss (NLML): -1.7036, Training RMSE: 0.0151
+ridges dfGP Run 1/8, Epoch 261/2000, Training Loss (NLML): -1.7038, Training RMSE: 0.0150
+ridges dfGP Run 1/8, Epoch 281/2000, Training Loss (NLML): -1.7044, Training RMSE: 0.0151
+ridges dfGP Run 1/8, Epoch 301/2000, Training Loss (NLML): -1.7051, Training RMSE: 0.0151
+ridges dfGP Run 1/8, Epoch 321/2000, Training Loss (NLML): -1.7051, Training RMSE: 0.0151
+ridges dfGP Run 1/8, Epoch 341/2000, Training Loss (NLML): -1.7058, Training RMSE: 0.0150
+ridges dfGP Run 1/8, Epoch 361/2000, Training Loss (NLML): -1.7059, Training RMSE: 0.0150
+ridges dfGP Run 1/8, Epoch 381/2000, Training Loss (NLML): -1.7066, Training RMSE: 0.0151
+ridges dfGP Run 1/8, Epoch 401/2000, Training Loss (NLML): -1.7081, Training RMSE: 0.0151
+ridges dfGP Run 1/8, Epoch 421/2000, Training Loss (NLML): -1.7063, Training RMSE: 0.0151
+ridges dfGP Run 1/8, Epoch 441/2000, Training Loss (NLML): -1.7073, Training RMSE: 0.0151
+ridges dfGP Run 1/8, Epoch 461/2000, Training Loss (NLML): -1.7059, Training RMSE: 0.0151
+ridges dfGP Run 1/8, Epoch 481/2000, Training Loss (NLML): -1.7062, Training RMSE: 0.0151
+ridges dfGP Run 1/8, Epoch 501/2000, Training Loss (NLML): -1.7075, Training RMSE: 0.0151
+ridges dfGP Run 1/8, Epoch 521/2000, Training Loss (NLML): -1.7082, Training RMSE: 0.0151
+ridges dfGP Run 1/8, Epoch 541/2000, Training Loss (NLML): -1.7070, Training RMSE: 0.0151
+ridges dfGP Run 1/8, Epoch 561/2000, Training Loss (NLML): -1.7074, Training RMSE: 0.0151
+Early stopping triggered after 571 epochs.
+
+--- Training Run 2/8 ---
+
+Start Training
+ridges dfGP Run 2/8, Epoch 1/2000, Training Loss (NLML): -1.4567
+ridges dfGP Run 2/8, Epoch 21/2000, Training Loss (NLML): -1.5173
+ridges dfGP Run 2/8, Epoch 41/2000, Training Loss (NLML): -1.5612
+ridges dfGP Run 2/8, Epoch 61/2000, Training Loss (NLML): -1.5939
+ridges dfGP Run 2/8, Epoch 81/2000, Training Loss (NLML): -1.6149
+ridges dfGP Run 2/8, Epoch 101/2000, Training Loss (NLML): -1.6281
+ridges dfGP Run 2/8, Epoch 121/2000, Training Loss (NLML): -1.6336
+ridges dfGP Run 2/8, Epoch 141/2000, Training Loss (NLML): -1.6353
+ridges dfGP Run 2/8, Epoch 161/2000, Training Loss (NLML): -1.6358
+ridges dfGP Run 2/8, Epoch 181/2000, Training Loss (NLML): -1.6370
+ridges dfGP Run 2/8, Epoch 201/2000, Training Loss (NLML): -1.6364
+ridges dfGP Run 2/8, Epoch 221/2000, Training Loss (NLML): -1.6362
+ridges dfGP Run 2/8, Epoch 241/2000, Training Loss (NLML): -1.6365
+ridges dfGP Run 2/8, Epoch 261/2000, Training Loss (NLML): -1.6368
+ridges dfGP Run 2/8, Epoch 281/2000, Training Loss (NLML): -1.6365
+Early stopping triggered after 283 epochs.
+
+--- Training Run 3/8 ---
+
+Start Training
+ridges dfGP Run 3/8, Epoch 1/2000, Training Loss (NLML): -1.5183
+ridges dfGP Run 3/8, Epoch 21/2000, Training Loss (NLML): -1.6177
+ridges dfGP Run 3/8, Epoch 41/2000, Training Loss (NLML): -1.6481
+ridges dfGP Run 3/8, Epoch 61/2000, Training Loss (NLML): -1.6635
+ridges dfGP Run 3/8, Epoch 81/2000, Training Loss (NLML): -1.6687
+ridges dfGP Run 3/8, Epoch 101/2000, Training Loss (NLML): -1.6703
+ridges dfGP Run 3/8, Epoch 121/2000, Training Loss (NLML): -1.6708
+ridges dfGP Run 3/8, Epoch 141/2000, Training Loss (NLML): -1.6713
+ridges dfGP Run 3/8, Epoch 161/2000, Training Loss (NLML): -1.6708
+ridges dfGP Run 3/8, Epoch 181/2000, Training Loss (NLML): -1.6712
+ridges dfGP Run 3/8, Epoch 201/2000, Training Loss (NLML): -1.6711
+ridges dfGP Run 3/8, Epoch 221/2000, Training Loss (NLML): -1.6718
+ridges dfGP Run 3/8, Epoch 241/2000, Training Loss (NLML): -1.6708
+ridges dfGP Run 3/8, Epoch 261/2000, Training Loss (NLML): -1.6706
+ridges dfGP Run 3/8, Epoch 281/2000, Training Loss (NLML): -1.6715
+ridges dfGP Run 3/8, Epoch 301/2000, Training Loss (NLML): -1.6709
+ridges dfGP Run 3/8, Epoch 321/2000, Training Loss (NLML): -1.6714
+Early stopping triggered after 324 epochs.
+
+--- Training Run 4/8 ---
+
+Start Training
+ridges dfGP Run 4/8, Epoch 1/2000, Training Loss (NLML): -1.3951
+ridges dfGP Run 4/8, Epoch 21/2000, Training Loss (NLML): -1.4728
+ridges dfGP Run 4/8, Epoch 41/2000, Training Loss (NLML): -1.5257
+ridges dfGP Run 4/8, Epoch 61/2000, Training Loss (NLML): -1.5684
+ridges dfGP Run 4/8, Epoch 81/2000, Training Loss (NLML): -1.6002
+ridges dfGP Run 4/8, Epoch 101/2000, Training Loss (NLML): -1.6225
+ridges dfGP Run 4/8, Epoch 121/2000, Training Loss (NLML): -1.6362
+ridges dfGP Run 4/8, Epoch 141/2000, Training Loss (NLML): -1.6432
+ridges dfGP Run 4/8, Epoch 161/2000, Training Loss (NLML): -1.6460
+ridges dfGP Run 4/8, Epoch 181/2000, Training Loss (NLML): -1.6487
+ridges dfGP Run 4/8, Epoch 201/2000, Training Loss (NLML): -1.6494
+ridges dfGP Run 4/8, Epoch 221/2000, Training Loss (NLML): -1.6476
+ridges dfGP Run 4/8, Epoch 241/2000, Training Loss (NLML): -1.6494
+ridges dfGP Run 4/8, Epoch 261/2000, Training Loss (NLML): -1.6475
+ridges dfGP Run 4/8, Epoch 281/2000, Training Loss (NLML): -1.6496
+ridges dfGP Run 4/8, Epoch 301/2000, Training Loss (NLML): -1.6510
+ridges dfGP Run 4/8, Epoch 321/2000, Training Loss (NLML): -1.6495
+Early stopping triggered after 330 epochs.
+
+--- Training Run 5/8 ---
+
+Start Training
+ridges dfGP Run 5/8, Epoch 1/2000, Training Loss (NLML): 9.6537
+ridges dfGP Run 5/8, Epoch 21/2000, Training Loss (NLML): 4.7299
+ridges dfGP Run 5/8, Epoch 41/2000, Training Loss (NLML): 1.7221
+ridges dfGP Run 5/8, Epoch 61/2000, Training Loss (NLML): 0.2925
+ridges dfGP Run 5/8, Epoch 81/2000, Training Loss (NLML): -0.2167
+ridges dfGP Run 5/8, Epoch 101/2000, Training Loss (NLML): -0.4593
+ridges dfGP Run 5/8, Epoch 121/2000, Training Loss (NLML): -0.6332
+ridges dfGP Run 5/8, Epoch 141/2000, Training Loss (NLML): -0.7461
+ridges dfGP Run 5/8, Epoch 161/2000, Training Loss (NLML): -0.8678
+ridges dfGP Run 5/8, Epoch 181/2000, Training Loss (NLML): -0.9601
+ridges dfGP Run 5/8, Epoch 201/2000, Training Loss (NLML): -1.0257
+ridges dfGP Run 5/8, Epoch 221/2000, Training Loss (NLML): -1.1249
+ridges dfGP Run 5/8, Epoch 241/2000, Training Loss (NLML): -1.1748
+ridges dfGP Run 5/8, Epoch 261/2000, Training Loss (NLML): -1.2273
+ridges dfGP Run 5/8, Epoch 281/2000, Training Loss (NLML): -1.2765
+ridges dfGP Run 5/8, Epoch 301/2000, Training Loss (NLML): -1.3223
+ridges dfGP Run 5/8, Epoch 321/2000, Training Loss (NLML): -1.3608
+ridges dfGP Run 5/8, Epoch 341/2000, Training Loss (NLML): -1.4022
+ridges dfGP Run 5/8, Epoch 361/2000, Training Loss (NLML): -1.4397
+ridges dfGP Run 5/8, Epoch 381/2000, Training Loss (NLML): -1.4633
+ridges dfGP Run 5/8, Epoch 401/2000, Training Loss (NLML): -1.4903
+ridges dfGP Run 5/8, Epoch 421/2000, Training Loss (NLML): -1.5103
+ridges dfGP Run 5/8, Epoch 441/2000, Training Loss (NLML): -1.5276
+ridges dfGP Run 5/8, Epoch 461/2000, Training Loss (NLML): -1.5469
+ridges dfGP Run 5/8, Epoch 481/2000, Training Loss (NLML): -1.5576
+ridges dfGP Run 5/8, Epoch 501/2000, Training Loss (NLML): -1.5734
+ridges dfGP Run 5/8, Epoch 521/2000, Training Loss (NLML): -1.5845
+ridges dfGP Run 5/8, Epoch 541/2000, Training Loss (NLML): -1.5915
+ridges dfGP Run 5/8, Epoch 561/2000, Training Loss (NLML): -1.6009
+ridges dfGP Run 5/8, Epoch 581/2000, Training Loss (NLML): -1.6064
+ridges dfGP Run 5/8, Epoch 601/2000, Training Loss (NLML): -1.6130
+ridges dfGP Run 5/8, Epoch 621/2000, Training Loss (NLML): -1.6190
+ridges dfGP Run 5/8, Epoch 641/2000, Training Loss (NLML): -1.6212
+ridges dfGP Run 5/8, Epoch 661/2000, Training Loss (NLML): -1.6280
+ridges dfGP Run 5/8, Epoch 681/2000, Training Loss (NLML): -1.6319
+ridges dfGP Run 5/8, Epoch 701/2000, Training Loss (NLML): -1.6325
+ridges dfGP Run 5/8, Epoch 721/2000, Training Loss (NLML): -1.6363
+ridges dfGP Run 5/8, Epoch 741/2000, Training Loss (NLML): -1.6381
+ridges dfGP Run 5/8, Epoch 761/2000, Training Loss (NLML): -1.6419
+ridges dfGP Run 5/8, Epoch 781/2000, Training Loss (NLML): -1.6424
+ridges dfGP Run 5/8, Epoch 801/2000, Training Loss (NLML): -1.6431
+ridges dfGP Run 5/8, Epoch 821/2000, Training Loss (NLML): -1.6468
+ridges dfGP Run 5/8, Epoch 841/2000, Training Loss (NLML): -1.6471
+ridges dfGP Run 5/8, Epoch 861/2000, Training Loss (NLML): -1.6493
+ridges dfGP Run 5/8, Epoch 881/2000, Training Loss (NLML): -1.6478
+ridges dfGP Run 5/8, Epoch 901/2000, Training Loss (NLML): -1.6491
+ridges dfGP Run 5/8, Epoch 921/2000, Training Loss (NLML): -1.6496
+ridges dfGP Run 5/8, Epoch 941/2000, Training Loss (NLML): -1.6496
+ridges dfGP Run 5/8, Epoch 961/2000, Training Loss (NLML): -1.6521
+ridges dfGP Run 5/8, Epoch 981/2000, Training Loss (NLML): -1.6517
+ridges dfGP Run 5/8, Epoch 1001/2000, Training Loss (NLML): -1.6521
+ridges dfGP Run 5/8, Epoch 1021/2000, Training Loss (NLML): -1.6524
+ridges dfGP Run 5/8, Epoch 1041/2000, Training Loss (NLML): -1.6545
+ridges dfGP Run 5/8, Epoch 1061/2000, Training Loss (NLML): -1.6521
+ridges dfGP Run 5/8, Epoch 1081/2000, Training Loss (NLML): -1.6528
+ridges dfGP Run 5/8, Epoch 1101/2000, Training Loss (NLML): -1.6527
+ridges dfGP Run 5/8, Epoch 1121/2000, Training Loss (NLML): -1.6534
+ridges dfGP Run 5/8, Epoch 1141/2000, Training Loss (NLML): -1.6533
+ridges dfGP Run 5/8, Epoch 1161/2000, Training Loss (NLML): -1.6536
+ridges dfGP Run 5/8, Epoch 1181/2000, Training Loss (NLML): -1.6546
+ridges dfGP Run 5/8, Epoch 1201/2000, Training Loss (NLML): -1.6544
+ridges dfGP Run 5/8, Epoch 1221/2000, Training Loss (NLML): -1.6534
+ridges dfGP Run 5/8, Epoch 1241/2000, Training Loss (NLML): -1.6546
+ridges dfGP Run 5/8, Epoch 1261/2000, Training Loss (NLML): -1.6553
+ridges dfGP Run 5/8, Epoch 1281/2000, Training Loss (NLML): -1.6551
+ridges dfGP Run 5/8, Epoch 1301/2000, Training Loss (NLML): -1.6549
+ridges dfGP Run 5/8, Epoch 1321/2000, Training Loss (NLML): -1.6539
+ridges dfGP Run 5/8, Epoch 1341/2000, Training Loss (NLML): -1.6549
+Early stopping triggered after 1356 epochs.
+
+--- Training Run 6/8 ---
+
+Start Training
+ridges dfGP Run 6/8, Epoch 1/2000, Training Loss (NLML): -0.7959
+ridges dfGP Run 6/8, Epoch 21/2000, Training Loss (NLML): -1.0454
+ridges dfGP Run 6/8, Epoch 41/2000, Training Loss (NLML): -1.2412
+ridges dfGP Run 6/8, Epoch 61/2000, Training Loss (NLML): -1.3636
+ridges dfGP Run 6/8, Epoch 81/2000, Training Loss (NLML): -1.4758
+ridges dfGP Run 6/8, Epoch 101/2000, Training Loss (NLML): -1.5739
+ridges dfGP Run 6/8, Epoch 121/2000, Training Loss (NLML): -1.6289
+ridges dfGP Run 6/8, Epoch 141/2000, Training Loss (NLML): -1.6555
+ridges dfGP Run 6/8, Epoch 161/2000, Training Loss (NLML): -1.6702
+ridges dfGP Run 6/8, Epoch 181/2000, Training Loss (NLML): -1.6765
+ridges dfGP Run 6/8, Epoch 201/2000, Training Loss (NLML): -1.6772
+ridges dfGP Run 6/8, Epoch 221/2000, Training Loss (NLML): -1.6797
+ridges dfGP Run 6/8, Epoch 241/2000, Training Loss (NLML): -1.6782
+ridges dfGP Run 6/8, Epoch 261/2000, Training Loss (NLML): -1.6795
+ridges dfGP Run 6/8, Epoch 281/2000, Training Loss (NLML): -1.6782
+ridges dfGP Run 6/8, Epoch 301/2000, Training Loss (NLML): -1.6799
+ridges dfGP Run 6/8, Epoch 321/2000, Training Loss (NLML): -1.6794
+ridges dfGP Run 6/8, Epoch 341/2000, Training Loss (NLML): -1.6784
+ridges dfGP Run 6/8, Epoch 361/2000, Training Loss (NLML): -1.6788
+ridges dfGP Run 6/8, Epoch 381/2000, Training Loss (NLML): -1.6791
+ridges dfGP Run 6/8, Epoch 401/2000, Training Loss (NLML): -1.6797
+ridges dfGP Run 6/8, Epoch 421/2000, Training Loss (NLML): -1.6789
+ridges dfGP Run 6/8, Epoch 441/2000, Training Loss (NLML): -1.6793
+ridges dfGP Run 6/8, Epoch 461/2000, Training Loss (NLML): -1.6781
+ridges dfGP Run 6/8, Epoch 481/2000, Training Loss (NLML): -1.6793
+ridges dfGP Run 6/8, Epoch 501/2000, Training Loss (NLML): -1.6792
+ridges dfGP Run 6/8, Epoch 521/2000, Training Loss (NLML): -1.6787
+Early stopping triggered after 540 epochs.
+
+--- Training Run 7/8 ---
+
+Start Training
+ridges dfGP Run 7/8, Epoch 1/2000, Training Loss (NLML): 0.4472
+ridges dfGP Run 7/8, Epoch 21/2000, Training Loss (NLML): -0.3610
+ridges dfGP Run 7/8, Epoch 41/2000, Training Loss (NLML): -0.9890
+ridges dfGP Run 7/8, Epoch 61/2000, Training Loss (NLML): -1.2825
+ridges dfGP Run 7/8, Epoch 81/2000, Training Loss (NLML): -1.4512
+ridges dfGP Run 7/8, Epoch 101/2000, Training Loss (NLML): -1.5513
+ridges dfGP Run 7/8, Epoch 121/2000, Training Loss (NLML): -1.6015
+ridges dfGP Run 7/8, Epoch 141/2000, Training Loss (NLML): -1.6232
+ridges dfGP Run 7/8, Epoch 161/2000, Training Loss (NLML): -1.6333
+ridges dfGP Run 7/8, Epoch 181/2000, Training Loss (NLML): -1.6389
+ridges dfGP Run 7/8, Epoch 201/2000, Training Loss (NLML): -1.6433
+ridges dfGP Run 7/8, Epoch 221/2000, Training Loss (NLML): -1.6450
+ridges dfGP Run 7/8, Epoch 241/2000, Training Loss (NLML): -1.6478
+ridges dfGP Run 7/8, Epoch 261/2000, Training Loss (NLML): -1.6480
+ridges dfGP Run 7/8, Epoch 281/2000, Training Loss (NLML): -1.6489
+ridges dfGP Run 7/8, Epoch 301/2000, Training Loss (NLML): -1.6495
+ridges dfGP Run 7/8, Epoch 321/2000, Training Loss (NLML): -1.6504
+ridges dfGP Run 7/8, Epoch 341/2000, Training Loss (NLML): -1.6508
+ridges dfGP Run 7/8, Epoch 361/2000, Training Loss (NLML): -1.6508
+ridges dfGP Run 7/8, Epoch 381/2000, Training Loss (NLML): -1.6511
+ridges dfGP Run 7/8, Epoch 401/2000, Training Loss (NLML): -1.6511
+ridges dfGP Run 7/8, Epoch 421/2000, Training Loss (NLML): -1.6510
+ridges dfGP Run 7/8, Epoch 441/2000, Training Loss (NLML): -1.6521
+Early stopping triggered after 443 epochs.
+
+--- Training Run 8/8 ---
+
+Start Training
+ridges dfGP Run 8/8, Epoch 1/2000, Training Loss (NLML): 3.2424
+ridges dfGP Run 8/8, Epoch 21/2000, Training Loss (NLML): 0.9191
+ridges dfGP Run 8/8, Epoch 41/2000, Training Loss (NLML): -0.3105
+ridges dfGP Run 8/8, Epoch 61/2000, Training Loss (NLML): -0.9238
+ridges dfGP Run 8/8, Epoch 81/2000, Training Loss (NLML): -1.2171
+ridges dfGP Run 8/8, Epoch 101/2000, Training Loss (NLML): -1.3527
+ridges dfGP Run 8/8, Epoch 121/2000, Training Loss (NLML): -1.4201
+ridges dfGP Run 8/8, Epoch 141/2000, Training Loss (NLML): -1.4624
+ridges dfGP Run 8/8, Epoch 161/2000, Training Loss (NLML): -1.4959
+ridges dfGP Run 8/8, Epoch 181/2000, Training Loss (NLML): -1.5198
+ridges dfGP Run 8/8, Epoch 201/2000, Training Loss (NLML): -1.5361
+ridges dfGP Run 8/8, Epoch 221/2000, Training Loss (NLML): -1.5564
+ridges dfGP Run 8/8, Epoch 241/2000, Training Loss (NLML): -1.5698
+ridges dfGP Run 8/8, Epoch 261/2000, Training Loss (NLML): -1.5791
+ridges dfGP Run 8/8, Epoch 281/2000, Training Loss (NLML): -1.5879
+ridges dfGP Run 8/8, Epoch 301/2000, Training Loss (NLML): -1.5923
+ridges dfGP Run 8/8, Epoch 321/2000, Training Loss (NLML): -1.5953
+ridges dfGP Run 8/8, Epoch 341/2000, Training Loss (NLML): -1.6030
+ridges dfGP Run 8/8, Epoch 361/2000, Training Loss (NLML): -1.6058
+ridges dfGP Run 8/8, Epoch 381/2000, Training Loss (NLML): -1.6103
+ridges dfGP Run 8/8, Epoch 401/2000, Training Loss (NLML): -1.6124
+ridges dfGP Run 8/8, Epoch 421/2000, Training Loss (NLML): -1.6139
+ridges dfGP Run 8/8, Epoch 441/2000, Training Loss (NLML): -1.6170
+ridges dfGP Run 8/8, Epoch 461/2000, Training Loss (NLML): -1.6159
+ridges dfGP Run 8/8, Epoch 481/2000, Training Loss (NLML): -1.6171
+ridges dfGP Run 8/8, Epoch 501/2000, Training Loss (NLML): -1.6185
+ridges dfGP Run 8/8, Epoch 521/2000, Training Loss (NLML): -1.6188
+ridges dfGP Run 8/8, Epoch 541/2000, Training Loss (NLML): -1.6211
+ridges dfGP Run 8/8, Epoch 561/2000, Training Loss (NLML): -1.6198
+ridges dfGP Run 8/8, Epoch 581/2000, Training Loss (NLML): -1.6213
+ridges dfGP Run 8/8, Epoch 601/2000, Training Loss (NLML): -1.6205
+ridges dfGP Run 8/8, Epoch 621/2000, Training Loss (NLML): -1.6222
+ridges dfGP Run 8/8, Epoch 641/2000, Training Loss (NLML): -1.6211
+ridges dfGP Run 8/8, Epoch 661/2000, Training Loss (NLML): -1.6209
+ridges dfGP Run 8/8, Epoch 681/2000, Training Loss (NLML): -1.6213
+ridges dfGP Run 8/8, Epoch 701/2000, Training Loss (NLML): -1.6203
+ridges dfGP Run 8/8, Epoch 721/2000, Training Loss (NLML): -1.6225
+ridges dfGP Run 8/8, Epoch 741/2000, Training Loss (NLML): -1.6217
+ridges dfGP Run 8/8, Epoch 761/2000, Training Loss (NLML): -1.6211
+ridges dfGP Run 8/8, Epoch 781/2000, Training Loss (NLML): -1.6221
+ridges dfGP Run 8/8, Epoch 801/2000, Training Loss (NLML): -1.6216
+ridges dfGP Run 8/8, Epoch 821/2000, Training Loss (NLML): -1.6220
+ridges dfGP Run 8/8, Epoch 841/2000, Training Loss (NLML): -1.6212
+ridges dfGP Run 8/8, Epoch 861/2000, Training Loss (NLML): -1.6230
+ridges dfGP Run 8/8, Epoch 881/2000, Training Loss (NLML): -1.6216
+Early stopping triggered after 894 epochs.
+
+Results per run saved to results_sim/dfGP/ridges_dfGP_metrics_per_run.csv
+
+Mean & Std saved to results_sim/dfGP/ridges_dfGP_metrics_summary.csv
+Elapsed wall time: 401.6608 seconds
+Wall time saved to results_sim/dfGP/dfGP_run_wall_time.txt.

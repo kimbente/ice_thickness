@@ -427,9 +427,9 @@ for sim_name, sim_func in simulations.items():
     mean_std_df.to_csv(path_to_metrics_summary, float_format = "%.5f") # reduce to 5 decimals
     print(f"\nMean & Std saved to {path_to_metrics_summary}")
 
-###############################
-### END LOOP 1 over REGIONS ###
-###############################
+###################################
+### END LOOP 1 over SIMULATIONS ###
+###################################
 
 #############################
 ### WALL time & GPU model ###

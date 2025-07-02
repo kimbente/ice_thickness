@@ -19,9 +19,6 @@ NUM_RUNS = NUM_RUNS
 WEIGHT_DECAY = WEIGHT_DECAY
 PATIENCE = PATIENCE
 
-# TODO: Delete overwrite, run full
-# NUM_RUNS = 1
-
 # assign model-specific variable
 MODEL_LEARNING_RATE = getattr(configs, f"{model_name}_REAL_LEARNING_RATE")
 MODEL_REAL_RESULTS_DIR = getattr(configs, f"{model_name}_REAL_RESULTS_DIR")
@@ -250,10 +247,11 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
 
             # Compute average loss for the epoch (e.g. 7 batches / epoch)
             avg_train_loss_PINN_for_epoch = train_losses_PINN_over_batches / len(dataloader)
+            avg_train_loss_RMSE_for_epoch = train_losses_RMSE_over_batches / len(dataloader)  # average RMSE loss over batches
 
             # Print for epoch
             if epoch % 20 == 0:
-                print(f"{region_name} {model_name} Run {run + 1}/{NUM_RUNS}, Epoch {epoch + 1}/{MAX_NUM_EPOCHS}, Training PINN Loss (RMSE + div): {avg_train_loss_PINN_for_epoch:.4f}")
+                print(f"{region_name} {model_name} Run {run + 1}/{NUM_RUNS}, Epoch {epoch + 1}/{MAX_NUM_EPOCHS}, Training PINN Loss (RMSE + div): {avg_train_loss_PINN_for_epoch:.4f} Training RMSE Loss: {avg_train_loss_RMSE_for_epoch:.4f}")
 
             # Early stopping check
             if avg_train_loss_PINN_for_epoch < best_loss:

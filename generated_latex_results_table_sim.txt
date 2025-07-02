@@ -1,54 +1,54 @@
 \multicolumn{6}{l}{\textbf{I. Curve}} \\
 \midrule
-dfNN & 0.190 \footnotesize{± 0.089} & 0.134 \footnotesize{± 0.071} & \footnotesize{n.a.} & \footnotesize{n.a.} & 0.0 \footnotesize{± 0.0} \\
-dfGP & 0.180 \footnotesize{± 0.021} & 0.092 \footnotesize{± 0.010} & -4.32 \footnotesize{± 0.128} & 0.063 \footnotesize{± 0.041} & \textcolor{BrickRed}{\footnotesize{0.105 ± 0.048}} \\
-dfGPcm & 0.138 \footnotesize{± 0.012} & 0.079 \footnotesize{± 0.007} & -4.49 \footnotesize{± 0.090} & 0.071 \footnotesize{± 0.034} & \textcolor{BrickRed}{\footnotesize{0.071 ± 0.032}} \\
-dfNGP & \textcolor{OliveGreen}{0.073 \footnotesize{± 0.022}} & 0.041 \footnotesize{± 0.010} & \textcolor{OliveGreen}{-4.56 \footnotesize{± 0.169}} & 0.083 \footnotesize{± 0.040} & \textcolor{BrickRed}{\footnotesize{0.080 ± 0.030}} \\
+dfNN & 0.108 \footnotesize{± 0.068} & 0.075 \footnotesize{± 0.045} & \footnotesize{n.a.} & \footnotesize{n.a.} & 0.0 \footnotesize{± 0.0} \\
+dfGP & 0.114 \footnotesize{± 0.014} & 0.052 \footnotesize{± 0.005} & -4.49 \footnotesize{± 0.081} & 0.086 \footnotesize{± 0.030} & 0.0 \footnotesize{± 0.0} \\
+dfGPcm & 0.069 \footnotesize{± 0.008} & 0.037 \footnotesize{± 0.004} & \textcolor{OliveGreen}{-4.64 \footnotesize{± 0.073}} & 0.029 \footnotesize{± 0.020} & 0.0 \footnotesize{± 0.0} \\
+dfNGP & \textcolor{OliveGreen}{0.067 \footnotesize{± 0.025}} & 0.036 \footnotesize{± 0.009} & -4.61 \footnotesize{± 0.161} & 0.042 \footnotesize{± 0.028} & 0.0 \footnotesize{± 0.0} \\
 \midrule
 PINN & 0.132 \footnotesize{± 0.049} & 0.092 \footnotesize{± 0.029} & \footnotesize{n.a.} & \footnotesize{n.a.} & \textcolor{BrickRed}{\footnotesize{0.136 ± 0.028}} \\
-GP & 0.139 \footnotesize{± 0.005} & 0.080 \footnotesize{± 0.003} & -4.31 \footnotesize{± 0.084} & 0.065 \footnotesize{± 0.013} & \textcolor{BrickRed}{\footnotesize{0.943 ± 0.070}} \\
+GP & 0.139 \footnotesize{± 0.005} & 0.080 \footnotesize{± 0.003} & -4.31 \footnotesize{± 0.086} & 0.065 \footnotesize{± 0.014} & \textcolor{BrickRed}{\footnotesize{0.943 ± 0.070}} \\
 \bottomrule
 \toprule
 \multicolumn{6}{l}{\textbf{II. Branching}} \\
 \midrule
-dfNN & 0.194 \footnotesize{± 0.045} & 0.057 \footnotesize{± 0.003} & \footnotesize{n.a.} & \footnotesize{n.a.} & 0.0 \footnotesize{± 0.0} \\
-dfGP & 0.179 \footnotesize{± 0.008} & 0.075 \footnotesize{± 0.006} & -1.86 \footnotesize{± 0.301} & 0.125 \footnotesize{± 0.023} & \textcolor{BrickRed}{\footnotesize{0.047 ± 0.015}} \\
-dfGPcm & 0.164 \footnotesize{± 0.005} & 0.065 \footnotesize{± 0.004} & \textcolor{OliveGreen}{-2.36 \footnotesize{± 0.750}} & 0.070 \footnotesize{± 0.027} & \textcolor{BrickRed}{\footnotesize{0.033 ± 0.017}} \\
-dfNGP & 0.180 \footnotesize{± 0.101} & 0.038 \footnotesize{± 0.009} & 9.983 \footnotesize{± 18.20} & 0.050 \footnotesize{± 0.024} & \textcolor{BrickRed}{\footnotesize{0.091 ± 0.087}} \\
+dfNN & 0.223 \footnotesize{± 0.056} & 0.057 \footnotesize{± 0.003} & \footnotesize{n.a.} & \footnotesize{n.a.} & 0.0 \footnotesize{± 0.0} \\
+dfGP & 0.181 \footnotesize{± 0.027} & 0.076 \footnotesize{± 0.008} & -4.20 \footnotesize{± 0.117} & 0.179 \footnotesize{± 0.014} & 0.0 \footnotesize{± 0.0} \\
+dfGPcm & 0.128 \footnotesize{± 0.004} & 0.060 \footnotesize{± 0.003} & -4.25 \footnotesize{± 0.145} & 0.147 \footnotesize{± 0.020} & 0.0 \footnotesize{± 0.0} \\
+dfNGP & \textcolor{OliveGreen}{0.092 \footnotesize{± 0.004}} & 0.033 \footnotesize{± 0.000} & \textcolor{OliveGreen}{-4.61 \footnotesize{± 0.068}} & 0.057 \footnotesize{± 0.008} & 0.0 \footnotesize{± 0.0} \\
 \midrule
-PINN & \textcolor{OliveGreen}{0.120 \footnotesize{± 0.003}} & 0.050 \footnotesize{± 0.003} & \footnotesize{n.a.} & \footnotesize{n.a.} & \textcolor{BrickRed}{\footnotesize{0.079 ± 0.037}} \\
-GP & 0.165 \footnotesize{± 0.003} & 0.082 \footnotesize{± 0.001} & -2.17 \footnotesize{± 0.325} & 0.094 \footnotesize{± 0.010} & \textcolor{BrickRed}{\footnotesize{1.202 ± 0.023}} \\
+PINN & 0.120 \footnotesize{± 0.003} & 0.050 \footnotesize{± 0.003} & \footnotesize{n.a.} & \footnotesize{n.a.} & \textcolor{BrickRed}{\footnotesize{0.079 ± 0.037}} \\
+GP & 0.165 \footnotesize{± 0.003} & 0.082 \footnotesize{± 0.001} & -2.18 \footnotesize{± 0.324} & 0.094 \footnotesize{± 0.010} & \textcolor{BrickRed}{\footnotesize{1.202 ± 0.023}} \\
 \bottomrule
 \toprule
 \multicolumn{6}{l}{\textbf{III. Deflection}} \\
 \midrule
-dfNN & 0.092 \footnotesize{± 0.040} & 0.062 \footnotesize{± 0.025} & \footnotesize{n.a.} & \footnotesize{n.a.} & 0.0 \footnotesize{± 0.0} \\
-dfGP & 0.161 \footnotesize{± 0.012} & 0.074 \footnotesize{± 0.005} & -4.33 \footnotesize{± 0.142} & 0.060 \footnotesize{± 0.034} & \textcolor{BrickRed}{\footnotesize{0.088 ± 0.046}} \\
-dfGPcm & 0.147 \footnotesize{± 0.012} & 0.060 \footnotesize{± 0.004} & -4.52 \footnotesize{± 0.103} & 0.039 \footnotesize{± 0.024} & \textcolor{BrickRed}{\footnotesize{0.071 ± 0.043}} \\
-dfNGP & \textcolor{OliveGreen}{0.051 \footnotesize{± 0.009}} & 0.030 \footnotesize{± 0.003} & \textcolor{OliveGreen}{-4.61 \footnotesize{± 0.195}} & 0.036 \footnotesize{± 0.034} & \textcolor{BrickRed}{\footnotesize{0.165 ± 0.122}} \\
+dfNN & 0.081 \footnotesize{± 0.036} & 0.053 \footnotesize{± 0.022} & \footnotesize{n.a.} & \footnotesize{n.a.} & 0.0 \footnotesize{± 0.0} \\
+dfGP & \textcolor{OliveGreen}{0.069 \footnotesize{± 0.018}} & 0.035 \footnotesize{± 0.006} & -4.69 \footnotesize{± 0.055} & 0.020 \footnotesize{± 0.021} & 0.0 \footnotesize{± 0.0} \\
+dfGPcm & 0.071 \footnotesize{± 0.018} & 0.035 \footnotesize{± 0.006} & \textcolor{OliveGreen}{-4.77 \footnotesize{± 0.055}} & 0.012 \footnotesize{± 0.009} & 0.0 \footnotesize{± 0.0} \\
+dfNGP & 0.069 \footnotesize{± 0.017} & 0.035 \footnotesize{± 0.006} & -4.73 \footnotesize{± 0.075} & 0.014 \footnotesize{± 0.017} & 0.0 \footnotesize{± 0.0} \\
 \midrule
 PINN & 0.158 \footnotesize{± 0.046} & 0.109 \footnotesize{± 0.032} & \footnotesize{n.a.} & \footnotesize{n.a.} & \textcolor{BrickRed}{\footnotesize{0.115 ± 0.048}} \\
-GP & 0.149 \footnotesize{± 0.014} & 0.073 \footnotesize{± 0.006} & -4.54 \footnotesize{± 0.056} & 0.012 \footnotesize{± 0.010} & \textcolor{BrickRed}{\footnotesize{0.910 ± 0.069}} \\
+GP & 0.148 \footnotesize{± 0.015} & 0.072 \footnotesize{± 0.006} & -4.54 \footnotesize{± 0.057} & 0.013 \footnotesize{± 0.010} & \textcolor{BrickRed}{\footnotesize{0.904 ± 0.069}} \\
 \bottomrule
 \toprule
 \multicolumn{6}{l}{\textbf{IV. Ridges}} \\
 \midrule
-dfNN & 0.103 \footnotesize{± 0.043} & 0.071 \footnotesize{± 0.031} & \footnotesize{n.a.} & \footnotesize{n.a.} & 0.0 \footnotesize{± 0.0} \\
-dfGP & 0.131 \footnotesize{± 0.028} & 0.047 \footnotesize{± 0.008} & -4.43 \footnotesize{± 0.044} & 0.038 \footnotesize{± 0.031} & \textcolor{BrickRed}{\footnotesize{0.007 ± 0.006}} \\
-dfGPcm & 0.121 \footnotesize{± 0.023} & 0.045 \footnotesize{± 0.006} & -4.42 \footnotesize{± 0.043} & 0.049 \footnotesize{± 0.030} & \textcolor{BrickRed}{\footnotesize{0.008 ± 0.006}} \\
-dfNGP & \textcolor{OliveGreen}{0.039 \footnotesize{± 0.010}} & 0.023 \footnotesize{± 0.003} & -4.69 \footnotesize{± 0.117} & 0.033 \footnotesize{± 0.016} & \textcolor{BrickRed}{\footnotesize{0.087 ± 0.102}} \\
+dfNN & 0.124 \footnotesize{± 0.031} & 0.086 \footnotesize{± 0.021} & \footnotesize{n.a.} & \footnotesize{n.a.} & 0.0 \footnotesize{± 0.0} \\
+dfGP & 0.046 \footnotesize{± 0.010} & 0.025 \footnotesize{± 0.003} & -4.52 \footnotesize{± 0.050} & 0.028 \footnotesize{± 0.019} & 0.0 \footnotesize{± 0.0} \\
+dfGPcm & 0.045 \footnotesize{± 0.010} & 0.025 \footnotesize{± 0.003} & -4.52 \footnotesize{± 0.049} & 0.027 \footnotesize{± 0.019} & 0.0 \footnotesize{± 0.0} \\
+dfNGP & \textcolor{OliveGreen}{0.028 \footnotesize{± 0.011}} & 0.018 \footnotesize{± 0.006} & \textcolor{OliveGreen}{-4.78 \footnotesize{± 0.271}} & 0.038 \footnotesize{± 0.011} & 0.0 \footnotesize{± 0.0} \\
 \midrule
 PINN & 0.112 \footnotesize{± 0.034} & 0.077 \footnotesize{± 0.026} & \footnotesize{n.a.} & \footnotesize{n.a.} & \textcolor{BrickRed}{\footnotesize{0.086 ± 0.029}} \\
-GP & 0.118 \footnotesize{± 0.021} & 0.049 \footnotesize{± 0.007} & \textcolor{OliveGreen}{-4.83 \footnotesize{± 0.064}} & 0.102 \footnotesize{± 0.029} & \textcolor{BrickRed}{\footnotesize{0.603 ± 0.097}} \\
+GP & 0.104 \footnotesize{± 0.023} & 0.046 \footnotesize{± 0.006} & -4.72 \footnotesize{± 0.183} & 0.097 \footnotesize{± 0.029} & \textcolor{BrickRed}{\footnotesize{0.507 ± 0.146}} \\
 \bottomrule
 \toprule
 \multicolumn{6}{l}{\textbf{V. Edge}} \\
 \midrule
-dfNN & 0.179 \footnotesize{± 0.012} & 0.113 \footnotesize{± 0.006} & \footnotesize{n.a.} & \footnotesize{n.a.} & 0.0 \footnotesize{± 0.0} \\
-dfGP & 0.224 \footnotesize{± 0.015} & 0.110 \footnotesize{± 0.008} & -3.87 \footnotesize{± 0.077} & 0.010 \footnotesize{± 0.003} & \textcolor{BrickRed}{\footnotesize{0.072 ± 0.045}} \\
-dfGPcm & 0.194 \footnotesize{± 0.007} & 0.105 \footnotesize{± 0.005} & -4.19 \footnotesize{± 0.056} & 0.037 \footnotesize{± 0.011} & \textcolor{BrickRed}{\footnotesize{0.044 ± 0.036}} \\
-dfNGP & \textcolor{OliveGreen}{0.127 \footnotesize{± 0.012}} & 0.067 \footnotesize{± 0.005} & \textcolor{OliveGreen}{-4.51 \footnotesize{± 0.328}} & 0.177 \footnotesize{± 0.031} & \textcolor{BrickRed}{\footnotesize{0.047 ± 0.037}} \\
+dfNN & 0.190 \footnotesize{± 0.020} & 0.111 \footnotesize{± 0.007} & \footnotesize{n.a.} & \footnotesize{n.a.} & 0.0 \footnotesize{± 0.0} \\
+dfGP & 0.200 \footnotesize{± 0.010} & 0.101 \footnotesize{± 0.005} & -3.73 \footnotesize{± 0.117} & 0.012 \footnotesize{± 0.011} & 0.0 \footnotesize{± 0.0} \\
+dfGPcm & 0.172 \footnotesize{± 0.005} & 0.091 \footnotesize{± 0.004} & -4.14 \footnotesize{± 0.069} & 0.036 \footnotesize{± 0.009} & 0.0 \footnotesize{± 0.0} \\
+dfNGP & \textcolor{OliveGreen}{0.101 \footnotesize{± 0.003}} & 0.057 \footnotesize{± 0.003} & \textcolor{OliveGreen}{-4.57 \footnotesize{± 0.080}} & 0.037 \footnotesize{± 0.019} & 0.0 \footnotesize{± 0.0} \\
 \midrule
 PINN & 0.134 \footnotesize{± 0.014} & 0.084 \footnotesize{± 0.008} & \footnotesize{n.a.} & \footnotesize{n.a.} & \textcolor{BrickRed}{\footnotesize{0.120 ± 0.026}} \\
-GP & 0.207 \footnotesize{± 0.012} & 0.102 \footnotesize{± 0.006} & -3.59 \footnotesize{± 0.095} & 0.005 \footnotesize{± 0.002} & \textcolor{BrickRed}{\footnotesize{1.456 ± 0.069}} \\
+GP & 0.207 \footnotesize{± 0.012} & 0.102 \footnotesize{± 0.006} & -3.59 \footnotesize{± 0.096} & 0.005 \footnotesize{± 0.002} & \textcolor{BrickRed}{\footnotesize{1.456 ± 0.069}} \\
 \bottomrule
