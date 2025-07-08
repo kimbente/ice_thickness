@@ -290,7 +290,7 @@ class dfGPcm(gpytorch.models.ExactGP):
             )
 
         ### COVARIANCE MODULE ###
-        self.base_kernel = dfRBFKernel().to(device)
+        self.base_kernel = dfRBFKernel(ard_num_dims = 2).to(device)
         # Wrap the base kernel in a scaling wrapper
         self.covar_module = gpytorch.kernels.ScaleKernel(
             self.base_kernel)
@@ -337,7 +337,7 @@ class dfNGP(gpytorch.models.ExactGP):
             input_dim = 2) # default hidden_dim = 32
         
         ### COVARIANCE MODULE ###
-        self.base_kernel = dfRBFKernel().to(device)
+        self.base_kernel = dfRBFKernel(ard_num_dims = 2).to(device)
         # Wrap the base kernel in a scaling wrapper
         self.covar_module = gpytorch.kernels.ScaleKernel(
             self.base_kernel)
@@ -357,7 +357,8 @@ class dfNGP(gpytorch.models.ExactGP):
         self.likelihood.raw_noise_constraint = gpytorch.constraints.GreaterThan(1e-5)
 
     def forward(self, x):
-        mean_x = self.mean_module(x)
+        # print("requires_grad?", x.requires_grad)
+        mean_x = self.mean_module(x)  # Ensure gradients are computed for the mean
         # NOTE: Specify x1 and x2 for the dfRBFKernel
         covar_x = self.covar_module.forward(x, x)
         # NOTE: Assure it is multitask

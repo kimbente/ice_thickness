@@ -8,7 +8,7 @@
 #   \__,_|_| |_|\__\__,_|_|  \___|\__|_|\___|
 # 
 model_name = "dfGPcm"
-from gpytorch_models_11d import dfGPcm
+from gpytorch_models import dfGPcm
 
 # import configs to we can access the hypers with getattr
 import configs
@@ -157,6 +157,10 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
             mean_vector
             ).to(device)
         
+        model.base_kernel.lengthscale = torch.tensor([[6.0, 10.0]]).to(device)
+        model.covar_module.outputscale = torch.tensor([0.6]).to(device)
+        model.likelihood.noise = torch.tensor([0.03]).to(device)
+        
         optimizer = torch.optim.AdamW(model.parameters(), lr = MODEL_LEARNING_RATE, weight_decay = WEIGHT_DECAY)
         
         # Use ExactMarginalLogLikelihood
@@ -228,8 +232,9 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
                 test_losses_RMSE_over_epochs[epoch] = test_RMSE.item()
 
                 # Save evolution of hypers for convergence plot
-                l1_over_epochs[epoch] = model.base_kernel.lengthscale[0].item()
-                l2_over_epochs[epoch] = model.base_kernel.lengthscale[1].item()
+                # NOTE: lengthscale is [1, 2] in shape
+                l1_over_epochs[epoch] = model.base_kernel.lengthscale[:, 0].item()
+                l2_over_epochs[epoch] = model.base_kernel.lengthscale[:, 1].item()
                 outputscale_var_over_epochs[epoch] = model.covar_module.outputscale.item()
                 noise_var_over_epochs[epoch] = model.likelihood.noise.item()
 

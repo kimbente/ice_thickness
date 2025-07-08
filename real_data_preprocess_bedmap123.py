@@ -40,6 +40,10 @@ lonlat_to_polarstereo = pyproj.Transformer.from_crs(
 paths_to_data_folders_all_versions = [path_to_bedmap1_data_folder, path_to_bedmap2_data_folder, path_to_bedmap3_data_folder]
 list_of_all_versions = [list_of_bedmap1_csv_files, list_of_bedmap2_csv_files, list_of_bedmap3_csv_files]
 
+# Initialise to save meta data
+metadata_columns = ["source", "BM_version", "platform", "firn"]
+metadata_df = pd.DataFrame(columns = metadata_columns)
+
 # loop over bedmap versions
 for v, (csv_list, folder_path) in enumerate(zip(list_of_all_versions, paths_to_data_folders_all_versions), start = 1):
     print(f"Processing Bedmap{v}...")
@@ -51,6 +55,13 @@ for v, (csv_list, folder_path) in enumerate(zip(list_of_all_versions, paths_to_d
         print("Processing:", i)
         # construct full file path
         file_path = os.path.join(folder_path, i)
+
+        # Load metadata only
+        i_metadata = pd.read_csv(file_path, nrows = 18, low_memory = False, sep = "#")
+        i_platform = i_metadata.iloc[7, 1][10:]
+        i_firn = i_metadata.iloc[11, 1][17:]
+        # Add to next line of metadata DataFrame
+        metadata_df.loc[len(metadata_df)] = [i, i[-7:-4], i_platform, i_firn]
 
         # Load CSV, skipping metadata header lines
         pd_data = pd.read_csv(file_path, skiprows = 18, low_memory = False)
@@ -109,6 +120,12 @@ output_path = os.path.join(path_to_bedmap_data_folder, "bedmap123.csv")
 bedmap123_data.to_csv(output_path, index = False)
 
 print(f"Combined dataset saved to {output_path}.")
+
+# Repeat for meta data DataFrame
+metadata_path = os.path.join(path_to_bedmap_data_folder, "bedmap123_metadata.csv")
+metadata_df.to_csv(metadata_path, index = False)
+
+print(f"Metadata dataset saved to {metadata_path}.")
 
 if bool_save_byrd_catchment_crop:
     # Hard-coded corners of 300 x 300 km Byrd catchment (crop). In the domain literature the domain is defined as an even larger region, however we are interested in the faster flowing areas closer to Byrd glacier drainage. 

@@ -8,7 +8,7 @@
 #   \__,_|_| |_|\__\__,_|_|  \___|\__|_|\___|
 # 
 model_name = "dfNGP"
-from gpytorch_models_11d import dfNGP
+from gpytorch_models import dfNGP
 
 # import configs to we can access the hypers with getattr
 import configs
@@ -131,18 +131,26 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
             has_task_noise = False, # HACK: This still needs to be manually turned off
             ).to(device)
 
+        # NOTE: This was needed
+        x_train = x_train.clone().detach().requires_grad_(True)
+
         model = dfNGP(
             x_train,
             y_train, 
             likelihood
             ).to(device)
         
+        # Hardcode for same starting point for all runs
+        model.base_kernel.lengthscale = torch.tensor([[6.0, 10.0]]).to(device)
+        model.covar_module.outputscale = torch.tensor([0.8]).to(device)
+        model.likelihood.noise = torch.tensor([0.03]).to(device)
+        
         # NOTE: This part is different from dfGP
         optimizer = torch.optim.AdamW([
             {"params": model.mean_module.parameters(), 
-             "weight_decay": WEIGHT_DECAY, "lr": (0.1 * 0.1 * MODEL_LEARNING_RATE)},
+             "weight_decay": WEIGHT_DECAY, "lr": (MODEL_LEARNING_RATE)},
             {"params": list(model.covar_module.parameters()) + list(model.likelihood.parameters()), 
-             "weight_decay":  WEIGHT_DECAY, "lr": 0.5 * MODEL_LEARNING_RATE},
+             "weight_decay":  WEIGHT_DECAY, "lr": MODEL_LEARNING_RATE},
             ])
         
         # Use ExactMarginalLogLikelihood
@@ -185,6 +193,8 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
 
             # Do a step
             optimizer.zero_grad()
+
+            x_train = x_train.clone().detach().requires_grad_(True)
             # model outputs a multivariate normal distribution
             train_pred_dist = model(x_train.to(device))
             # Train on noisy or targets
@@ -214,8 +224,9 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
                 test_losses_RMSE_over_epochs[epoch] = test_RMSE.item()
 
                 # Save evolution of hypers for convergence plot
-                l1_over_epochs[epoch] = model.base_kernel.lengthscale[0].item()
-                l2_over_epochs[epoch] = model.base_kernel.lengthscale[1].item()
+                # NOTE: lengthscale is [1, 2] in shape
+                l1_over_epochs[epoch] = model.base_kernel.lengthscale[:, 0].item()
+                l2_over_epochs[epoch] = model.base_kernel.lengthscale[:, 1].item()
                 outputscale_var_over_epochs[epoch] = model.covar_module.outputscale.item()
                 noise_var_over_epochs[epoch] = model.likelihood.noise.item()
 
