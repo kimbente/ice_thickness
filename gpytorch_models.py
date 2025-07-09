@@ -251,6 +251,7 @@ class dfGP(gpytorch.models.ExactGP):
         
         ### HYPERPARAMETERS INITIALIZATION ###
         # initialize hyperparameters by sampling from a uniform distribution over predefined ranges
+        # NOTE: Models are initialised for sim experiments here. We overwrite the initialisations in the real data experiments.
         self.base_kernel.lengthscale = torch.empty(2, device = device).uniform_( * L_RANGE)
         # NOTE: The outputscale in gpytorch denotes σ², the outputscale variance, not σ
         # See https://docs.gpytorch.ai/en/latest/kernels.html#scalekernel

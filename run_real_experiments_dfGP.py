@@ -16,6 +16,7 @@ from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, WEIGHT_DECAY
 from configs import TRACK_EMISSIONS_BOOL
 from configs import REAL_L_RANGE, REAL_OUTPUTSCALE_VAR_RANGE, REAL_NOISE_VAR_RANGE
 from configs import SCALE_INPUT_region_lower_byrd, SCALE_INPUT_region_mid_byrd, SCALE_INPUT_region_upper_byrd
+from configs import REAL_L_RANGE, REAL_NOISE_VAR_RANGE, REAL_OUTPUTSCALE_VAR_RANGE
 
 SCALE_INPUT = {
     "region_lower_byrd": SCALE_INPUT_region_lower_byrd,
@@ -25,7 +26,6 @@ SCALE_INPUT = {
 
 # Reiterating import for visibility
 MAX_NUM_EPOCHS = MAX_NUM_EPOCHS
-MAX_NUM_EPOCHS = 2000
 NUM_RUNS = NUM_RUNS
 NUM_RUNS = 1
 WEIGHT_DECAY = WEIGHT_DECAY
@@ -152,19 +152,13 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
             y_train, 
             likelihood
             ).to(device)
-
-        model.base_kernel.lengthscale = torch.empty(2, device = device).uniform_( * REAL_L_RANGE)
-        # NOTE: The outputscale in gpytorch denotes σ², the outputscale variance, not σ
-        # See https://docs.gpytorch.ai/en/latest/kernels.html#scalekernel
+        
+        # Overwrite default lengthscale hyperparameter initialisation because we have a different input scale.
+        model.base_kernel.lengthscale = torch.empty([1, 2], device = device).uniform_( * REAL_L_RANGE)
+        # Overwrite default outputscale variance initialisation.
         model.covar_module.outputscale = torch.empty(1, device = device).uniform_( * REAL_OUTPUTSCALE_VAR_RANGE)
-        # NOTE: Noise in gpytorch denotes σ², the noise variance, not σ
-        # See https://docs.gpytorch.ai/en/latest/likelihoods.html#gaussianlikelihood 
+        # Overwrite default noise variance initialisation because this is real noisy data.
         model.likelihood.noise = torch.empty(1, device = device).uniform_( * REAL_NOISE_VAR_RANGE)
-
-        # Hardcode for same starting point for all runs
-        model.base_kernel.lengthscale = torch.tensor([[6.0, 10.0]]).to(device)
-        model.covar_module.outputscale = torch.tensor([0.8]).to(device)
-        model.likelihood.noise = torch.tensor([0.03]).to(device)
         
         optimizer = torch.optim.AdamW(model.parameters(), lr = MODEL_LEARNING_RATE, weight_decay = WEIGHT_DECAY)
         

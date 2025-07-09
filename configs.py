@@ -24,6 +24,8 @@ PINN_SIM_LEARNING_RATE = 0.005
 # test grid resolution
 N_SIDE = 20
 
+N_SIDE_INFERENCE = 30
+
 #################
 ### REAL DATA ###
 #################
@@ -38,11 +40,12 @@ PINN_REAL_RESULTS_DIR = "results_real/PINN"
 
 # learning rates (alphabetic order)
 # NOTE: GP lrs are 1/10th of sim lrs, because real data is more complex. NN lrs are the same.
-dfGP_REAL_LEARNING_RATE = 0.001 # smaller for real data
-dfGPcm_REAL_LEARNING_RATE = 0.001
-dfNGP_REAL_LEARNING_RATE = 0.001 # lr x 0.1 for NN mean function params
+dfGP_REAL_LEARNING_RATE = 0.005 # more stable when 0.5 * lr SIM
+dfGPcm_REAL_LEARNING_RATE = 0.001 # 0.005 crashed
+dfNGP_REAL_LEARNING_RATE = 0.005 # lr x 0.2 for NN mean function params
+
 dfNN_REAL_LEARNING_RATE = 0.001 # 0.005 worked, but could try slower makes it smoother
-GP_REAL_LEARNING_RATE = 0.001 # needs to be smaller
+GP_REAL_LEARNING_RATE = 0.005 # more stable when 0.5 * GP_SIM_LR
 PINN_REAL_LEARNING_RATE = 0.0001 # 0.005 was too fast
 
 ################################
@@ -81,14 +84,13 @@ SCALE_INPUT_region_mid_byrd = 70
 SCALE_INPUT_region_upper_byrd = 70
 
 # NOTE: This corresponds to a l^2 range of (4.0, 25.0) (domain is [0, 100])
-REAL_L_RANGE = (1.5, 4.0)
+REAL_L_RANGE = (5.0, 8.0)
 
 # NOTE: This corresponds to a sigma_n range of (,)
-# REAL_NOISE_VAR_RANGE = (0.04, 0.07)
 REAL_NOISE_VAR_RANGE = (0.02, 0.05) 
 
 # REAL_OUTPUTSCALE_VAR_RANGE = (0.8, 1.8)
-REAL_OUTPUTSCALE_VAR_RANGE = (1.0, 2.0)
+REAL_OUTPUTSCALE_VAR_RANGE = (1.0, 1.6)
 
 ##############################
 ### (df)GP HYPERPARAMETERS ###

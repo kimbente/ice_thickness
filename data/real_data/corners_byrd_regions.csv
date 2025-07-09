@@ -1,5 +1,5 @@
-name,x_min,x_max,y_min,y_max
-region_Byrd,350000,650000,-1000000,-700000
-region_upper_byrd,400000,470000,-800000,-730000
-region_mid_byrd,395000,465000,-870000,-800000
-region_lower_byrd,420000,450000,-910000,-880000
+name,x_min,x_max,y_min,y_max,flux_scalar
+region_Byrd,350000,650000,-1000000,-700000,0
+region_upper_byrd,400000,470000,-800000,-730000,15000
+region_mid_byrd,395000,465000,-870000,-800000,60000
+region_lower_byrd,420000,450000,-910000,-880000,200000
