@@ -252,8 +252,8 @@ for sim_name, sim_func in simulations.items():
                 test_losses_RMSE_over_epochs[epoch] = test_RMSE.item()
 
                 # Save evolution of hypers for convergence plot
-                l1_over_epochs[epoch] = model.base_kernel.lengthscale[0].item()
-                l2_over_epochs[epoch] = model.base_kernel.lengthscale[1].item()
+                l1_over_epochs[epoch] = model.base_kernel.lengthscale[:, 0].item()
+                l2_over_epochs[epoch] = model.base_kernel.lengthscale[:, 1].item()
                 outputscale_var_over_epochs[epoch] = model.covar_module.outputscale.item()
                 noise_var_over_epochs[epoch] = model.likelihood.noise.item()
 

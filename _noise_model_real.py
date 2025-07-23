@@ -28,3 +28,36 @@
     # combine both noise variances into the std for each dimension
     test_noise_diag = torch.sqrt(noise_var_h_times_uv_test + noise_var_uv_times_h_test).to(device)
     """
+
+   # NOTE: Here we estimate the noise variance, but use a domain-informed prior
+    ### NOISE MODEL ###
+    # Thickness^2 * error_uv^2 (t^2 * sigma_u^2, t^2 * sigma_v^2)
+    ### NOISE MODEL ###
+    # Thickness^2 * error_uv^2 (t^2 * sigma_u^2, t^2 * sigma_v^2)
+    noise_var_t_sq_times_uv_var = torch.cat([
+        (train[:, 9]**2 * train[:, 5]**2),
+        (train[:, 9]**2 * train[:, 6]**2),
+    ], dim = 0)
+
+    # UV^2 * error_thickness^2 (u^2 * sigma_t^2, v^2 * sigma_t^2)
+    # Calculate the factor for sigma_t (indpendent of scaling)
+    factor = 7.5 / train[:, 11]
+    # noise std level: only dependent on age, not depth, abou 15 m std
+    sigma_t = torch.cat([
+        factor * torch.log(train[:, 10] + 3),
+        factor * torch.log(train[:, 10] + 3)
+    ], dim = 0)
+    noise_var_uv_sq_times_t_var = (torch.concat((train[:, 7]**2, train[:, 8]**2), dim = 0) * sigma_t**2)
+
+    # Combine via independed error propagation
+    noise_var = noise_var_t_sq_times_uv_var + noise_var_uv_sq_times_t_var
+
+    # Get quantiles for prior
+    lower_noise_var = torch.quantile(noise_var, 0.05, dim = 0).item()
+    upper_noise_var = torch.quantile(noise_var, 0.95, dim = 0).item()
+
+    REAL_NOISE_VAR_RANGE = (lower_noise_var, upper_noise_var)
+
+    print(f"Lower percentile noise var: {lower_noise_var:.4f}")
+    print(f"Upper percentile noise var: {upper_noise_var:.4f}")
+    print()

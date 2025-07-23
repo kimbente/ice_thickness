@@ -13,11 +13,11 @@ PINN_SIM_RESULTS_DIR = "results_sim/PINN"
 # learning rates (alphabetic order)
 # NOTE: df is always smallcap.
 # NOTE: We use a GP and a NN lr
-dfGP_SIM_LEARNING_RATE = 0.01 
-dfGPcm_SIM_LEARNING_RATE = 0.01
-dfNGP_SIM_LEARNING_RATE = 0.01 # lr x 0.1 for NN mean function params
+dfGP_SIM_LEARNING_RATE = 0.005
+dfGPcm_SIM_LEARNING_RATE = 0.005 
+dfNGP_SIM_LEARNING_RATE = 0.005 # lr x 0.02 for NN mean function params
 dfNN_SIM_LEARNING_RATE = 0.005
-GP_SIM_LEARNING_RATE = 0.01
+GP_SIM_LEARNING_RATE = 0.005 
 PINN_SIM_LEARNING_RATE = 0.005
 
 # sim specific hyperparameters
@@ -40,21 +40,23 @@ PINN_REAL_RESULTS_DIR = "results_real/PINN"
 
 # learning rates (alphabetic order)
 # NOTE: GP lrs are 1/10th of sim lrs, because real data is more complex. NN lrs are the same.
-dfGP_REAL_LEARNING_RATE = 0.005 # more stable when 0.5 * lr SIM
-dfGPcm_REAL_LEARNING_RATE = 0.001 # 0.005 crashed
+dfGP_REAL_LEARNING_RATE = 0.005
+dfGPcm_REAL_LEARNING_RATE = 0.005
 dfNGP_REAL_LEARNING_RATE = 0.005 # lr x 0.2 for NN mean function params
 
-dfNN_REAL_LEARNING_RATE = 0.001 # 0.005 worked, but could try slower makes it smoother
-GP_REAL_LEARNING_RATE = 0.005 # more stable when 0.5 * GP_SIM_LR
-PINN_REAL_LEARNING_RATE = 0.0001 # 0.005 was too fast
+dfNN_REAL_LEARNING_RATE = 0.005 # 
+GP_REAL_LEARNING_RATE = 0.005 # 
+PINN_REAL_LEARNING_RATE = 0.001 # requires lower lr for smooth descent on train
 
 ################################
 ### TRAINING HYPERPARAMETERS ###
 ################################
 
+# TRACK_EMISSIONS_BOOL = True
 TRACK_EMISSIONS_BOOL = False
 
-NUM_RUNS = 8 # previously 10
+# NUM_RUNS = 8 # previously 10
+NUM_RUNS = 1 # NOTE: For debugging, set to 1
 MAX_NUM_EPOCHS = 2000
 
 PATIENCE = 100  # Stop after {PATIENCE} epochs with no improvement
@@ -87,10 +89,16 @@ SCALE_INPUT_region_upper_byrd = 70
 REAL_L_RANGE = (5.0, 8.0)
 
 # NOTE: This corresponds to a sigma_n range of (,)
-REAL_NOISE_VAR_RANGE = (0.02, 0.05) 
+# REAL_NOISE_VAR_RANGE = (0.02, 0.05) 
+# REAL_NOISE_VAR_RANGE = (0.01, 0.03) 
+# REAL_NOISE_VAR_RANGE = (0.005, 0.05) 
+REAL_NOISE_VAR_RANGE = (0.01, 0.05)
 
 # REAL_OUTPUTSCALE_VAR_RANGE = (0.8, 1.8)
-REAL_OUTPUTSCALE_VAR_RANGE = (1.0, 1.6)
+# REAL_OUTPUTSCALE_VAR_RANGE = (1.0, 1.6)
+# REAL_OUTPUTSCALE_VAR_RANGE = (0.5, 1.0)
+REAL_OUTPUTSCALE_VAR_RANGE = (1.0, 2.0)
+# REAL_OUTPUTSCALE_VAR_RANGE = (0.5, 3.0)
 
 ##############################
 ### (df)GP HYPERPARAMETERS ###
@@ -98,8 +106,9 @@ REAL_OUTPUTSCALE_VAR_RANGE = (1.0, 1.6)
 # order: lengthscale, outputscale variance, noise variance
 
 # HYPERPARAMETER 1: Range for lengthscale parameter (l) 
-# NOTE: This corresponds to a l^2 range of (0.09, 0.64) (domain is [0, 1])
-L_RANGE = (0.3, 0.8) 
+# NOTE: This corresponds to a l^2 range of (0.09, 0.49) (domain is [0, 1])
+L_RANGE = (0.3, 0.7)
+# L_RANGE = (0.1, 0.3) 
 
 # HYPERPARAMETER 2: Range for outputscale variance parameter (sigma_f^2)
 # NOTE: This corresponds to a sigma_f range of (0.64, ~1.22)

@@ -97,9 +97,13 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
     # [:, 2] = surface elevation (s)
     # [:, 3] = ice flux in x direction (u)
     # [:, 4] = ice flux in y direction (v)
-    # [:, 5] = ice flux error in x direction (u_err)
-    # [:, 6] = ice flux error in y direction (v_err)
-    # [:, 7] = source age
+    # [:, 5] = ice velocity error in x direction (u_err)
+    # [:, 6] = ice velocity error in y direction (v_err)
+    # [:, 7] = ice velocity in x direction (u)
+    # [:, 8] = ice velocity in y direction (v)
+    # [:, 9] = thickness
+    # [:, 10] = source age
+    # [:, 11] = sqrt flux scale (used for scaling the fluxes)
 
     # train
     x_train = train[:, [0, 1]].to(device)
@@ -152,12 +156,18 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
             y_train, 
             likelihood
             ).to(device)
-        
+
+        # CONSTRAINT: Domain-informed noise variance constraint
+        model.likelihood.register_constraint(
+            "raw_noise", gpytorch.constraints.Interval(REAL_NOISE_VAR_RANGE[0], REAL_NOISE_VAR_RANGE[1])
+        )
+
+        # Overwrite default noise variance initialisation with REAL data noise range init
+        model.likelihood.noise = torch.empty(1, device = device).uniform_( * REAL_NOISE_VAR_RANGE)      
+
         # Overwrite lengthscale hyperparameter initialisation because we have a different input scale.
-        # Overwrite noise variance initialisation because this is real noisy data.
-        # Use other default initialisations from SIM experiments
         model.covar_module.data_covar_module.lengthscale = torch.empty([1, 2], device = device).uniform_( * REAL_L_RANGE)
-        model.likelihood.noise = torch.empty(1, device = device).uniform_( * REAL_NOISE_VAR_RANGE)
+        # Use other default initialisations from SIM experiments
         
         optimizer = torch.optim.AdamW(model.parameters(), lr = MODEL_LEARNING_RATE, weight_decay = WEIGHT_DECAY)
         

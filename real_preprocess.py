@@ -104,11 +104,16 @@ def create_flux_df_for_region(region_name, thickness_points, velocity_grid, corn
     # Step 5: Compute flux
     thickness_velocity_df["xflux"] = thickness_velocity_df["VX"] * thickness_velocity_df["t"]
     thickness_velocity_df["yflux"] = thickness_velocity_df["VY"] * thickness_velocity_df["t"]
-    # NOTE: We define the error as the produce of the VX error and the thickness 
-    thickness_velocity_df["xflux_err"] = thickness_velocity_df["ERRX"] * thickness_velocity_df["t"]
-    # NOTE: # We define the error as the produce of the VY error and the thickness
-    # NOTE: There are no errors published for Bedmap points unfortunately
-    thickness_velocity_df["yflux_err"] = thickness_velocity_df["ERRY"] * thickness_velocity_df["t"]
+
+
+    # NOTE: Also export the one-sigma error 
+    thickness_velocity_df["vel_x_err"] = thickness_velocity_df["ERRX"]
+    thickness_velocity_df["vel_y_err"] = thickness_velocity_df["ERRY"]
+
+    # Components
+    thickness_velocity_df["vel_x"] = thickness_velocity_df["VX"]
+    thickness_velocity_df["vel_y"] = thickness_velocity_df["VY"]
+    thickness_velocity_df["t"] = thickness_velocity_df["t"]
 
     # Step 6: Add source_age column
     # define nominal year for surface velocity data, published 2017 (https://nsidc.org/sites/default/files/nsidc-0484-v002-userguide.pdf)   
@@ -302,14 +307,29 @@ def df_to_tensor(df, x_min, x_max, y_min, y_max, flux_scale, surface_scale = 100
         dtype = torch.float32
     )
 
-    # error
-    xfluxerr_tensor = torch.tensor(
-        (df.xflux_err / flux_scale).to_numpy(),
+    # error, also scaled by flux_scale
+    velxerr_tensor = torch.tensor(
+        (df.vel_x_err/ np.sqrt(flux_scale)).to_numpy(),
         dtype = torch.float32
     )
 
-    yfluxerr_tensor = torch.tensor(
-        (df.yflux_err / flux_scale).to_numpy(),
+    velyerr_tensor = torch.tensor(
+        (df.vel_x_err / np.sqrt(flux_scale)).to_numpy(),
+        dtype = torch.float32
+    )
+
+    vel_x_tensor = torch.tensor(
+        (df.vel_x / np.sqrt(flux_scale)).to_numpy(),
+        dtype = torch.float32
+    )
+
+    vel_y_tensor = torch.tensor(
+        (df.vel_y / np.sqrt(flux_scale)).to_numpy(),
+        dtype = torch.float32
+    )
+
+    t_tensor = torch.tensor(
+        (df.t / np.sqrt(flux_scale)).to_numpy(),
         dtype = torch.float32
     )
 
@@ -324,8 +344,12 @@ def df_to_tensor(df, x_min, x_max, y_min, y_max, flux_scale, surface_scale = 100
          s_tensor.unsqueeze(0), 
          xflux_tensor.unsqueeze(0), 
          yflux_tensor.unsqueeze(0),
-         xfluxerr_tensor.unsqueeze(0),
-         yfluxerr_tensor.unsqueeze(0),
-         source_age_tensor.unsqueeze(0)),
+         velxerr_tensor.unsqueeze(0),
+         velyerr_tensor.unsqueeze(0),
+         vel_x_tensor.unsqueeze(0),
+         vel_y_tensor.unsqueeze(0),
+         t_tensor.unsqueeze(0),
+         source_age_tensor.unsqueeze(0),
+         torch.sqrt(torch.tensor(flux_scale)).repeat(1, source_age_tensor.shape[0])),
         dim = 0
     )

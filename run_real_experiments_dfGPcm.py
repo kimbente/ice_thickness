@@ -96,9 +96,13 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
     # [:, 2] = surface elevation (s)
     # [:, 3] = ice flux in x direction (u)
     # [:, 4] = ice flux in y direction (v)
-    # [:, 5] = ice flux error in x direction (u_err)
-    # [:, 6] = ice flux error in y direction (v_err)
-    # [:, 7] = source age
+    # [:, 5] = ice velocity error in x direction (u_err)
+    # [:, 6] = ice velocity error in y direction (v_err)
+    # [:, 7] = ice velocity in x direction (u)
+    # [:, 8] = ice velocity in y direction (v)
+    # [:, 9] = thickness
+    # [:, 10] = source age
+    # [:, 11] = sqrt flux scale (used for scaling the fluxes)
 
     # train
     x_train = train[:, [0, 1]].to(device)
@@ -111,8 +115,6 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
     # HACK: We scale the data to a larger domain to avoid numerical issues
     x_test = x_test * SCALE_DOMAIN
     x_train = x_train * SCALE_DOMAIN
-
-    # NOTE: Here we estimate the noise variance 
 
     # Print train details
     print(f"=== {region_name.upper()} ===")
@@ -157,15 +159,36 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
             mean_vector
             ).to(device)
         
-        # Overwrite default lengthscale hyperparameter initialisation because we have a different input scale.
+        ### REGISTER PRIORS & CONSTRAINTS ###
+        # PRIOR: outputscale variance
+        outputscale_prior = gpytorch.priors.SmoothedBoxPrior(
+            REAL_OUTPUTSCALE_VAR_RANGE[0], REAL_OUTPUTSCALE_VAR_RANGE[1]).to(device)
+        
+        model.covar_module.register_prior(
+            "outputscale_prior",
+            outputscale_prior,
+            "raw_outputscale"
+        )
+
+        # CONSTRAINT: Domain-informed noise variance constraint
+        model.likelihood.register_constraint(
+            "raw_noise", gpytorch.constraints.Interval(REAL_NOISE_VAR_RANGE[0], REAL_NOISE_VAR_RANGE[1])
+        )
+        
+        ### INITIALISE HYPERPARAMETERS ###
+        # Overwrite default lengthscale hyperparameter initialisation with REAL data lengthscale range init
         model.base_kernel.lengthscale = torch.empty([1, 2], device = device).uniform_( * REAL_L_RANGE)
-        # Overwrite default outputscale variance initialisation.
-        model.covar_module.outputscale = torch.empty(1, device = device).uniform_( * REAL_OUTPUTSCALE_VAR_RANGE)
-        # Overwrite default noise variance initialisation because this is real noisy data.
+        
+        # Overwrite default outputscale variance initialisation with sample from prior
+        outputscale_sample = outputscale_prior.sample().to(device)
+        model.covar_module.outputscale = outputscale_sample
+
+        # Overwrite default noise variance initialisation with REAL data noise range init
         model.likelihood.noise = torch.empty(1, device = device).uniform_( * REAL_NOISE_VAR_RANGE)
-        
+
+        ### OPTIMISER ###
         optimizer = torch.optim.AdamW(model.parameters(), lr = MODEL_LEARNING_RATE, weight_decay = WEIGHT_DECAY)
-        
+
         # Use ExactMarginalLogLikelihood
         mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
 

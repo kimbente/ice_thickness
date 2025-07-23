@@ -26,7 +26,7 @@
 # This artwork is a visual reminder that this script is for the sim experiments.
 
 model_name = "GP"
-from gpytorch_models_11d import GP
+from gpytorch_models import GP
 
 # import configs to we can access the hypers with getattr
 import configs
@@ -180,6 +180,7 @@ for sim_name, sim_func in simulations.items():
             likelihood
             ).to(device)
         
+
         # NOTE: model parameters contains likelihood parameters as well
         optimizer = torch.optim.AdamW(model.parameters(), lr = MODEL_LEARNING_RATE, weight_decay = WEIGHT_DECAY)
         
@@ -256,8 +257,8 @@ for sim_name, sim_func in simulations.items():
 
                 # Save evolution of hypers for convergence plot
                 # NOTE: This is different to dfGPs
-                l1_over_epochs[epoch] = model.covar_module.data_covar_module.lengthscale[0, 0].item()
-                l2_over_epochs[epoch] = model.covar_module.data_covar_module.lengthscale[0, 1].item()
+                l1_over_epochs[epoch] = model.covar_module.data_covar_module.lengthscale[:, 0].item()
+                l2_over_epochs[epoch] = model.covar_module.data_covar_module.lengthscale[:, 1].item()
 
                 # Reconstruct B first via FF.T + D where F is the covar_factor and D is the diagonal matrix of task variances var
                 B = model.covar_module.task_covar_module.covar_factor @ model.covar_module.task_covar_module.covar_factor.T + torch.diag(model.covar_module.task_covar_module.var)

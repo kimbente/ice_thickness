@@ -94,9 +94,13 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
     # [:, 2] = surface elevation (s)
     # [:, 3] = ice flux in x direction (u)
     # [:, 4] = ice flux in y direction (v)
-    # [:, 5] = ice flux error in x direction (u_err)
-    # [:, 6] = ice flux error in y direction (v_err)
-    # [:, 7] = source age
+    # [:, 5] = ice velocity error in x direction (u_err)
+    # [:, 6] = ice velocity error in y direction (v_err)
+    # [:, 7] = ice velocity in x direction (u)
+    # [:, 8] = ice velocity in y direction (v)
+    # [:, 9] = thickness
+    # [:, 10] = source age
+    # [:, 11] = sqrt flux scale (used for scaling the fluxes)
 
     # train
     x_train = train[:, [0, 1]].to(device)
@@ -154,22 +158,37 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
             likelihood
             ).to(device)
         
-        # Hardcode for same starting point for all runs
-        # model.base_kernel.lengthscale = torch.tensor([[6.0, 10.0]]).to(device)
-        # model.covar_module.outputscale = torch.tensor([0.8]).to(device)
-        # model.likelihood.noise = torch.tensor([0.03]).to(device)
+        ### REGISTER PRIORS & CONSTRAINTS ###
+        # PRIOR: outputscale variance
+        outputscale_prior = gpytorch.priors.SmoothedBoxPrior(
+            REAL_OUTPUTSCALE_VAR_RANGE[0]/2, REAL_OUTPUTSCALE_VAR_RANGE[1]/2).to(device)
+        
+        model.covar_module.register_prior(
+            "outputscale_prior",
+            outputscale_prior,
+            "raw_outputscale"
+        )
 
-        # Overwrite default lengthscale hyperparameter initialisation because we have a different input scale.
+        # CONSTRAINT: Domain-informed noise variance constraint
+        model.likelihood.register_constraint(
+            "raw_noise", gpytorch.constraints.Interval(REAL_NOISE_VAR_RANGE[0], REAL_NOISE_VAR_RANGE[1])
+        )
+        
+        ### INITIALISE HYPERPARAMETERS ###
+        # Overwrite default lengthscale hyperparameter initialisation with REAL data lengthscale range init
         model.base_kernel.lengthscale = torch.empty([1, 2], device = device).uniform_( * REAL_L_RANGE)
-        # Overwrite default outputscale variance initialisation.
-        model.covar_module.outputscale = torch.empty(1, device = device).uniform_( * REAL_OUTPUTSCALE_VAR_RANGE)
-        # Overwrite default noise variance initialisation because this is real noisy data.
+        
+        # Overwrite default outputscale variance initialisation with sample from prior
+        outputscale_sample = outputscale_prior.sample().to(device)
+        model.covar_module.outputscale = outputscale_sample
+
+        # Overwrite default noise variance initialisation with REAL data noise range init
         model.likelihood.noise = torch.empty(1, device = device).uniform_( * REAL_NOISE_VAR_RANGE)
         
         # NOTE: This part is different from dfGP
         optimizer = torch.optim.AdamW([
             {"params": model.mean_module.parameters(), 
-             "weight_decay": WEIGHT_DECAY, "lr": MODEL_LEARNING_RATE * 0.2},
+             "weight_decay": WEIGHT_DECAY, "lr": MODEL_LEARNING_RATE * 0.5},
             {"params": list(model.covar_module.parameters()) + list(model.likelihood.parameters()), 
              "weight_decay":  WEIGHT_DECAY, "lr": MODEL_LEARNING_RATE},
             ])

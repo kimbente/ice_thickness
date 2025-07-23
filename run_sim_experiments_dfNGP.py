@@ -26,7 +26,7 @@
 # This artwork is a visual reminder that this script is for the sim experiments.
 
 model_name = "dfNGP"
-from gpytorch_models_11d import dfNGP
+from gpytorch_models import dfNGP
 
 # import configs to we can access the hypers with getattr
 import configs
@@ -182,9 +182,9 @@ for sim_name, sim_func in simulations.items():
         
         optimizer = torch.optim.AdamW([
             {"params": model.mean_module.parameters(), 
-             "weight_decay": WEIGHT_DECAY, "lr": (0.1 * 0.1 * MODEL_LEARNING_RATE)},
+             "weight_decay": WEIGHT_DECAY, "lr": (0.02 * MODEL_LEARNING_RATE)},
             {"params": list(model.covar_module.parameters()) + list(model.likelihood.parameters()), 
-             "weight_decay":  WEIGHT_DECAY, "lr": 0.5 * MODEL_LEARNING_RATE},
+             "weight_decay":  WEIGHT_DECAY, "lr": MODEL_LEARNING_RATE},
             ])
                 
         # Use ExactMarginalLogLikelihood
@@ -256,8 +256,8 @@ for sim_name, sim_func in simulations.items():
                 test_losses_RMSE_over_epochs[epoch] = test_RMSE.item()
 
                 # Save evolution of hypers for convergence plot
-                l1_over_epochs[epoch] = model.base_kernel.lengthscale[0].item()
-                l2_over_epochs[epoch] = model.base_kernel.lengthscale[1].item()
+                l1_over_epochs[epoch] = model.base_kernel.lengthscale[:, 0].item()
+                l2_over_epochs[epoch] = model.base_kernel.lengthscale[:, 1].item()
                 outputscale_var_over_epochs[epoch] = model.covar_module.outputscale.item()
                 noise_var_over_epochs[epoch] = model.likelihood.noise.item()
 
