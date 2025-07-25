@@ -24,7 +24,8 @@ PINN_SIM_LEARNING_RATE = 0.005
 # test grid resolution
 N_SIDE = 20
 
-N_SIDE_INFERENCE = 30
+# infer at higher resolution and downsample later e.. factor ::3 to 15
+N_SIDE_INFERENCE = 45
 
 #################
 ### REAL DATA ###

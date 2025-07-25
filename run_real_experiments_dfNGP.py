@@ -12,7 +12,7 @@ from gpytorch_models import dfNGP
 
 # import configs to we can access the hypers with getattr
 import configs
-from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, WEIGHT_DECAY
+from configs import PATIENCE, MAX_NUM_EPOCHS, NUM_RUNS, WEIGHT_DECAY, N_SIDE_INFERENCE
 from configs import TRACK_EMISSIONS_BOOL
 from configs import SCALE_INPUT_region_lower_byrd, SCALE_INPUT_region_mid_byrd, SCALE_INPUT_region_upper_byrd
 from configs import REAL_L_RANGE, REAL_NOISE_VAR_RANGE, REAL_OUTPUTSCALE_VAR_RANGE
@@ -317,7 +317,7 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
         ### --- dfNGP only: grid inference --- ###
         if run == 0:
 
-            _, x_grid = make_grid(n_side = 20) # 20 is enough for vis
+            _, x_grid = make_grid(n_side = N_SIDE_INFERENCE) # infer at higher res and downsample later
             x_grid = x_grid * SCALE_DOMAIN # scale grid to match training data
             x_grid.requires_grad_(True) # need gradients for divergence field
 
