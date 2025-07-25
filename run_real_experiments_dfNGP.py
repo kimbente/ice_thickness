@@ -161,7 +161,7 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
         ### REGISTER PRIORS & CONSTRAINTS ###
         # PRIOR: outputscale variance
         outputscale_prior = gpytorch.priors.SmoothedBoxPrior(
-            REAL_OUTPUTSCALE_VAR_RANGE[0]/2, REAL_OUTPUTSCALE_VAR_RANGE[1]/2).to(device)
+            REAL_OUTPUTSCALE_VAR_RANGE[0], REAL_OUTPUTSCALE_VAR_RANGE[1]).to(device)
         
         model.covar_module.register_prior(
             "outputscale_prior",
@@ -188,7 +188,7 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
         # NOTE: This part is different from dfGP
         optimizer = torch.optim.AdamW([
             {"params": model.mean_module.parameters(), 
-             "weight_decay": WEIGHT_DECAY, "lr": MODEL_LEARNING_RATE * 0.5},
+             "weight_decay": WEIGHT_DECAY, "lr": MODEL_LEARNING_RATE * 0.2},
             {"params": list(model.covar_module.parameters()) + list(model.likelihood.parameters()), 
              "weight_decay":  WEIGHT_DECAY, "lr": MODEL_LEARNING_RATE},
             ])
@@ -317,16 +317,16 @@ for region_name in ["region_lower_byrd", "region_mid_byrd", "region_upper_byrd"]
         ### --- dfNGP only: grid inference --- ###
         if run == 0:
 
-            _, x_grid = make_grid(n_side = 30) 
+            _, x_grid = make_grid(n_side = 20) # 20 is enough for vis
             x_grid = x_grid * SCALE_DOMAIN # scale grid to match training data
             x_grid.requires_grad_(True) # need gradients for divergence field
 
             dist_grid = model(x_grid.to(device))
             pred_dist_grid = likelihood(dist_grid)
 
-            torch.save(pred_dist_grid.mean, f"{MODEL_REAL_RESULTS_DIR}/{region_name}_{model_name}_grid_mean_predictions.pt")
-            torch.save(pred_dist_grid.covariance_matrix, f"{MODEL_REAL_RESULTS_DIR}/{region_name}_{model_name}_grid_covar_predictions.pt")
-            torch.save(dist_grid.covariance_matrix, f"{MODEL_REAL_RESULTS_DIR}/{region_name}_{model_name}_grid_latent_covar_predictions.pt")
+            torch.save(pred_dist_grid.mean, f"{MODEL_REAL_RESULTS_DIR}_grid_inference/{region_name}_{model_name}_grid_mean_predictions.pt")
+            torch.save(pred_dist_grid.covariance_matrix, f"{MODEL_REAL_RESULTS_DIR}_grid_inference/{region_name}_{model_name}_grid_covar_predictions.pt")
+            torch.save(dist_grid.covariance_matrix, f"{MODEL_REAL_RESULTS_DIR}_grid_inference/{region_name}_{model_name}_grid_latent_covar_predictions.pt")
 
         ### ---------------------------------- ###
 

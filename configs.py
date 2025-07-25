@@ -44,8 +44,8 @@ dfGP_REAL_LEARNING_RATE = 0.005
 dfGPcm_REAL_LEARNING_RATE = 0.005
 dfNGP_REAL_LEARNING_RATE = 0.005 # lr x 0.2 for NN mean function params
 
-dfNN_REAL_LEARNING_RATE = 0.005 # 
-GP_REAL_LEARNING_RATE = 0.005 # 
+dfNN_REAL_LEARNING_RATE = 0.005 
+GP_REAL_LEARNING_RATE = 0.005 
 PINN_REAL_LEARNING_RATE = 0.001 # requires lower lr for smooth descent on train
 
 ################################
