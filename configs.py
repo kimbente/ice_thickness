@@ -55,7 +55,7 @@ PINN_REAL_LEARNING_RATE = 0.001 # requires lower lr for smooth descent on train
 ################################
 
 # TRACK_EMISSIONS_BOOL = True
-TRACK_EMISSIONS_BOOL = False
+TRACK_EMISSIONS_BOOL = True
 
 # NUM_RUNS = 8 # previously 10
 NUM_RUNS = 1 # NOTE: For debugging, set to 1

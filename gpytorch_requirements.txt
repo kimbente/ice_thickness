@@ -1,0 +1,12 @@
+gpytorch==1.14
+linear-operator==0.6
+torch==2.5.1
+scipy==1.15.3
+pandas==2.3.0
+numpy==2.1.2
+matplotlib==3.10.3
+ipython==8.37.0
+ipykernel==6.29.5
+netCDF4==1.7.2
+xarray==2024.5.0
+codecarbon==3.0.2

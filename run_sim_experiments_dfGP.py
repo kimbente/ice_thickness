@@ -162,7 +162,7 @@ for sim_name, sim_func in simulations.items():
         print(f"\n--- Training Run {run + 1}/{NUM_RUNS} ---")
 
         # Additive noise model: independent Gaussian noise
-        # For every run we have a FIXED NOISY TARGET. Draw from standard normal with appropriate std
+        # For every run we have a FIXED NOISY TARGET. Draw from standard normal with appropriate std/var
         y_train_noisy = y_train + (torch.randn(y_train.shape, device = device) * sim_noise)
 
         # Initialise the likelihood for the GP model (estimates noise)
