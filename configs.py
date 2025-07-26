@@ -25,7 +25,8 @@ PINN_SIM_LEARNING_RATE = 0.005
 N_SIDE = 20
 
 # infer at higher resolution and downsample later e.. factor ::3 to 15
-N_SIDE_INFERENCE = 45
+# 45
+N_SIDE_INFERENCE = 60
 
 #################
 ### REAL DATA ###
